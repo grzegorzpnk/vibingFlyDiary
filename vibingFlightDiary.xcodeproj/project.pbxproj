@@ -1,0 +1,557 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		34C158B72F7ECF5A001AE5BE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34C1589E2F7ECF59001AE5BE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 34C158A52F7ECF59001AE5BE;
+			remoteInfo = vibingFlightDiary;
+		};
+		34C158C12F7ECF5A001AE5BE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34C1589E2F7ECF59001AE5BE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 34C158A52F7ECF59001AE5BE;
+			remoteInfo = vibingFlightDiary;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		34C158A62F7ECF59001AE5BE /* vibingFlightDiary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = vibingFlightDiary.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		34C158B62F7ECF5A001AE5BE /* vibingFlightDiaryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = vibingFlightDiaryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		34C158C02F7ECF5A001AE5BE /* vibingFlightDiaryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = vibingFlightDiaryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		34C158A82F7ECF59001AE5BE /* vibingFlightDiary */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = vibingFlightDiary;
+			sourceTree = "<group>";
+		};
+		34C158B92F7ECF5A001AE5BE /* vibingFlightDiaryTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = vibingFlightDiaryTests;
+			sourceTree = "<group>";
+		};
+		34C158C32F7ECF5A001AE5BE /* vibingFlightDiaryUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = vibingFlightDiaryUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		34C158A32F7ECF59001AE5BE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		34C158B32F7ECF5A001AE5BE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		34C158BD2F7ECF5A001AE5BE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		34C1589D2F7ECF59001AE5BE = {
+			isa = PBXGroup;
+			children = (
+				34C158A82F7ECF59001AE5BE /* vibingFlightDiary */,
+				34C158B92F7ECF5A001AE5BE /* vibingFlightDiaryTests */,
+				34C158C32F7ECF5A001AE5BE /* vibingFlightDiaryUITests */,
+				34C158A72F7ECF59001AE5BE /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		34C158A72F7ECF59001AE5BE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				34C158A62F7ECF59001AE5BE /* vibingFlightDiary.app */,
+				34C158B62F7ECF5A001AE5BE /* vibingFlightDiaryTests.xctest */,
+				34C158C02F7ECF5A001AE5BE /* vibingFlightDiaryUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		34C158A52F7ECF59001AE5BE /* vibingFlightDiary */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 34C158CA2F7ECF5A001AE5BE /* Build configuration list for PBXNativeTarget "vibingFlightDiary" */;
+			buildPhases = (
+				34C158A22F7ECF59001AE5BE /* Sources */,
+				34C158A32F7ECF59001AE5BE /* Frameworks */,
+				34C158A42F7ECF59001AE5BE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				34C158A82F7ECF59001AE5BE /* vibingFlightDiary */,
+			);
+			name = vibingFlightDiary;
+			packageProductDependencies = (
+			);
+			productName = vibingFlightDiary;
+			productReference = 34C158A62F7ECF59001AE5BE /* vibingFlightDiary.app */;
+			productType = "com.apple.product-type.application";
+		};
+		34C158B52F7ECF5A001AE5BE /* vibingFlightDiaryTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 34C158CD2F7ECF5A001AE5BE /* Build configuration list for PBXNativeTarget "vibingFlightDiaryTests" */;
+			buildPhases = (
+				34C158B22F7ECF5A001AE5BE /* Sources */,
+				34C158B32F7ECF5A001AE5BE /* Frameworks */,
+				34C158B42F7ECF5A001AE5BE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				34C158B82F7ECF5A001AE5BE /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				34C158B92F7ECF5A001AE5BE /* vibingFlightDiaryTests */,
+			);
+			name = vibingFlightDiaryTests;
+			packageProductDependencies = (
+			);
+			productName = vibingFlightDiaryTests;
+			productReference = 34C158B62F7ECF5A001AE5BE /* vibingFlightDiaryTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		34C158BF2F7ECF5A001AE5BE /* vibingFlightDiaryUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 34C158D02F7ECF5A001AE5BE /* Build configuration list for PBXNativeTarget "vibingFlightDiaryUITests" */;
+			buildPhases = (
+				34C158BC2F7ECF5A001AE5BE /* Sources */,
+				34C158BD2F7ECF5A001AE5BE /* Frameworks */,
+				34C158BE2F7ECF5A001AE5BE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				34C158C22F7ECF5A001AE5BE /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				34C158C32F7ECF5A001AE5BE /* vibingFlightDiaryUITests */,
+			);
+			name = vibingFlightDiaryUITests;
+			packageProductDependencies = (
+			);
+			productName = vibingFlightDiaryUITests;
+			productReference = 34C158C02F7ECF5A001AE5BE /* vibingFlightDiaryUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		34C1589E2F7ECF59001AE5BE /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1620;
+				LastUpgradeCheck = 1620;
+				TargetAttributes = {
+					34C158A52F7ECF59001AE5BE = {
+						CreatedOnToolsVersion = 16.2;
+					};
+					34C158B52F7ECF5A001AE5BE = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = 34C158A52F7ECF59001AE5BE;
+					};
+					34C158BF2F7ECF5A001AE5BE = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = 34C158A52F7ECF59001AE5BE;
+					};
+				};
+			};
+			buildConfigurationList = 34C158A12F7ECF59001AE5BE /* Build configuration list for PBXProject "vibingFlightDiary" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 34C1589D2F7ECF59001AE5BE;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 34C158A72F7ECF59001AE5BE /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				34C158A52F7ECF59001AE5BE /* vibingFlightDiary */,
+				34C158B52F7ECF5A001AE5BE /* vibingFlightDiaryTests */,
+				34C158BF2F7ECF5A001AE5BE /* vibingFlightDiaryUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		34C158A42F7ECF59001AE5BE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		34C158B42F7ECF5A001AE5BE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		34C158BE2F7ECF5A001AE5BE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		34C158A22F7ECF59001AE5BE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		34C158B22F7ECF5A001AE5BE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		34C158BC2F7ECF5A001AE5BE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		34C158B82F7ECF5A001AE5BE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 34C158A52F7ECF59001AE5BE /* vibingFlightDiary */;
+			targetProxy = 34C158B72F7ECF5A001AE5BE /* PBXContainerItemProxy */;
+		};
+		34C158C22F7ECF5A001AE5BE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 34C158A52F7ECF59001AE5BE /* vibingFlightDiary */;
+			targetProxy = 34C158C12F7ECF5A001AE5BE /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		34C158C82F7ECF5A001AE5BE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		34C158C92F7ECF5A001AE5BE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		34C158CB2F7ECF5A001AE5BE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"vibingFlightDiary/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = enso.vibingFlightDiary;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		34C158CC2F7ECF5A001AE5BE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"vibingFlightDiary/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = enso.vibingFlightDiary;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		34C158CE2F7ECF5A001AE5BE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = enso.vibingFlightDiaryTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/vibingFlightDiary.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/vibingFlightDiary";
+			};
+			name = Debug;
+		};
+		34C158CF2F7ECF5A001AE5BE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = enso.vibingFlightDiaryTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/vibingFlightDiary.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/vibingFlightDiary";
+			};
+			name = Release;
+		};
+		34C158D12F7ECF5A001AE5BE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = enso.vibingFlightDiaryUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = vibingFlightDiary;
+			};
+			name = Debug;
+		};
+		34C158D22F7ECF5A001AE5BE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = enso.vibingFlightDiaryUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = vibingFlightDiary;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		34C158A12F7ECF59001AE5BE /* Build configuration list for PBXProject "vibingFlightDiary" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				34C158C82F7ECF5A001AE5BE /* Debug */,
+				34C158C92F7ECF5A001AE5BE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		34C158CA2F7ECF5A001AE5BE /* Build configuration list for PBXNativeTarget "vibingFlightDiary" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				34C158CB2F7ECF5A001AE5BE /* Debug */,
+				34C158CC2F7ECF5A001AE5BE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		34C158CD2F7ECF5A001AE5BE /* Build configuration list for PBXNativeTarget "vibingFlightDiaryTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				34C158CE2F7ECF5A001AE5BE /* Debug */,
+				34C158CF2F7ECF5A001AE5BE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		34C158D02F7ECF5A001AE5BE /* Build configuration list for PBXNativeTarget "vibingFlightDiaryUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				34C158D12F7ECF5A001AE5BE /* Debug */,
+				34C158D22F7ECF5A001AE5BE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 34C1589E2F7ECF59001AE5BE /* Project object */;
+}

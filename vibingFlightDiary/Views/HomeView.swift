@@ -16,11 +16,16 @@ struct HomeView: View {
         ZStack {
             FDColor.black.ignoresSafeArea()
 
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    heroSection
+            VStack(spacing: 0) {
+                heroSection
 
+                ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 12) {
+                        if !flights.isEmpty {
+                            statsRow
+                                .padding(.top, 20)
+                        }
+
                         HStack {
                             Text("RECENT FLIGHTS")
                                 .font(FDFont.ui(11, weight: .medium))
@@ -29,12 +34,13 @@ struct HomeView: View {
                             Spacer()
                             if flights.count > previewCount {
                                 Button(action: onViewAll) {
-                                    Text("View all →")
+                                    Text("History →")
                                         .font(FDFont.ui(12, weight: .medium))
                                         .foregroundStyle(FDColor.gold)
                                 }
                             }
                         }
+                        .padding(.top, flights.isEmpty ? 24 : 16)
 
                         if flights.isEmpty {
                             emptyState
@@ -66,9 +72,9 @@ struct HomeView: View {
                         }
                     }
                     .padding(.horizontal, 20)
-                    .padding(.top, 24)
                     .padding(.bottom, 110)
                 }
+                .background(FDColor.black)
             }
         }
         .sheet(item: $selectedFlight) { flight in
@@ -110,13 +116,13 @@ struct HomeView: View {
                     .foregroundStyle(FDColor.gold)
                     .tracking(2.5)
 
-                Text("Your\nJourneys")
+                Text("Your\nFlight Diary")
                     .font(FDFont.display(36, weight: .bold))
                     .foregroundStyle(FDColor.text)
                     .lineSpacing(4)
 
                 if !flights.isEmpty {
-                    Text("\(flights.count) flight\(flights.count == 1 ? "" : "s") logged")
+                    Text("\(flights.count) flight\(flights.count == 1 ? "" : "s") across \(allCountries) \(allCountries == 1 ? "country" : "countries")")
                         .font(FDFont.ui(13))
                         .foregroundStyle(FDColor.textMuted)
                         .padding(.top, 2)
@@ -127,6 +133,67 @@ struct HomeView: View {
         }
         .frame(height: 310)
         .clipped()
+    }
+
+    // MARK: - Stats
+
+    private var currentYear: Int { Calendar.current.component(.year, from: .now) }
+
+    private var thisYearFlights: [Flight] {
+        flights.filter { Calendar.current.component(.year, from: $0.date) == currentYear }
+    }
+
+    private var thisYearKm: Int { Int(thisYearFlights.reduce(0) { $0 + $1.distanceKm }) }
+
+    private var thisYearCountries: Int {
+        var codes = Set<String>()
+        for flight in thisYearFlights {
+            if let o = airportService.airport(for: flight.originIATA) { codes.insert(o.country) }
+            if let d = airportService.airport(for: flight.destinationIATA) { codes.insert(d.country) }
+        }
+        return codes.count
+    }
+
+    private var allCountries: Int {
+        var codes = Set<String>()
+        for flight in flights {
+            if let o = airportService.airport(for: flight.originIATA) { codes.insert(o.country) }
+            if let d = airportService.airport(for: flight.destinationIATA) { codes.insert(d.country) }
+        }
+        return codes.count
+    }
+
+    private var statsRow: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("THIS YEAR")
+                .font(FDFont.ui(11, weight: .medium))
+                .foregroundStyle(FDColor.textMuted)
+                .tracking(1.5)
+            HStack(spacing: 10) {
+                statCard(value: "\(thisYearFlights.count)", label: "Flights", highlight: false)
+                statCard(value: thisYearKm >= 1000 ? "\(thisYearKm / 1000)k" : "\(thisYearKm)", label: "Km Flown", highlight: true)
+                statCard(value: "\(thisYearCountries)", label: "Countries", highlight: false)
+            }
+        }
+    }
+
+    private func statCard(value: String, label: String, highlight: Bool) -> some View {
+        VStack(spacing: 5) {
+            Text(value)
+                .font(FDFont.display(22, weight: .bold))
+                .foregroundStyle(highlight ? FDColor.gold : FDColor.text)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            Text(label.uppercased())
+                .font(FDFont.ui(10, weight: .medium))
+                .foregroundStyle(FDColor.textMuted)
+                .tracking(0.8)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .background(FDColor.surface2)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
     private var emptyState: some View {
@@ -164,7 +231,7 @@ struct FlightCard: View {
         } label: {
             HStack(spacing: 12) {
                 Circle()
-                    .fill(FDColor.gold)
+                    .fill(flight.flightClass == .business || flight.flightClass == .first ? FDColor.blue : FDColor.gold)
                     .frame(width: 6, height: 6)
                     .padding(.top, 2)
                     .alignmentGuide(.top) { d in d[.top] }
@@ -196,9 +263,19 @@ struct FlightCard: View {
                             .foregroundStyle(FDColor.textMuted)
                     }
 
-                    Text("\(Int(flight.distanceKm).formatted()) km")
-                        .font(FDFont.ui(10))
-                        .foregroundStyle(FDColor.textDim)
+                    HStack(spacing: 6) {
+                        if let airline = flight.airline {
+                            Text(airline)
+                            Text("·")
+                        }
+                        if let cls = flight.flightClass {
+                            Text(cls.label)
+                            Text("·")
+                        }
+                        Text(flight.estimatedDurationFormatted)
+                    }
+                    .font(FDFont.ui(10))
+                    .foregroundStyle(FDColor.textDim)
                 }
 
                 Spacer(minLength: 8)

@@ -63,6 +63,15 @@ class Flight {
     var distanceKm: Double
     var seatType: SeatType?
     var flightClass: FlightClass?
+    var airline: String?
+
+    /// Approximate flight time based on distance at 850 km/h + 30 min overhead
+    var estimatedDurationFormatted: String {
+        let totalMinutes = Int((distanceKm / 850.0 + 0.5) * 60)
+        let h = totalMinutes / 60
+        let m = totalMinutes % 60
+        return m > 0 ? "\(h)h \(m)m" : "\(h)h"
+    }
 
     init(
         originIATA: String,
@@ -70,7 +79,8 @@ class Flight {
         date: Date,
         distanceKm: Double,
         seatType: SeatType? = nil,
-        flightClass: FlightClass? = nil
+        flightClass: FlightClass? = nil,
+        airline: String? = nil
     ) {
         self.id = UUID()
         self.originIATA = originIATA
@@ -79,5 +89,6 @@ class Flight {
         self.distanceKm = distanceKm
         self.seatType = seatType
         self.flightClass = flightClass
+        self.airline = airline
     }
 }

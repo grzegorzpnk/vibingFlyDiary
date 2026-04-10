@@ -12,6 +12,8 @@ struct AddFlightView: View {
     @State private var date: Date = .now
     @State private var seatType: SeatType?
     @State private var flightClass: FlightClass?
+    @State private var airline: String = ""
+    @State private var showAirlineSuggestions: Bool = false
 
     // Inline search state
     enum SearchField { case from, to }
@@ -19,6 +21,23 @@ struct AddFlightView: View {
     @State private var searchQuery = ""
 
     @FocusState private var searchFocused: Bool
+    @FocusState private var airlineFocused: Bool
+
+    private static let allAirlines: [AirlineInfo] = {
+        guard let url = Bundle.main.url(forResource: "airlines", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let list = try? JSONDecoder().decode([AirlineInfo].self, from: data)
+        else { return [] }
+        return list
+    }()
+
+    private var airlineSuggestions: [AirlineInfo] {
+        guard !airline.isEmpty else { return [] }
+        return Self.allAirlines
+            .filter { $0.name.localizedCaseInsensitiveContains(airline) || $0.iata.localizedCaseInsensitiveContains(airline) }
+            .prefix(5)
+            .map { $0 }
+    }
 
     private var distanceKm: Double? {
         guard let o = origin, let d = destination else { return nil }
@@ -164,6 +183,13 @@ struct AddFlightView: View {
                 .frame(height: 1)
                 .padding(.horizontal, 20)
 
+            airlineField
+
+            Rectangle()
+                .fill(FDColor.border)
+                .frame(height: 1)
+                .padding(.horizontal, 20)
+
             seatPicker
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
@@ -259,6 +285,64 @@ struct AddFlightView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: - Airline Field
+
+    private var airlineField: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("AIRLINE")
+                    .font(FDFont.ui(10, weight: .medium))
+                    .foregroundStyle(FDColor.textDim)
+                    .tracking(1.2)
+                TextField("e.g. Lufthansa, Ryanair…", text: $airline)
+                    .font(FDFont.ui(15, weight: .medium))
+                    .foregroundStyle(FDColor.text)
+                    .tint(FDColor.gold)
+                    .autocorrectionDisabled()
+                    .focused($airlineFocused)
+                    .onChange(of: airlineFocused) { _, focused in
+                        showAirlineSuggestions = focused && !airline.isEmpty
+                    }
+                    .onChange(of: airline) { _, value in
+                        showAirlineSuggestions = !value.isEmpty
+                    }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+
+            if showAirlineSuggestions && !airlineSuggestions.isEmpty {
+                Divider().background(FDColor.border)
+                VStack(spacing: 0) {
+                    ForEach(airlineSuggestions) { suggestion in
+                        Button {
+                            airline = suggestion.name
+                            showAirlineSuggestions = false
+                            airlineFocused = false
+                        } label: {
+                            HStack(spacing: 10) {
+                                Text(suggestion.iata)
+                                    .font(FDFont.display(13, weight: .bold))
+                                    .foregroundStyle(FDColor.gold)
+                                    .frame(width: 32, alignment: .leading)
+                                Text(suggestion.name)
+                                    .font(FDFont.ui(14, weight: .medium))
+                                    .foregroundStyle(FDColor.text)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 11)
+                        }
+                        .buttonStyle(.plain)
+                        if suggestion.id != airlineSuggestions.last?.id {
+                            Divider().background(FDColor.border).padding(.leading, 20)
+                        }
+                    }
+                }
+                .background(FDColor.surface3)
+            }
+        }
     }
 
     // MARK: - Seat Picker
@@ -480,7 +564,7 @@ struct AddFlightView: View {
 
     private func save() {
         guard let o = origin, let d = destination, let km = distanceKm else { return }
-        modelContext.insert(Flight(originIATA: o.iata, destinationIATA: d.iata, date: date, distanceKm: km, seatType: seatType, flightClass: flightClass))
+        modelContext.insert(Flight(originIATA: o.iata, destinationIATA: d.iata, date: date, distanceKm: km, seatType: seatType, flightClass: flightClass, airline: airline.isEmpty ? nil : airline))
         dismiss()
     }
 
@@ -493,4 +577,12 @@ struct AddFlightView: View {
         let a = sin(dLat/2)*sin(dLat/2) + cos(lat1)*cos(lat2)*sin(dLon/2)*sin(dLon/2)
         return R * 2 * atan2(sqrt(a), sqrt(1 - a))
     }
+}
+
+// MARK: - Airline Info
+
+struct AirlineInfo: Codable, Identifiable {
+    let name: String
+    let iata: String
+    var id: String { iata + name }
 }

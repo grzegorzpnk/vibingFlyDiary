@@ -18,7 +18,7 @@ struct FlightDetailView: View {
                     routeHeader
                     Divider().background(FDColor.border).padding(.horizontal, 24)
                     metaSection
-                    if flight.seatType != nil || flight.flightClass != nil {
+                    if flight.airline != nil || flight.seatType != nil || flight.flightClass != nil {
                         Divider().background(FDColor.border).padding(.horizontal, 24)
                         travelSection
                     }
@@ -115,6 +115,16 @@ struct FlightDetailView: View {
                 label: "DISTANCE",
                 value: "\(Int(flight.distanceKm).formatted()) km"
             )
+
+            Rectangle()
+                .fill(FDColor.border)
+                .frame(width: 1)
+                .padding(.vertical, 16)
+
+            metaCell(
+                label: "EST. DURATION",
+                value: flight.estimatedDurationFormatted
+            )
         }
         .padding(.vertical, 4)
     }
@@ -136,18 +146,21 @@ struct FlightDetailView: View {
     // MARK: - Travel Section (Seat + Class)
 
     private var travelSection: some View {
-        HStack(spacing: 0) {
-            if let seat = flight.seatType {
-                travelCell(label: "SEAT", value: seat.label, icon: seat.icon)
-            }
-            if flight.seatType != nil && flight.flightClass != nil {
-                Rectangle()
-                    .fill(FDColor.border)
-                    .frame(width: 1)
-                    .padding(.vertical, 16)
-            }
-            if let cls = flight.flightClass {
-                travelCell(label: "CLASS", value: cls.label, icon: cls.icon)
+        let items: [(label: String, value: String, icon: String)] = [
+            flight.airline.map { ("AIRLINE", $0, "airplane.circle") },
+            flight.flightClass.map { ("CLASS", $0.label, $0.icon) },
+            flight.seatType.map { ("SEAT", $0.label, $0.icon) }
+        ].compactMap { $0 }
+
+        return HStack(spacing: 0) {
+            ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                if index > 0 {
+                    Rectangle()
+                        .fill(FDColor.border)
+                        .frame(width: 1)
+                        .padding(.vertical, 16)
+                }
+                travelCell(label: item.label, value: item.value, icon: item.icon)
             }
         }
         .padding(.vertical, 4)

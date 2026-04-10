@@ -1,0 +1,1117 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #0A0A0F;
+    --surface: #111118;
+    --surface2: #1A1A24;
+    --surface3: #22222E;
+    --border: rgba(255,255,255,0.07);
+    --border-bright: rgba(255,255,255,0.15);
+    --gold: #C9A96E;
+    --gold-light: #E8C98A;
+    --gold-dim: rgba(201,169,110,0.15);
+    --text: #F0EEE8;
+    --text-muted: rgba(240,238,232,0.45);
+    --text-dim: rgba(240,238,232,0.25);
+    --accent: #4A7FA5;
+    --accent-light: #6BA3CC;
+    --red: #E05252;
+    --serif: 'Playfair Display', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+  }
+
+  body {
+    background: #0A0A0F;
+    font-family: var(--sans);
+    color: var(--text);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 32px;
+    padding: 32px 24px;
+    flex-wrap: wrap;
+    min-height: 100vh;
+  }
+
+  .phone {
+    width: 375px;
+    height: 812px;
+    background: var(--surface);
+    border-radius: 52px;
+    border: 1.5px solid var(--border-bright);
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 8px rgba(255,255,255,0.03), 0 60px 120px rgba(0,0,0,0.8);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
+  .phone:hover { transform: translateY(-4px); }
+
+  .notch {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 120px; height: 34px;
+    background: var(--black);
+    border-radius: 0 0 20px 20px;
+    z-index: 100;
+  }
+
+  .screen {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── SCREEN 1: HOME ── */
+  .s-home { display: flex; flex-direction: column; height: 100%; }
+
+  .home-hero {
+    position: relative;
+    height: 340px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(160deg, #0d1a2a 0%, #1a0f2e 50%, #0a0a0f 100%);
+  }
+
+  .stars {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 80% 15%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 45% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 65% 25%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 70%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 50%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 10% 50%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 55% 80%, rgba(255,255,255,0.3) 0%, transparent 100%);
+  }
+
+  .earth-glow {
+    position: absolute;
+    bottom: -40px; left: 50%;
+    transform: translateX(-50%);
+    width: 260px; height: 140px;
+    background: radial-gradient(ellipse, rgba(74,127,165,0.25) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .flight-arc {
+    position: absolute;
+    top: 50px; left: 0; right: 0;
+    height: 200px;
+  }
+
+  .status-bar {
+    position: absolute;
+    top: 14px; left: 24px; right: 24px;
+    display: flex; justify-content: space-between;
+    font-size: 12px; font-weight: 500;
+    color: rgba(255,255,255,0.6);
+    z-index: 10;
+  }
+
+  .hero-content {
+    position: absolute;
+    bottom: 24px; left: 24px; right: 24px;
+    z-index: 10;
+  }
+
+  .greeting {
+    font-size: 11px; letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  .hero-title {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .hero-sub {
+    font-size: 13px; color: var(--text-muted);
+  }
+
+  .home-body {
+    flex: 1;
+    overflow: hidden;
+    padding: 0 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 20px;
+  }
+
+  .section-title {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .section-action {
+    font-size: 12px;
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .stat-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .stat-card.highlight .stat-num { color: var(--gold); }
+
+  .flight-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .flight-route {
+    flex: 1;
+  }
+
+  .route-airports {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .airport-code {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .route-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--border-bright), var(--border-bright));
+    position: relative;
+  }
+
+  .route-line::after {
+    content: '✈';
+    font-size: 10px;
+    position: absolute;
+    top: -7px; left: 50%;
+    transform: translateX(-50%);
+    color: var(--gold);
+  }
+
+  .flight-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .flight-date {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .memory-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+  }
+
+  /* ── SCREEN 2: MAP ── */
+  .s-map { display: flex; flex-direction: column; height: 100%; }
+
+  .map-bg {
+    flex: 1;
+    background: #0d1520;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .map-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(74,127,165,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(74,127,165,0.06) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+
+  .map-overlay {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(13,21,32,0.8) 100%);
+  }
+
+  .map-header {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 52px 20px 20px;
+    background: linear-gradient(to bottom, rgba(13,21,32,0.95) 60%, transparent);
+    z-index: 10;
+  }
+
+  .map-title {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .filter-chips {
+    display: flex; gap: 8px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--border-bright);
+    background: var(--surface2);
+    color: var(--text-muted);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .chip.active {
+    background: var(--gold-dim);
+    border-color: var(--gold);
+    color: var(--gold-light);
+  }
+
+  .map-footer {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 16px 20px 20px;
+    background: linear-gradient(to top, rgba(13,21,32,0.95) 60%, transparent);
+    z-index: 10;
+  }
+
+  .visited-count {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .country-tags {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+
+  .country-tag {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  /* ── SCREEN 3: ADD FLIGHT ── */
+  .s-add { display: flex; flex-direction: column; height: 100%; }
+
+  .add-header {
+    padding: 56px 24px 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .back-btn {
+    font-size: 13px;
+    color: var(--gold);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .add-title {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .add-body {
+    flex: 1;
+    overflow: hidden;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .route-picker {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+  }
+
+  .route-visual {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .airport-input-group { flex: 1; }
+
+  .airport-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .airport-input {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    background: none;
+    border: none;
+    outline: none;
+    width: 100%;
+  }
+
+  .swap-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--surface3);
+    border: 1px solid var(--border-bright);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gold);
+    font-size: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .divider-h { height: 1px; background: var(--border); margin: 0 -20px; }
+
+  .meta-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .meta-field { }
+
+  .meta-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+
+  .meta-value {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .memory-section {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 16px;
+  }
+
+  .memory-area {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-top: 8px;
+  }
+
+  .cta-btn {
+    background: var(--gold);
+    color: #0A0A0F;
+    border: none;
+    border-radius: 16px;
+    padding: 18px;
+    width: 100%;
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    margin-top: auto;
+  }
+
+  /* ── SCREEN 4: MEMORIES ── */
+  .s-memories { display: flex; flex-direction: column; height: 100%; }
+
+  .memories-header {
+    padding: 52px 24px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .memories-title {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 900;
+    margin-bottom: 4px;
+  }
+
+  .memories-sub {
+    font-size: 13px; color: var(--text-muted);
+  }
+
+  .memories-grid {
+    flex: 1;
+    overflow: hidden;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 10px;
+    align-content: start;
+  }
+
+  .memory-item {
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .memory-item.tall { grid-row: span 2; }
+
+  .mem-bg {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 12px;
+    min-height: 140px;
+    position: relative;
+  }
+
+  .mem-1 { background: linear-gradient(160deg, #1a2a3e 0%, #0d1520 100%); }
+  .mem-2 { background: linear-gradient(160deg, #2e1a12 0%, #1a0d08 100%); }
+  .mem-3 { background: linear-gradient(160deg, #1a1a2e 0%, #0d0d20 100%); }
+  .mem-4 { background: linear-gradient(160deg, #1e2a1a 0%, #111a0d 100%); }
+
+  .mem-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%);
+  }
+
+  .mem-icon {
+    font-size: 28px;
+    position: absolute;
+    top: 14px; right: 14px;
+    opacity: 0.6;
+  }
+
+  .mem-route {
+    font-family: var(--serif);
+    font-size: 14px;
+    font-weight: 700;
+    position: relative; z-index: 1;
+    margin-bottom: 2px;
+  }
+
+  .mem-city {
+    font-size: 11px;
+    color: var(--text-muted);
+    position: relative; z-index: 1;
+  }
+
+  /* ── NAV BAR ── */
+  .nav-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--black);
+    border-top: 1px solid var(--border);
+    padding: 12px 0 28px;
+    display: flex;
+    z-index: 200;
+  }
+
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+  }
+
+  .nav-icon {
+    font-size: 20px;
+    opacity: 0.35;
+  }
+
+  .nav-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  .nav-item.active .nav-icon { opacity: 1; }
+  .nav-item.active .nav-label { color: var(--gold); }
+
+  .nav-add {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    margin-top: -20px;
+  }
+
+  .nav-add-btn {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    color: var(--black);
+    font-weight: 300;
+    box-shadow: 0 4px 20px rgba(201,169,110,0.4);
+    transition: transform 0.2s;
+  }
+
+  .nav-add-btn:hover { transform: scale(1.1); }
+
+  .nav-add .nav-label { color: var(--gold); font-weight: 600; }
+
+  /* ── LABEL ── */
+  .phone-label {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+  }
+
+  .phone-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── INFO PANEL ── */
+  .info-panel {
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-top: 20px;
+  }
+
+  .brand-mark {
+    margin-bottom: 8px;
+  }
+
+  .brand-name {
+    font-family: var(--serif);
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .brand-sub {
+    font-size: 13px;
+    color: var(--gold);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .design-note {
+    border-left: 2px solid var(--gold-dim);
+    padding: 12px 16px;
+    background: rgba(201,169,110,0.04);
+    border-radius: 0 12px 12px 0;
+  }
+
+  .note-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  .note-text {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .palette-row {
+    display: flex; gap: 8px;
+  }
+
+  .swatch {
+    flex: 1; height: 28px;
+    border-radius: 8px;
+  }
+
+  .type-sample {
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  .type-serif {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .type-sans {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+</style>
+
+<div style="display:flex; gap:32px; flex-wrap:wrap; justify-content:center; align-items:flex-start;">
+
+<!-- ── PHONE 1: HOME ── -->
+<div class="phone-wrap">
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="screen s-home">
+      <div class="home-hero">
+        <div class="hero-bg"></div>
+        <div class="stars"></div>
+        <div class="earth-glow"></div>
+        <!-- Flight arc SVG -->
+        <svg class="flight-arc" viewBox="0 0 375 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="2" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <!-- Arc 1 -->
+          <path d="M 60,160 Q 130,40 290,100" fill="none" stroke="rgba(201,169,110,0.3)" stroke-width="1" stroke-dasharray="4,6"/>
+          <circle cx="290" cy="100" r="3" fill="#C9A96E" opacity="0.8"/>
+          <circle cx="60" cy="160" r="3" fill="#C9A96E" opacity="0.8"/>
+          <!-- Plane -->
+          <text x="175" y="72" font-size="14" fill="#C9A96E" opacity="0.9" filter="url(#glow)">✈</text>
+          <!-- Arc 2 -->
+          <path d="M 40,130 Q 200,20 340,80" fill="none" stroke="rgba(74,127,165,0.2)" stroke-width="1" stroke-dasharray="3,8"/>
+          <!-- Arc 3 -->
+          <path d="M 80,170 Q 160,100 310,130" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="0.5" stroke-dasharray="2,10"/>
+        </svg>
+        <div class="status-bar">
+          <span>9:41</span>
+          <span>●●●</span>
+        </div>
+        <div class="hero-content">
+          <div class="greeting">✦ Welcome back, Alex</div>
+          <div class="hero-title">Your<br>Flight Diary</div>
+          <div class="hero-sub">47 flights across 28 countries</div>
+        </div>
+      </div>
+      <div class="home-body">
+        <div>
+          <div class="section-header">
+            <span class="section-title">This Year</span>
+            <span class="section-action">View all →</span>
+          </div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card highlight">
+            <div class="stat-num">47</div>
+            <div class="stat-label">Flights</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">89k</div>
+            <div class="stat-label">km flown</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">28</div>
+            <div class="stat-label">Countries</div>
+          </div>
+        </div>
+        <div class="section-header" style="margin-top:4px;">
+          <span class="section-title">Recent Flights</span>
+          <span class="section-action">History →</span>
+        </div>
+        <div class="flight-card">
+          <div class="memory-dot"></div>
+          <div class="flight-route">
+            <div class="route-airports">
+              <span class="airport-code">WAW</span>
+              <div class="route-line"></div>
+              <span class="airport-code">JFK</span>
+            </div>
+            <div class="flight-meta">LOT Polish · Economy · 9h 15m</div>
+          </div>
+          <div class="flight-date">Apr 3<br>2025</div>
+        </div>
+        <div class="flight-card" style="opacity:0.65;">
+          <div class="memory-dot" style="background:var(--accent-light)"></div>
+          <div class="flight-route">
+            <div class="route-airports">
+              <span class="airport-code">DXB</span>
+              <div class="route-line"></div>
+              <span class="airport-code">WAW</span>
+            </div>
+            <div class="flight-meta">Emirates · Business · 5h 40m</div>
+          </div>
+          <div class="flight-date">Mar 18<br>2025</div>
+        </div>
+      </div>
+      <div class="nav-bar">
+        <div class="nav-item active">
+          <span class="nav-icon">⌂</span>
+          <span class="nav-label">Home</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">◉</span>
+          <span class="nav-label">Map</span>
+        </div>
+        <div class="nav-add">
+          <div class="nav-add-btn">+</div>
+          <span class="nav-label">Log</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">✦</span>
+          <span class="nav-label">Memories</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">◎</span>
+          <span class="nav-label">Stats</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="phone-label">Home</div>
+</div>
+
+<!-- ── PHONE 2: MAP ── -->
+<div class="phone-wrap">
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="screen s-map">
+      <div class="map-bg">
+        <div class="map-grid"></div>
+        <div class="map-overlay"></div>
+        <!-- World map SVG minimal -->
+        <svg style="position:absolute;inset:0;width:100%;height:100%;" viewBox="0 0 375 600" xmlns="http://www.w3.org/2000/svg" opacity="0.35">
+          <!-- Simplified continents -->
+          <g fill="rgba(74,127,165,0.3)" stroke="rgba(74,127,165,0.5)" stroke-width="0.5">
+            <!-- North America -->
+            <path d="M 30,120 L 95,100 L 110,140 L 100,180 L 80,200 L 50,190 L 30,160 Z"/>
+            <!-- South America -->
+            <path d="M 75,210 L 100,200 L 110,250 L 95,300 L 75,290 L 60,250 Z"/>
+            <!-- Europe -->
+            <path d="M 160,100 L 200,90 L 210,120 L 190,135 L 165,130 Z"/>
+            <!-- Africa -->
+            <path d="M 165,145 L 205,140 L 215,200 L 200,240 L 175,245 L 158,210 L 155,170 Z"/>
+            <!-- Asia -->
+            <path d="M 215,80 L 320,70 L 340,110 L 320,150 L 250,160 L 220,140 L 205,110 Z"/>
+            <!-- Australia -->
+            <path d="M 290,230 L 330,225 L 335,260 L 315,270 L 290,255 Z"/>
+          </g>
+          <!-- Flight paths -->
+          <g fill="none" stroke-width="1.5">
+            <path d="M 72,135 Q 115,70 165,108" stroke="rgba(201,169,110,0.7)" stroke-dasharray="3,5"/>
+            <path d="M 165,108 Q 250,60 295,88" stroke="rgba(201,169,110,0.5)" stroke-dasharray="3,5"/>
+            <path d="M 72,135 Q 110,200 169,178" stroke="rgba(74,127,165,0.5)" stroke-dasharray="2,6"/>
+            <path d="M 290,255 Q 250,160 295,88" stroke="rgba(201,169,110,0.3)" stroke-dasharray="2,8"/>
+          </g>
+          <!-- Airport dots -->
+          <g fill="#C9A96E">
+            <circle cx="72" cy="135" r="4"/>
+            <circle cx="165" cy="108" r="4"/>
+            <circle cx="295" cy="88" r="3.5"/>
+            <circle cx="290" cy="255" r="3"/>
+            <circle cx="88" cy="215" r="3"/>
+          </g>
+          <!-- Plane on path -->
+          <text x="122" y="90" font-size="12" fill="#C9A96E">✈</text>
+        </svg>
+
+        <div class="map-header">
+          <div class="status-bar" style="position:relative;top:auto;left:auto;right:auto;padding:0;margin-bottom:12px;">
+            <span style="font-size:12px;color:rgba(255,255,255,0.5)">9:41</span>
+            <span style="font-size:12px;color:rgba(255,255,255,0.5)">●●●</span>
+          </div>
+          <div class="map-title">Flight Map</div>
+          <div class="filter-chips">
+            <div class="chip active">All Time</div>
+            <div class="chip">2025</div>
+            <div class="chip">2024</div>
+            <div class="chip">Long-haul</div>
+          </div>
+        </div>
+
+        <div class="map-footer">
+          <div class="visited-count">28 countries visited</div>
+          <div class="country-tags">
+            <span class="country-tag">🇵🇱 Poland</span>
+            <span class="country-tag">🇺🇸 USA</span>
+            <span class="country-tag">🇦🇪 UAE</span>
+            <span class="country-tag">🇯🇵 Japan</span>
+            <span class="country-tag">+24 more</span>
+          </div>
+        </div>
+      </div>
+      <div class="nav-bar">
+        <div class="nav-item">
+          <span class="nav-icon">⌂</span>
+          <span class="nav-label">Home</span>
+        </div>
+        <div class="nav-item active">
+          <span class="nav-icon">◉</span>
+          <span class="nav-label">Map</span>
+        </div>
+        <div class="nav-add">
+          <div class="nav-add-btn">+</div>
+          <span class="nav-label">Log</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">✦</span>
+          <span class="nav-label">Memories</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">◎</span>
+          <span class="nav-label">Stats</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="phone-label">Map</div>
+</div>
+
+<!-- ── PHONE 3: ADD FLIGHT ── -->
+<div class="phone-wrap">
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="screen s-add">
+      <div class="add-header">
+        <div class="back-btn">← Back</div>
+        <div class="add-title">Log a<br>New Flight</div>
+      </div>
+      <div class="add-body">
+        <div class="route-picker">
+          <div class="route-visual">
+            <div class="airport-input-group">
+              <div class="airport-label">From</div>
+              <div class="airport-input" style="color:var(--text)">WAW</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Warsaw Chopin</div>
+            </div>
+            <div class="swap-btn">⇄</div>
+            <div class="airport-input-group" style="text-align:right">
+              <div class="airport-label" style="text-align:right">To</div>
+              <div class="airport-input" style="text-align:right;color:var(--gold);">NRT_</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px;text-align:right;">Narita Intl</div>
+            </div>
+          </div>
+          <div class="divider-h"></div>
+          <div class="meta-fields">
+            <div class="meta-field">
+              <div class="meta-label">Date</div>
+              <div class="meta-value">Apr 10, 2025</div>
+            </div>
+            <div class="meta-field">
+              <div class="meta-label">Airline</div>
+              <div class="meta-value">LOT Polish</div>
+            </div>
+            <div class="meta-field">
+              <div class="meta-label">Duration</div>
+              <div class="meta-value">11h 30m</div>
+            </div>
+            <div class="meta-field">
+              <div class="meta-label">Class</div>
+              <div class="meta-value">Economy</div>
+            </div>
+          </div>
+        </div>
+        <div class="memory-section">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim);">Memory Note</div>
+          <div class="memory-area">Add a note about this trip...</div>
+        </div>
+        <div style="margin-top:auto">
+          <button class="cta-btn">Save Flight</button>
+        </div>
+      </div>
+      <div class="nav-bar" style="position:static;border-top:1px solid var(--border)">
+        <div class="nav-item"><span class="nav-icon">⌂</span><span class="nav-label">Home</span></div>
+        <div class="nav-item"><span class="nav-icon">◉</span><span class="nav-label">Map</span></div>
+        <div class="nav-add"><div class="nav-add-btn" style="background:var(--text);color:var(--black);">✕</div><span class="nav-label" style="color:var(--text-muted)">Cancel</span></div>
+        <div class="nav-item"><span class="nav-icon">✦</span><span class="nav-label">Memories</span></div>
+        <div class="nav-item"><span class="nav-icon">◎</span><span class="nav-label">Stats</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="phone-label">Log Flight</div>
+</div>
+
+<!-- ── PHONE 4: MEMORIES ── -->
+<div class="phone-wrap">
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="screen s-memories">
+      <div class="memories-header">
+        <div class="status-bar" style="position:relative;top:auto;left:auto;right:auto;padding:0;margin-bottom:16px;">
+          <span style="font-size:12px;color:rgba(255,255,255,0.5)">9:41</span>
+          <span style="font-size:12px;color:rgba(255,255,255,0.5)">●●●</span>
+        </div>
+        <div class="memories-title">Memories</div>
+        <div class="memories-sub">Stories from your journeys</div>
+      </div>
+      <div class="memories-grid">
+        <div class="memory-item tall">
+          <div class="mem-bg mem-1" style="min-height:300px;">
+            <div class="mem-overlay"></div>
+            <div class="mem-icon">🗼</div>
+            <div class="mem-route">CDG → NRT</div>
+            <div class="mem-city">Tokyo, Japan · 2024</div>
+          </div>
+        </div>
+        <div class="memory-item">
+          <div class="mem-bg mem-2">
+            <div class="mem-overlay"></div>
+            <div class="mem-icon">🏜️</div>
+            <div class="mem-route">DXB · UAE</div>
+            <div class="mem-city">March 2025</div>
+          </div>
+        </div>
+        <div class="memory-item">
+          <div class="mem-bg mem-3">
+            <div class="mem-overlay"></div>
+            <div class="mem-icon">🗽</div>
+            <div class="mem-route">WAW → JFK</div>
+            <div class="mem-city">New York · Apr</div>
+          </div>
+        </div>
+        <div class="memory-item" style="grid-column:span 2;">
+          <div class="mem-bg mem-4" style="min-height:120px;">
+            <div class="mem-overlay"></div>
+            <div class="mem-icon">🌏</div>
+            <div class="mem-route">SYD → SIN → WAW</div>
+            <div class="mem-city">Australia leg · 2023</div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-bar">
+        <div class="nav-item"><span class="nav-icon">⌂</span><span class="nav-label">Home</span></div>
+        <div class="nav-item"><span class="nav-icon">◉</span><span class="nav-label">Map</span></div>
+        <div class="nav-add"><div class="nav-add-btn">+</div><span class="nav-label">Log</span></div>
+        <div class="nav-item active"><span class="nav-icon">✦</span><span class="nav-label">Memories</span></div>
+        <div class="nav-item"><span class="nav-icon">◎</span><span class="nav-label">Stats</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="phone-label">Memories</div>
+</div>
+
+<!-- ── INFO PANEL ── -->
+<div class="info-panel">
+  <div class="brand-mark">
+    <div class="brand-name">Flight<br>Diary</div>
+    <div class="brand-sub">✦ iOS Concept</div>
+  </div>
+
+  <div class="design-note">
+    <div class="note-title">Visual Language</div>
+    <div class="note-text">Cinematic dark theme — deep space tones with amber-gold accents. Playfair Display for editorial weight, DM Sans for clean UI copy.</div>
+  </div>
+
+  <div>
+    <div class="note-title" style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim);margin-bottom:8px;">Palette</div>
+    <div class="palette-row">
+      <div class="swatch" style="background:#C9A96E;" title="Gold"></div>
+      <div class="swatch" style="background:#4A7FA5;" title="Accent Blue"></div>
+      <div class="swatch" style="background:#1A1A24;" title="Surface"></div>
+      <div class="swatch" style="background:#0A0A0F;" title="Black"></div>
+      <div class="swatch" style="background:#F0EEE8;" title="Text"></div>
+    </div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-serif">Flight<br>Diary</div>
+    <div class="type-sans" style="margin-top:8px;">Playfair Display · serif<br>DM Sans · interface</div>
+  </div>
+
+  <div class="design-note">
+    <div class="note-title">UX Principles</div>
+    <div class="note-text">
+      — Hero section anchors identity<br>
+      — Gold + accent = hierarchy<br>
+      — Instagram bottom nav pattern<br>
+      — Netflix editorial typography<br>
+      — Airport codes as display type<br>
+      — Memories as visual stories
+    </div>
+  </div>
+</div>
+
+</div>

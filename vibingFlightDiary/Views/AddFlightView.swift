@@ -10,6 +10,8 @@ struct AddFlightView: View {
     @State private var origin: Airport?
     @State private var destination: Airport?
     @State private var date: Date = .now
+    @State private var seatType: SeatType?
+    @State private var flightClass: FlightClass?
 
     // Inline search state
     enum SearchField { case from, to }
@@ -156,6 +158,24 @@ struct AddFlightView: View {
                 }
             }
             .padding(.vertical, 4)
+
+            Rectangle()
+                .fill(FDColor.border)
+                .frame(height: 1)
+                .padding(.horizontal, 20)
+
+            seatPicker
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
+
+            Rectangle()
+                .fill(FDColor.border)
+                .frame(height: 1)
+                .padding(.horizontal, 20)
+
+            classPicker
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
         }
         .background(FDColor.surface2)
         .overlay(RoundedRectangle(cornerRadius: 20).stroke(FDColor.border, lineWidth: 1))
@@ -239,6 +259,86 @@ struct AddFlightView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: - Seat Picker
+
+    private var seatPicker: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("SEAT")
+                .font(FDFont.ui(10, weight: .medium))
+                .foregroundStyle(FDColor.textDim)
+                .tracking(1.2)
+            HStack(spacing: 8) {
+                ForEach(SeatType.allCases, id: \.self) { type in
+                    Button {
+                        seatType = seatType == type ? nil : type
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: type.icon)
+                                .font(.system(size: 12))
+                            Text(type.label)
+                                .font(FDFont.ui(13, weight: .medium))
+                        }
+                        .foregroundStyle(seatType == type ? FDColor.black : FDColor.textMuted)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(seatType == type ? FDColor.gold : FDColor.surface3)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(seatType == type ? Color.clear : FDColor.border, lineWidth: 1)
+                                )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .animation(.easeInOut(duration: 0.15), value: seatType)
+                }
+            }
+        }
+    }
+
+    // MARK: - Class Picker
+
+    private var classPicker: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("CLASS")
+                .font(FDFont.ui(10, weight: .medium))
+                .foregroundStyle(FDColor.textDim)
+                .tracking(1.2)
+            let columns = [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)]
+            LazyVGrid(columns: columns, spacing: 8) {
+                ForEach(FlightClass.allCases, id: \.self) { cls in
+                    Button {
+                        flightClass = flightClass == cls ? nil : cls
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: cls.icon)
+                                .font(.system(size: 12))
+                            Text(cls.label)
+                                .font(FDFont.ui(13, weight: .medium))
+                                .lineLimit(1)
+                        }
+                        .foregroundStyle(flightClass == cls ? FDColor.black : FDColor.textMuted)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(flightClass == cls ? FDColor.gold : FDColor.surface3)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(flightClass == cls ? Color.clear : FDColor.border, lineWidth: 1)
+                                )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .animation(.easeInOut(duration: 0.15), value: flightClass)
+                }
+            }
+        }
     }
 
     // MARK: - Inline Search Panel
@@ -380,7 +480,7 @@ struct AddFlightView: View {
 
     private func save() {
         guard let o = origin, let d = destination, let km = distanceKm else { return }
-        modelContext.insert(Flight(originIATA: o.iata, destinationIATA: d.iata, date: date, distanceKm: km))
+        modelContext.insert(Flight(originIATA: o.iata, destinationIATA: d.iata, date: date, distanceKm: km, seatType: seatType, flightClass: flightClass))
         dismiss()
     }
 

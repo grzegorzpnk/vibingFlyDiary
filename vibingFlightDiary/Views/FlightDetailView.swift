@@ -18,6 +18,10 @@ struct FlightDetailView: View {
                     routeHeader
                     Divider().background(FDColor.border).padding(.horizontal, 24)
                     metaSection
+                    if flight.seatType != nil || flight.flightClass != nil {
+                        Divider().background(FDColor.border).padding(.horizontal, 24)
+                        travelSection
+                    }
                     Divider().background(FDColor.border).padding(.horizontal, 24)
                     airportSection
                 }
@@ -124,6 +128,46 @@ struct FlightDetailView: View {
             Text(value)
                 .font(FDFont.ui(15, weight: .medium))
                 .foregroundStyle(FDColor.text)
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: - Travel Section (Seat + Class)
+
+    private var travelSection: some View {
+        HStack(spacing: 0) {
+            if let seat = flight.seatType {
+                travelCell(label: "SEAT", value: seat.label, icon: seat.icon)
+            }
+            if flight.seatType != nil && flight.flightClass != nil {
+                Rectangle()
+                    .fill(FDColor.border)
+                    .frame(width: 1)
+                    .padding(.vertical, 16)
+            }
+            if let cls = flight.flightClass {
+                travelCell(label: "CLASS", value: cls.label, icon: cls.icon)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func travelCell(label: String, value: String, icon: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundStyle(FDColor.gold)
+                .frame(width: 32)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(label)
+                    .font(FDFont.ui(10, weight: .medium))
+                    .foregroundStyle(FDColor.textDim)
+                    .tracking(1.5)
+                Text(value)
+                    .font(FDFont.ui(15, weight: .medium))
+                    .foregroundStyle(FDColor.text)
+            }
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -12,6 +12,14 @@ struct HomeView: View {
     @State private var selectedFlight: Flight?
     private let previewCount = 3
 
+    private var upcomingFlights: [Flight] {
+        flights.filter { $0.date > .now }.reversed()
+    }
+
+    private var pastFlights: [Flight] {
+        flights.filter { $0.date <= .now }
+    }
+
     var body: some View {
         ZStack {
             FDColor.black.ignoresSafeArea()
@@ -21,9 +29,24 @@ struct HomeView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 12) {
-                        if !flights.isEmpty {
+                        if !pastFlights.isEmpty {
                             statsRow
                                 .padding(.top, 20)
+                        }
+
+                        // Upcoming flights section
+                        if !upcomingFlights.isEmpty {
+                            Text("UPCOMING FLIGHTS")
+                                .font(FDFont.ui(11, weight: .medium))
+                                .foregroundStyle(FDColor.gold)
+                                .tracking(1.5)
+                                .padding(.top, 16)
+
+                            ForEach(upcomingFlights) { flight in
+                                FlightCard(flight: flight, airportService: airportService, onTap: {
+                                    selectedFlight = flight
+                                }, isUpcoming: true)
+                            }
                         }
 
                         HStack {
@@ -32,7 +55,7 @@ struct HomeView: View {
                                 .foregroundStyle(FDColor.textMuted)
                                 .tracking(1.5)
                             Spacer()
-                            if flights.count > previewCount {
+                            if pastFlights.count > previewCount {
                                 Button(action: onViewAll) {
                                     Text("History →")
                                         .font(FDFont.ui(12, weight: .medium))
@@ -42,19 +65,25 @@ struct HomeView: View {
                         }
                         .padding(.top, flights.isEmpty ? 24 : 16)
 
-                        if flights.isEmpty {
+                        if pastFlights.isEmpty && upcomingFlights.isEmpty {
                             emptyState
+                        } else if pastFlights.isEmpty {
+                            // Only upcoming flights exist — show a hint
+                            Text("Your past flights will appear here.")
+                                .font(FDFont.ui(13))
+                                .foregroundStyle(FDColor.textDim)
+                                .padding(.vertical, 16)
                         } else {
-                            ForEach(flights.prefix(previewCount)) { flight in
+                            ForEach(pastFlights.prefix(previewCount)) { flight in
                                 FlightCard(flight: flight, airportService: airportService) {
                                     selectedFlight = flight
                                 }
                             }
 
-                            if flights.count > previewCount {
+                            if pastFlights.count > previewCount {
                                 Button(action: onViewAll) {
                                     HStack {
-                                        Text("All \(flights.count) flights")
+                                        Text("All \(pastFlights.count) flights")
                                             .font(FDFont.ui(14, weight: .medium))
                                             .foregroundStyle(FDColor.textMuted)
                                         Spacer()
@@ -121,8 +150,8 @@ struct HomeView: View {
                     .foregroundStyle(FDColor.text)
                     .lineSpacing(4)
 
-                if !flights.isEmpty {
-                    Text("\(flights.count) flight\(flights.count == 1 ? "" : "s") across \(allCountries) \(allCountries == 1 ? "country" : "countries")")
+                if !pastFlights.isEmpty {
+                    Text("\(pastFlights.count) flight\(pastFlights.count == 1 ? "" : "s") across \(allCountries) \(allCountries == 1 ? "country" : "countries")")
                         .font(FDFont.ui(13))
                         .foregroundStyle(FDColor.textMuted)
                         .padding(.top, 2)
@@ -140,7 +169,7 @@ struct HomeView: View {
     private var currentYear: Int { Calendar.current.component(.year, from: .now) }
 
     private var thisYearFlights: [Flight] {
-        flights.filter { Calendar.current.component(.year, from: $0.date) == currentYear }
+        flights.filter { $0.date <= .now && Calendar.current.component(.year, from: $0.date) == currentYear }
     }
 
     private var thisYearKm: Int { Int(thisYearFlights.reduce(0) { $0 + $1.distanceKm }) }
@@ -156,7 +185,7 @@ struct HomeView: View {
 
     private var allCountries: Int {
         var codes = Set<String>()
-        for flight in flights {
+        for flight in pastFlights {
             if let o = airportService.airport(for: flight.originIATA) { codes.insert(o.country) }
             if let d = airportService.airport(for: flight.destinationIATA) { codes.insert(d.country) }
         }
@@ -221,20 +250,44 @@ struct FlightCard: View {
     let flight: Flight
     let airportService: AirportService
     var onTap: (() -> Void)? = nil
+    var isUpcoming: Bool = false
 
     private var origin: Airport? { airportService.airport(for: flight.originIATA) }
     private var dest: Airport?   { airportService.airport(for: flight.destinationIATA) }
+
+    private var daysUntil: Int {
+        Calendar.current.dateComponents(
+            [.day],
+            from: Calendar.current.startOfDay(for: .now),
+            to: Calendar.current.startOfDay(for: flight.date)
+        ).day ?? 0
+    }
+
+    private var countdownText: String {
+        switch daysUntil {
+        case 0: return "Today"
+        case 1: return "Tomorrow"
+        default: return "In \(daysUntil)d"
+        }
+    }
 
     var body: some View {
         Button {
             onTap?()
         } label: {
             HStack(spacing: 12) {
-                Circle()
-                    .fill(flight.flightClass == .business || flight.flightClass == .first ? FDColor.blue : FDColor.gold)
-                    .frame(width: 6, height: 6)
-                    .padding(.top, 2)
-                    .alignmentGuide(.top) { d in d[.top] }
+                if isUpcoming {
+                    Image(systemName: "airplane.departure")
+                        .font(.system(size: 9))
+                        .foregroundStyle(FDColor.blue)
+                        .padding(.top, 2)
+                } else {
+                    Circle()
+                        .fill(flight.flightClass == .business || flight.flightClass == .first ? FDColor.blue : FDColor.gold)
+                        .frame(width: 6, height: 6)
+                        .padding(.top, 2)
+                        .alignmentGuide(.top) { d in d[.top] }
+                }
 
                 VStack(alignment: .leading, spacing: 5) {
                     HStack(spacing: 6) {
@@ -248,7 +301,7 @@ struct FlightCard: View {
                                 .frame(height: 1)
                             Text("✈")
                                 .font(.system(size: 10))
-                                .foregroundStyle(FDColor.gold)
+                                .foregroundStyle(isUpcoming ? FDColor.blue : FDColor.gold)
                         }
                         .frame(maxWidth: .infinity)
 
@@ -281,17 +334,39 @@ struct FlightCard: View {
                 Spacer(minLength: 8)
 
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text(flight.date.formatted(.dateTime.month(.abbreviated).day()))
-                        .font(FDFont.ui(11, weight: .medium))
-                        .foregroundStyle(FDColor.textDim)
-                    Text(flight.date.formatted(.dateTime.year()))
-                        .font(FDFont.ui(11))
-                        .foregroundStyle(FDColor.textDim)
+                    if isUpcoming {
+                        Text(countdownText)
+                            .font(FDFont.ui(11, weight: .medium))
+                            .foregroundStyle(FDColor.gold)
+                        Text(flight.date.formatted(.dateTime.month(.abbreviated).day()))
+                            .font(FDFont.ui(11))
+                            .foregroundStyle(FDColor.textDim)
+                    } else {
+                        Text(flight.date.formatted(.dateTime.month(.abbreviated).day()))
+                            .font(FDFont.ui(11, weight: .medium))
+                            .foregroundStyle(FDColor.textDim)
+                        Text(flight.date.formatted(.dateTime.year()))
+                            .font(FDFont.ui(11))
+                            .foregroundStyle(FDColor.textDim)
+                    }
                 }
             }
             .padding(16)
-            .background(FDColor.surface2)
-            .overlay(RoundedRectangle(cornerRadius: 18).stroke(FDColor.border, lineWidth: 1))
+            .background(
+                ZStack {
+                    FDColor.surface2
+                    if isUpcoming { FDColor.blue.opacity(0.05) }
+                }
+            )
+            .overlay {
+                if isUpcoming {
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(FDColor.gold.opacity(0.4), style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
+                } else {
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(FDColor.border, lineWidth: 1)
+                }
+            }
             .clipShape(RoundedRectangle(cornerRadius: 18))
         }
         .buttonStyle(.plain)

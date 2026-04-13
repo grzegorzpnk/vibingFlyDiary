@@ -16,6 +16,7 @@ struct AddFlightView: View {
     @State private var flightClass: FlightClass?
     @State private var airline: String
     @State private var showAirlineSuggestions: Bool = false
+    @State private var datePickerID = UUID()
 
     init(editingFlight: Flight? = nil) {
         self.editingFlight = editingFlight
@@ -171,10 +172,14 @@ struct AddFlightView: View {
 
             HStack(spacing: 0) {
                 metaField("Date") {
-                    DatePicker("", selection: $date, displayedComponents: .date)
+                    DatePicker("", selection: Binding(
+                        get: { date },
+                        set: { date = $0; datePickerID = UUID() }
+                    ), displayedComponents: .date)
                         .datePickerStyle(.compact)
                         .labelsHidden()
                         .tint(FDColor.gold)
+                        .id(datePickerID)
                 }
                 Rectangle()
                     .fill(FDColor.border)

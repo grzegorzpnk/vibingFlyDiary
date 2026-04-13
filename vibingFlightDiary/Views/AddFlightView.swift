@@ -7,13 +7,23 @@ struct AddFlightView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AirportService.self) private var airportService
 
+    let editingFlight: Flight?
+
     @State private var origin: Airport?
     @State private var destination: Airport?
-    @State private var date: Date = .now
+    @State private var date: Date
     @State private var seatType: SeatType?
     @State private var flightClass: FlightClass?
-    @State private var airline: String = ""
+    @State private var airline: String
     @State private var showAirlineSuggestions: Bool = false
+
+    init(editingFlight: Flight? = nil) {
+        self.editingFlight = editingFlight
+        _date = State(initialValue: editingFlight?.date ?? .now)
+        _seatType = State(initialValue: editingFlight?.seatType)
+        _flightClass = State(initialValue: editingFlight?.flightClass)
+        _airline = State(initialValue: editingFlight?.airline ?? "")
+    }
 
     // Inline search state
     enum SearchField { case from, to }
@@ -93,7 +103,7 @@ struct AddFlightView: View {
                 ToolbarItem(placement: .principal) {
                     Text(activeSearch == .from ? "Departure Airport"
                          : activeSearch == .to ? "Arrival Airport"
-                         : "Add a New Flight")
+                         : editingFlight != nil ? "Edit Flight" : "Add a New Flight")
                         .font(FDFont.display(17, weight: .bold))
                         .foregroundStyle(FDColor.text)
                         .animation(.none, value: activeSearch)
@@ -104,6 +114,12 @@ struct AddFlightView: View {
         }
         .presentationBackground(FDColor.surface)
         .preferredColorScheme(.dark)
+        .onAppear {
+            if let ef = editingFlight {
+                origin = airportService.airport(for: ef.originIATA)
+                destination = airportService.airport(for: ef.destinationIATA)
+            }
+        }
     }
 
     // MARK: - Route Card
@@ -528,7 +544,7 @@ struct AddFlightView: View {
 
     private var saveButton: some View {
         Button(action: save) {
-            Text("Save Flight")
+            Text(editingFlight != nil ? "Save Changes" : "Save Flight")
                 .font(FDFont.ui(15, weight: .bold))
                 .tracking(0.5)
                 .foregroundStyle(FDColor.black)
@@ -564,7 +580,17 @@ struct AddFlightView: View {
 
     private func save() {
         guard let o = origin, let d = destination, let km = distanceKm else { return }
-        modelContext.insert(Flight(originIATA: o.iata, destinationIATA: d.iata, date: date, distanceKm: km, seatType: seatType, flightClass: flightClass, airline: airline.isEmpty ? nil : airline))
+        if let ef = editingFlight {
+            ef.originIATA = o.iata
+            ef.destinationIATA = d.iata
+            ef.date = date
+            ef.distanceKm = km
+            ef.seatType = seatType
+            ef.flightClass = flightClass
+            ef.airline = airline.isEmpty ? nil : airline
+        } else {
+            modelContext.insert(Flight(originIATA: o.iata, destinationIATA: d.iata, date: date, distanceKm: km, seatType: seatType, flightClass: flightClass, airline: airline.isEmpty ? nil : airline))
+        }
         dismiss()
     }
 

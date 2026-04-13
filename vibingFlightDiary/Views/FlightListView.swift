@@ -7,6 +7,7 @@ struct FlightListView: View {
     @Query(sort: \Flight.date, order: .reverse) private var flights: [Flight]
 
     @State private var selectedFlight: Flight?
+    @State private var flightToEdit: Flight?
 
     var body: some View {
         ZStack {
@@ -24,8 +25,20 @@ struct FlightListView: View {
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
                             .listRowInsets(EdgeInsets(top: 5, leading: 20, bottom: 5, trailing: 20))
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    modelContext.delete(flight)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                                Button {
+                                    flightToEdit = flight
+                                } label: {
+                                    Label("Edit", systemImage: "pencil")
+                                }
+                                .tint(FDColor.gold)
+                            }
                         }
-                        .onDelete(perform: delete)
                     } header: {
                         listHeader
                     }
@@ -37,6 +50,9 @@ struct FlightListView: View {
         }
         .sheet(item: $selectedFlight) { flight in
             FlightDetailView(flight: flight, airportService: airportService)
+        }
+        .sheet(item: $flightToEdit) { flight in
+            AddFlightView(editingFlight: flight)
         }
     }
 
@@ -77,7 +93,4 @@ struct FlightListView: View {
         .padding(.bottom, 80)
     }
 
-    private func delete(_ indexSet: IndexSet) {
-        for i in indexSet { modelContext.delete(flights[i]) }
-    }
 }

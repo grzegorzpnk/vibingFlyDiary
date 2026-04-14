@@ -8,6 +8,7 @@ struct MapFlightView: View {
 
     @State private var selectedYear: Int? = nil
     @State private var beenMode: Bool = false
+    @State private var selectedFlight: Flight?
 
     /// Unique ISO-A2 country codes touched by filteredFlights (both origin + destination)
     private var visitedIsoCodes: Set<String> {
@@ -55,9 +56,26 @@ struct MapFlightView: View {
         )
     )
 
-    private var visitedCountries: [String] {
-        let codes = filteredFlights.compactMap { airportService.airport(for: $0.destinationIATA)?.country }
-        return Array(Set(codes)).sorted()
+    /// Unique airports across filteredFlights. Bool = hasAnyUpcomingFlight using that airport.
+    private var uniqueAirportDots: [(airport: Airport, upcoming: Bool)] {
+        var seen: [String: Bool] = [:]
+        for flight in filteredFlights {
+            let up = flight.date > .now
+            for iata in [flight.originIATA, flight.destinationIATA] {
+                seen[iata] = (seen[iata] == true) || up
+            }
+        }
+        return seen.compactMap { iata, up in
+            airportService.airport(for: iata).map { ($0, up) }
+        }
+    }
+
+    private var totalKm: Int {
+        Int(filteredFlights.reduce(0) { $0 + $1.distanceKm })
+    }
+
+    private var kmFormatted: String {
+        totalKm >= 1000 ? "\(totalKm / 1000)k" : "\(totalKm)"
     }
 
     var body: some View {
@@ -73,6 +91,7 @@ struct MapFlightView: View {
                     }
                 }
 
+                // Arcs + midpoint taps
                 ForEach(filteredFlights) { flight in
                     if let origin = airportService.airport(for: flight.originIATA),
                        let dest   = airportService.airport(for: flight.destinationIATA) {
@@ -80,20 +99,33 @@ struct MapFlightView: View {
                         let upcoming = flight.date > .now
                         let arcColor = upcoming ? FDColor.blue : FDColor.gold
 
-                        // Subtle body — no blur, just slight width
                         MapPolyline(coordinates: arc)
                             .stroke(arcColor.opacity(0.22), lineWidth: 5)
-
-                        // Clean sharp core
                         MapPolyline(coordinates: arc)
                             .stroke(arcColor.opacity(0.88), lineWidth: 2)
 
-                        Annotation("", coordinate: origin.coordinate) {
-                            airportDot(upcoming: upcoming)
+                        if arc.indices.contains(arc.count / 2) {
+                            Annotation("", coordinate: arc[arc.count / 2]) {
+                                Button {
+                                    selectedFlight = flight
+                                } label: {
+                                    Image(systemName: "airplane")
+                                        .font(.system(size: 9, weight: .medium))
+                                        .foregroundStyle(arcColor)
+                                        .frame(width: 22, height: 22)
+                                        .background(.ultraThinMaterial, in: Circle())
+                                        .overlay(Circle().stroke(arcColor.opacity(0.4), lineWidth: 0.8))
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
-                        Annotation("", coordinate: dest.coordinate) {
-                            airportDot(upcoming: upcoming)
-                        }
+                    }
+                }
+
+                // Deduplicated airport dots (one per unique airport)
+                ForEach(uniqueAirportDots, id: \.airport.iata) { item in
+                    Annotation("", coordinate: item.airport.coordinate) {
+                        airportDot(upcoming: item.upcoming)
                     }
                 }
             }
@@ -120,19 +152,19 @@ struct MapFlightView: View {
                                 .foregroundStyle(FDColor.text)
                         }
 
-                        if availableYears.count > 0 || true {
+                        HStack(spacing: 8) {
+                            // Been mode — always visible, outside scroll
+                            yearChip(label: "✓ Been", active: beenMode) {
+                                beenMode.toggle()
+                            }
+
+                            Rectangle()
+                                .fill(FDColor.borderBright)
+                                .frame(width: 1, height: 20)
+
+                            // Year chips — scrollable with soft trailing fade
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 8) {
-                                    // Been mode toggle
-                                    yearChip(label: "✓ Been", active: beenMode) {
-                                        beenMode.toggle()
-                                    }
-
-                                    // Divider
-                                    Rectangle()
-                                        .fill(FDColor.borderBright)
-                                        .frame(width: 1, height: 20)
-
                                     yearChip(label: "All", active: selectedYear == nil) {
                                         selectedYear = nil
                                     }
@@ -142,9 +174,19 @@ struct MapFlightView: View {
                                         }
                                     }
                                 }
-                                .padding(.horizontal, 20)
+                                .padding(.trailing, 24)
                             }
-                            .padding(.horizontal, -20)
+                            .mask(
+                                LinearGradient(
+                                    stops: [
+                                        .init(color: .black, location: 0),
+                                        .init(color: .black, location: 0.75),
+                                        .init(color: .clear, location: 1)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
                         }
                     }
                     .padding(.horizontal, 20)
@@ -155,11 +197,11 @@ struct MapFlightView: View {
                 Spacer()
             }
 
-            // Bottom gradient + country tags
+            // Bottom gradient + stats panel
             VStack {
                 Spacer()
                 LinearGradient(
-                    colors: [.clear, Color(hex: "0D1520").opacity(0.95)],
+                    colors: [.clear, FDColor.black.opacity(0.95)],
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -168,6 +210,35 @@ struct MapFlightView: View {
                     bottomPanel
                 }
             }
+
+            // Recenter button
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.6)) {
+                            position = .camera(MapCamera(
+                                centerCoordinate: CLLocationCoordinate2D(latitude: 47, longitude: 13),
+                                distance: 15_000_000, heading: 0, pitch: 0
+                            ))
+                        }
+                    } label: {
+                        Image(systemName: "location.north.fill")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(FDColor.gold)
+                            .frame(width: 40, height: 40)
+                            .background(.ultraThinMaterial, in: Circle())
+                            .overlay(Circle().stroke(FDColor.gold.opacity(0.3), lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.trailing, 20)
+                    .padding(.bottom, 120)
+                }
+            }
+        }
+        .sheet(item: $selectedFlight) { flight in
+            FlightDetailView(flight: flight, airportService: airportService, detents: [.fraction(0.6)])
         }
     }
 
@@ -202,41 +273,48 @@ struct MapFlightView: View {
 
     @ViewBuilder
     private var bottomPanel: some View {
-        let visited = visitedIsoCodes.count
-        let total   = CountryShapeService.shared.shapes.count
+        let visited  = visitedIsoCodes.count
+        let total    = CountryShapeService.shared.shapes.count
         let progress = total > 0 ? Double(visited) / Double(total) : 0
 
         VStack(alignment: .leading, spacing: 10) {
-            Text("COUNTRIES VISITED")
-                .font(FDFont.ui(11, weight: .medium))
-                .foregroundStyle(FDColor.gold)
-                .tracking(1.5)
-
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("\(visited)")
-                    .font(FDFont.display(48, weight: .bold))
-                    .foregroundStyle(FDColor.text)
-                Text("/ \(total)")
-                    .font(FDFont.display(22, weight: .bold))
-                    .foregroundStyle(FDColor.textMuted)
+            HStack(spacing: 20) {
+                statItem(value: "\(filteredFlights.count)", label: "FLIGHTS")
+                statDivider
+                statItem(value: "\(kmFormatted) km", label: "DISTANCE")
+                statDivider
+                statItem(value: "\(visited) / \(total)", label: "COUNTRIES")
             }
 
-            // Progress bar
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(FDColor.borderBright)
-                        .frame(height: 3)
-                    Capsule()
-                        .fill(FDColor.gold)
-                        .frame(width: geo.size.width * progress, height: 3)
+                    Capsule().fill(FDColor.borderBright).frame(height: 3)
+                    Capsule().fill(FDColor.gold).frame(width: geo.size.width * progress, height: 3)
                 }
             }
             .frame(height: 3)
-            .frame(maxWidth: 220)
+            .frame(maxWidth: 260)
         }
         .padding(.horizontal, 24)
         .padding(.bottom, 100)
+    }
+
+    private func statItem(value: String, label: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(value)
+                .font(FDFont.display(20, weight: .bold))
+                .foregroundStyle(FDColor.text)
+            Text(label)
+                .font(FDFont.ui(10, weight: .medium))
+                .foregroundStyle(FDColor.gold)
+                .tracking(1.2)
+        }
+    }
+
+    private var statDivider: some View {
+        Rectangle()
+            .fill(FDColor.borderBright)
+            .frame(width: 1, height: 28)
     }
 
     // MARK: - Great Circle

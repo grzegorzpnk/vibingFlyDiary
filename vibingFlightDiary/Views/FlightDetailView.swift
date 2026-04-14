@@ -3,6 +3,7 @@ import SwiftUI
 struct FlightDetailView: View {
     let flight: Flight
     let airportService: AirportService
+    var detents: Set<PresentationDetent> = [.large]
 
     @Environment(\.dismiss) private var dismiss
 
@@ -41,7 +42,7 @@ struct FlightDetailView: View {
             .padding(.trailing, 24)
         }
         .presentationBackground(FDColor.surface)
-        .presentationDetents([.large])
+        .presentationDetents(detents)
         .presentationDragIndicator(.visible)
         .preferredColorScheme(.dark)
     }

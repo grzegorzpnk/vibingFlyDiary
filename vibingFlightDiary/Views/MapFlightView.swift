@@ -9,6 +9,7 @@ struct MapFlightView: View {
     @State private var selectedYear: Int? = nil
     @State private var beenMode: Bool = false
     @State private var selectedFlight: Flight?
+    @Environment(LocalizationService.self) private var ls
 
     /// Unique ISO-A2 country codes touched by filteredFlights (both origin + destination)
     private var visitedIsoCodes: Set<String> {
@@ -143,18 +144,18 @@ struct MapFlightView: View {
                 .overlay(alignment: .bottomLeading) {
                     VStack(alignment: .leading, spacing: 10) {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("FLIGHT MAP")
+                            Text(ls.flightMapOverline)
                                 .font(FDFont.ui(11, weight: .medium))
                                 .foregroundStyle(FDColor.gold)
                                 .tracking(2.5)
-                            Text("Flight Map")
+                            Text(ls.flightMapTitle)
                                 .font(FDFont.display(22, weight: .bold))
                                 .foregroundStyle(FDColor.text)
                         }
 
                         HStack(spacing: 8) {
                             // Been mode — always visible, outside scroll
-                            yearChip(label: "✓ Been", active: beenMode) {
+                            yearChip(label: ls.beenChip, active: beenMode) {
                                 beenMode.toggle()
                             }
 
@@ -165,7 +166,7 @@ struct MapFlightView: View {
                             // Year chips — scrollable with soft trailing fade
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 8) {
-                                    yearChip(label: "All", active: selectedYear == nil) {
+                                    yearChip(label: ls.allChip, active: selectedYear == nil) {
                                         selectedYear = nil
                                     }
                                     ForEach(availableYears, id: \.self) { year in
@@ -277,13 +278,25 @@ struct MapFlightView: View {
         let total    = CountryShapeService.shared.shapes.count
         let progress = total > 0 ? Double(visited) / Double(total) : 0
 
+        if filteredFlights.isEmpty {
+            VStack(alignment: .leading, spacing: 6) {
+                Image(systemName: "airplane.departure")
+                    .font(.system(size: 18, weight: .light))
+                    .foregroundStyle(FDColor.gold.opacity(0.6))
+                Text(ls.mapEmptyHint)
+                    .font(FDFont.ui(13, weight: .light))
+                    .foregroundStyle(FDColor.textMuted)
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 100)
+        } else {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 20) {
-                statItem(value: "\(filteredFlights.count)", label: "FLIGHTS")
+                statItem(value: "\(filteredFlights.count)", label: ls.flightsStat)
                 statDivider
-                statItem(value: "\(kmFormatted) km", label: "DISTANCE")
+                statItem(value: "\(kmFormatted) km", label: ls.distanceStat)
                 statDivider
-                statItem(value: "\(visited) / \(total)", label: "COUNTRIES")
+                statItem(value: "\(visited) / \(total)", label: ls.countriesStat)
             }
 
             GeometryReader { geo in
@@ -297,6 +310,7 @@ struct MapFlightView: View {
         }
         .padding(.horizontal, 24)
         .padding(.bottom, 100)
+        }
     }
 
     private func statItem(value: String, label: String) -> some View {

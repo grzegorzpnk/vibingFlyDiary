@@ -1,0 +1,184 @@
+import Foundation
+import Observation
+
+// MARK: - Supported Languages
+
+enum AppLanguage: String, CaseIterable, Identifiable {
+    case english  = "en"
+    case polish   = "pl"
+    case spanish  = "es"
+    case french   = "fr"
+    case japanese = "ja"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .english:  "English"
+        case .polish:   "Polski"
+        case .spanish:  "Español"
+        case .french:   "Français"
+        case .japanese: "日本語"
+        }
+    }
+
+    var flag: String {
+        switch self {
+        case .english:  "🇬🇧"
+        case .polish:   "🇵🇱"
+        case .spanish:  "🇪🇸"
+        case .french:   "🇫🇷"
+        case .japanese: "🇯🇵"
+        }
+    }
+}
+
+// MARK: - Localization Service
+
+@Observable class LocalizationService {
+    var language: AppLanguage {
+        didSet { UserDefaults.standard.set(language.rawValue, forKey: "appLanguage") }
+    }
+
+    init() {
+        let saved = UserDefaults.standard.string(forKey: "appLanguage") ?? "en"
+        self.language = AppLanguage(rawValue: saved) ?? .english
+    }
+
+    // Shorthand helper
+    private func t(_ en: String, _ pl: String, _ es: String, _ fr: String, _ ja: String) -> String {
+        switch language {
+        case .english:  en
+        case .polish:   pl
+        case .spanish:  es
+        case .french:   fr
+        case .japanese: ja
+        }
+    }
+
+    // MARK: - Tab Bar
+    var tabDiary:   String { t("Diary",   "Dziennik",    "Diario",     "Journal",      "日記") }
+    var tabMap:     String { t("Map",     "Mapa",        "Mapa",       "Carte",        "地図") }
+    var tabAdd:     String { t("Add",     "Dodaj",       "Añadir",     "Ajouter",      "追加") }
+    var tabFlights: String { t("Flights", "Loty",        "Vuelos",     "Vols",         "フライト") }
+    var tabStats:   String { t("Stats",   "Statystyki",  "Estadísticas","Statistiques","統計") }
+
+    // MARK: - Home / Diary
+    var heroTitle:        String { t("Your\nFlight Diary",  "Twój\nDziennik Lotów",    "Tu\nDiario de Vuelos",    "Votre\nJournal de Vols",     "あなたの\n飛行日誌") }
+    var thisYear:         String { t("THIS YEAR",           "W TYM ROKU",              "ESTE AÑO",                "CETTE ANNÉE",                "今年") }
+    var flightsStatLabel: String { t("Flights",             "Loty",                    "Vuelos",                  "Vols",                       "フライト") }
+    var kmFlownLabel:     String { t("Km Flown",            "Km Przelatane",           "Km Volados",              "Km Parcourus",               "飛行 km") }
+    var countriesLabel:   String { t("Countries",           "Kraje",                   "Países",                  "Pays",                       "訪問国") }
+    var statsArrow:       String { t("Stats →",             "Statystyki →",            "Estadísticas →",          "Statistiques →",             "統計 →") }
+    var upcomingFlights:  String { t("UPCOMING FLIGHTS",    "NADCHODZĄCE LOTY",        "PRÓXIMOS VUELOS",         "VOLS À VENIR",               "予定フライト") }
+    var recentFlights:    String { t("RECENT FLIGHTS",      "OSTATNIE LOTY",           "VUELOS RECIENTES",        "VOLS RÉCENTS",               "最近のフライト") }
+    var historyArrow:     String { t("History →",           "Historia →",              "Historial →",             "Historique →",               "履歴 →") }
+    var noFlightsTitle:   String { t("No flights yet",      "Brak lotów",              "Sin vuelos",              "Pas encore de vols",         "フライトなし") }
+    var noFlightsSub:     String { t("Tap Add below to log your first flight.",
+                                     "Dotknij Dodaj, aby zalogować pierwszy lot.",
+                                     "Toca Añadir para registrar tu primer vuelo.",
+                                     "Appuyez sur Ajouter pour enregistrer votre premier vol.",
+                                     "「追加」をタップして初フライトを記録しましょう。") }
+    var pastFlightsHint:  String { t("Your past flights will appear here.",
+                                     "Twoje poprzednie loty pojawią się tutaj.",
+                                     "Tus vuelos pasados aparecerán aquí.",
+                                     "Vos vols passés apparaîtront ici.",
+                                     "過去のフライトはここに表示されます。") }
+
+    func allFlightsCount(_ n: Int) -> String {
+        switch language {
+        case .english:  "All \(n) flights"
+        case .polish:   "Wszystkie \(n) lotów"
+        case .spanish:  "Los \(n) vuelos"
+        case .french:   "Les \(n) vols"
+        case .japanese: "全\(n)フライト"
+        }
+    }
+
+    // MARK: - Map
+    var flightMapOverline: String { t("FLIGHT MAP",    "MAPA LOTÓW",        "MAPA DE VUELOS",   "CARTE DES VOLS",   "フライトマップ") }
+    var flightMapTitle:    String { t("Flight Map",    "Mapa Lotów",        "Mapa de Vuelos",   "Carte des Vols",   "フライトマップ") }
+    var beenChip:          String { t("✓ Been",        "✓ Byłem",           "✓ Estuve",         "✓ Visité",         "✓ 訪問済み") }
+    var allChip:           String { t("All",           "Wszystkie",         "Todos",            "Tous",             "すべて") }
+    var flightsStat:       String { t("FLIGHTS",       "LOTY",              "VUELOS",           "VOLS",             "フライト") }
+    var distanceStat:      String { t("DISTANCE",      "DYSTANS",           "DISTANCIA",        "DISTANCE",         "距離") }
+    var countriesStat:     String { t("COUNTRIES",     "KRAJE",             "PAÍSES",           "PAYS",             "訪問国") }
+    var mapEmptyHint:      String { t("Add your first flight to see it on the map",
+                                      "Dodaj pierwszy lot, aby zobaczyć go na mapie",
+                                      "Añade tu primer vuelo para verlo en el mapa",
+                                      "Ajoutez votre premier vol pour le voir sur la carte",
+                                      "地図に表示するには最初のフライトを追加してください") }
+
+    // MARK: - Flights List
+    var logbookOverline:  String { t("LOGBOOK",          "DZIENNIK",           "CUADERNO",          "CARNET",             "ログブック") }
+    var allFlightsTitle:  String { t("All Flights",       "Wszystkie Loty",     "Todos los Vuelos",  "Tous les Vols",      "全フライト") }
+    var noFlightsLogged:  String { t("No flights logged", "Brak zapisanych lotów","Sin vuelos registrados","Aucun vol enregistré","フライト未記録") }
+    var tapAddHint:       String { t("Tap Add to log your first flight.",
+                                     "Dotknij Dodaj, aby zalogować pierwszy lot.",
+                                     "Toca Añadir para registrar tu primer vuelo.",
+                                     "Appuyez sur Ajouter pour enregistrer votre premier vol.",
+                                     "「追加」をタップして最初のフライトを記録しましょう。") }
+    var deleteAction:     String { t("Delete",  "Usuń",   "Eliminar", "Supprimer", "削除") }
+    var editAction:       String { t("Edit",    "Edytuj", "Editar",   "Modifier",  "編集") }
+
+    func entriesCount(_ n: Int) -> String {
+        switch language {
+        case .english:  "\(n) entr\(n == 1 ? "y" : "ies")"
+        case .polish:   "\(n) wpisów"
+        case .spanish:  "\(n) entradas"
+        case .french:   "\(n) entrées"
+        case .japanese: "\(n)件"
+        }
+    }
+
+    // MARK: - Add / Edit Flight
+    var addFlightTitle:     String { t("Add Flight",     "Dodaj Lot",       "Añadir Vuelo",    "Ajouter un Vol",     "フライト追加") }
+    var editFlightTitle:    String { t("Edit Flight",    "Edytuj Lot",      "Editar Vuelo",    "Modifier le Vol",    "フライト編集") }
+    var saveFlightButton:   String { t("Save Flight",    "Zapisz Lot",      "Guardar Vuelo",   "Enregistrer le Vol", "フライトを保存") }
+    var fromPlaceholder:    String { t("From",           "Skąd",            "Desde",           "Départ",             "出発地") }
+    var toPlaceholder:      String { t("To",             "Dokąd",           "Hasta",           "Arrivée",            "目的地") }
+    var airlinePlaceholder: String { t("Airline (optional)", "Linia lotnicza (opcjonalne)", "Aerolínea (opcional)", "Compagnie (optionnel)", "航空会社（任意）") }
+
+    // MARK: - Settings
+    var settingsTitle:      String { t("Settings",        "Ustawienia",      "Configuración",   "Paramètres",         "設定") }
+    var accountSection:     String { t("ACCOUNT",         "KONTO",           "CUENTA",          "COMPTE",             "アカウント") }
+    var profileRow:         String { t("Profile",         "Profil",          "Perfil",          "Profil",             "プロフィール") }
+    var syncRow:            String { t("Sync & Backup",   "Sync i Kopia",    "Sync y Copia",    "Sync et Sauvegarde", "同期とバックアップ") }
+    var appearanceSection:  String { t("APPEARANCE",      "WYGLĄD",          "APARIENCIA",      "APPARENCE",          "外観") }
+    var themeRow:           String { t("Theme",           "Motyw",           "Tema",            "Thème",              "テーマ") }
+    var unitsRow:           String { t("Units",           "Jednostki",       "Unidades",        "Unités",             "単位") }
+    var languageSection:    String { t("LANGUAGE",        "JĘZYK",           "IDIOMA",          "LANGUE",             "言語") }
+    var languageRow:        String { t("Language",        "Język",           "Idioma",          "Langue",             "言語") }
+    var aboutSection:       String { t("ABOUT",           "O APLIKACJI",     "ACERCA DE",       "À PROPOS",           "アプリについて") }
+    var versionRow:         String { t("Version",         "Wersja",          "Versión",         "Version",            "バージョン") }
+    var madeWithPassion:    String { t("Made with passion","Zrobione z pasją","Hecho con pasión","Fait avec passion",  "情熱を込めて制作") }
+    var doneButton:         String { t("Done",            "Gotowe",          "Listo",           "Terminé",            "完了") }
+    var comingSoon:         String { t("Soon",            "Wkrótce",         "Pronto",          "Bientôt",            "近日公開") }
+
+    // MARK: - Stats
+    var statsComingSoon: String { t("Coming soon", "Wkrótce", "Próximamente", "Bientôt", "近日公開") }
+
+    // MARK: - Add / Edit Flight (extended)
+    var cancelButton:         String { t("Cancel",              "Anuluj",           "Cancelar",          "Annuler",           "キャンセル") }
+    var backButton:           String { t("Back",                "Powrót",           "Atrás",             "Retour",            "戻る") }
+    var addNewFlight:         String { t("Add a New Flight",    "Dodaj nowy lot",   "Añadir un vuelo",   "Ajouter un vol",    "フライト追加") }
+    var editFlightNav:        String { t("Edit Flight",         "Edytuj lot",       "Editar vuelo",      "Modifier le vol",   "フライト編集") }
+    var departureAirport:     String { t("Departure Airport",   "Lotnisko odlotu",  "Aeropuerto salida", "Départ",            "出発空港") }
+    var arrivalAirport:       String { t("Arrival Airport",     "Lotnisko przylotu","Aeropuerto llegada","Arrivée",           "到着空港") }
+    var fromLabel:            String { t("FROM",                "SKĄD",             "DESDE",             "DÉPART",            "出発") }
+    var toLabel:              String { t("TO",                  "DOKĄD",            "HASTA",             "ARRIVÉE",           "到着") }
+    var originPlaceholder:    String { t("Origin",              "Skąd",             "Origen",            "Origine",           "出発地") }
+    var destinationPlaceholder: String { t("Destination",       "Dokąd",            "Destino",           "Destination",       "目的地") }
+    var tapToSearch:          String { t("Tap to search",       "Dotknij, aby szukać","Toca para buscar","Appuyez pour chercher","タップして検索") }
+    var dateLabel:            String { t("Date",                "Data",             "Fecha",             "Date",              "日付") }
+    var distanceLabel:        String { t("Distance",            "Dystans",          "Distancia",         "Distance",          "距離") }
+    var airlineLabel:         String { t("AIRLINE",             "LINIA LOTNICZA",   "AEROLÍNEA",         "COMPAGNIE",         "航空会社") }
+    var airlineFieldPlaceholder: String { t("e.g. Lufthansa, Ryanair…","np. Lufthansa, Ryanair…","p.ej. Iberia, Vueling…","ex. Air France…","例：ANA、JAL…") }
+    var seatLabel:            String { t("SEAT",                "MIEJSCE",          "ASIENTO",           "SIÈGE",             "座席") }
+    var classLabel:           String { t("CLASS",               "KLASA",            "CLASE",             "CLASSE",            "クラス") }
+    var searchFieldPlaceholder: String { t("City, airport or IATA code…","Miasto, lotnisko lub kod IATA…","Ciudad, aeropuerto o código IATA…","Ville, aéroport ou code IATA…","都市、空港またはIATAコード…") }
+    var searchPromptTitle:    String { t("Search for an airport","Szukaj lotniska",  "Buscar aeropuerto", "Rechercher aéroport","空港を検索") }
+    var searchPromptSub:      String { t("Type a city, country or IATA code.","Wpisz miasto, kraj lub kod IATA.","Escribe ciudad, país o código IATA.","Tapez ville, pays ou code IATA.","都市・国・IATAコードを入力") }
+    var noAirportsFound:      String { t("No airports found",   "Nie znaleziono lotnisk","No se encontraron aeropuertos","Aucun aéroport trouvé","空港が見つかりません") }
+    var saveChangesButton:    String { t("Save Changes",        "Zapisz zmiany",    "Guardar cambios",   "Enregistrer les modifications","変更を保存") }
+}

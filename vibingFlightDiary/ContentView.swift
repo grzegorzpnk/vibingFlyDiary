@@ -32,6 +32,7 @@ struct ContentView: View {
 struct FDTabBar: View {
     @Binding var selectedTab: Int
     @Binding var showAddFlight: Bool
+    @Environment(LocalizationService.self) private var ls
 
     var body: some View {
         VStack(spacing: 0) {
@@ -40,8 +41,8 @@ struct FDTabBar: View {
                 .frame(height: 0.5)
 
             HStack(spacing: 0) {
-                tabButton(icon: "book.fill", label: "Diary", tab: 0)
-                tabButton(icon: "map.fill", label: "Map", tab: 1)
+                tabButton(icon: "book.fill", label: ls.tabDiary, tab: 0)
+                tabButton(icon: "map.fill", label: ls.tabMap, tab: 1)
 
                 Button { showAddFlight = true } label: {
                     VStack(spacing: 5) {
@@ -56,7 +57,7 @@ struct FDTabBar: View {
                         }
                         .offset(y: -10)
 
-                        Text("Add")
+                        Text(ls.tabAdd)
                             .font(FDFont.ui(10, weight: .semibold))
                             .foregroundStyle(FDColor.gold)
                             .offset(y: -8)
@@ -64,8 +65,8 @@ struct FDTabBar: View {
                 }
                 .frame(maxWidth: .infinity)
 
-                tabButton(icon: "list.bullet", label: "Flights", tab: 2)
-                tabButton(icon: "chart.bar.fill", label: "Stats", tab: 3)
+                tabButton(icon: "list.bullet", label: ls.tabFlights, tab: 2)
+                tabButton(icon: "chart.bar.fill", label: ls.tabStats, tab: 3)
             }
             .frame(height: 60)
             .padding(.bottom, 2)

@@ -5,6 +5,7 @@ import SwiftData
 struct vibingFlightDiaryApp: App {
     private let modelContainer: ModelContainer
     private let airportService = AirportService()
+    private let localization = LocalizationService()
 
     init() {
         do {
@@ -18,6 +19,7 @@ struct vibingFlightDiaryApp: App {
         WindowGroup {
             ContentView()
                 .environment(airportService)
+                .environment(localization)
         }
         .modelContainer(modelContainer)
     }

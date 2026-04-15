@@ -8,6 +8,7 @@ struct FlightListView: View {
 
     @State private var selectedFlight: Flight?
     @State private var flightToEdit: Flight?
+    @Environment(LocalizationService.self) private var ls
 
     var body: some View {
         ZStack {
@@ -29,12 +30,12 @@ struct FlightListView: View {
                                 Button(role: .destructive) {
                                     modelContext.delete(flight)
                                 } label: {
-                                    Label("Delete", systemImage: "trash")
+                                    Label(ls.deleteAction, systemImage: "trash")
                                 }
                                 Button {
                                     flightToEdit = flight
                                 } label: {
-                                    Label("Edit", systemImage: "pencil")
+                                    Label(ls.editAction, systemImage: "pencil")
                                 }
                                 .tint(FDColor.gold)
                             }
@@ -58,14 +59,14 @@ struct FlightListView: View {
 
     private var listHeader: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("LOGBOOK")
+            Text(ls.logbookOverline)
                 .font(FDFont.ui(11, weight: .medium))
                 .foregroundStyle(FDColor.gold)
                 .tracking(2.5)
-            Text("All Flights")
+            Text(ls.allFlightsTitle)
                 .font(FDFont.display(34, weight: .bold))
                 .foregroundStyle(FDColor.text)
-            Text("\(flights.count) entr\(flights.count == 1 ? "y" : "ies")")
+            Text(ls.entriesCount(flights.count))
                 .font(FDFont.ui(13))
                 .foregroundStyle(FDColor.textMuted)
                 .padding(.top, 2)
@@ -82,10 +83,10 @@ struct FlightListView: View {
             Image(systemName: "airplane")
                 .font(.system(size: 48))
                 .foregroundStyle(FDColor.textDim)
-            Text("No flights logged")
+            Text(ls.noFlightsLogged)
                 .font(FDFont.display(22))
                 .foregroundStyle(FDColor.text)
-            Text("Tap Add to log your first flight.")
+            Text(ls.tapAddHint)
                 .font(FDFont.ui(13))
                 .foregroundStyle(FDColor.textMuted)
         }

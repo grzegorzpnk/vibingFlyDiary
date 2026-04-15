@@ -6,6 +6,7 @@ struct AddFlightView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(AirportService.self) private var airportService
+    @Environment(LocalizationService.self) private var ls
 
     let editingFlight: Flight?
 
@@ -95,16 +96,16 @@ struct AddFlightView: View {
                         HStack(spacing: 4) {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 13, weight: .medium))
-                            Text(activeSearch != nil ? "Back" : "Cancel")
+                            Text(activeSearch != nil ? ls.backButton : ls.cancelButton)
                                 .font(FDFont.ui(14))
                         }
                         .foregroundStyle(FDColor.gold)
                     }
                 }
                 ToolbarItem(placement: .principal) {
-                    Text(activeSearch == .from ? "Departure Airport"
-                         : activeSearch == .to ? "Arrival Airport"
-                         : editingFlight != nil ? "Edit Flight" : "Add a New Flight")
+                    Text(activeSearch == .from ? ls.departureAirport
+                         : activeSearch == .to ? ls.arrivalAirport
+                         : editingFlight != nil ? ls.editFlightNav : ls.addNewFlight)
                         .font(FDFont.display(17, weight: .bold))
                         .foregroundStyle(FDColor.text)
                         .animation(.none, value: activeSearch)
@@ -129,9 +130,9 @@ struct AddFlightView: View {
         VStack(spacing: 0) {
             HStack(alignment: .center, spacing: 10) {
                 airportField(
-                    label: "FROM",
+                    label: ls.fromLabel,
                     airport: origin,
-                    placeholder: "Origin",
+                    placeholder: ls.originPlaceholder,
                     alignment: .leading,
                     isActive: activeSearch == .from
                 ) {
@@ -154,9 +155,9 @@ struct AddFlightView: View {
                 }
 
                 airportField(
-                    label: "TO",
+                    label: ls.toLabel,
                     airport: destination,
-                    placeholder: "Destination",
+                    placeholder: ls.destinationPlaceholder,
                     alignment: .trailing,
                     isActive: activeSearch == .to
                 ) {
@@ -171,7 +172,7 @@ struct AddFlightView: View {
                 .padding(.horizontal, 20)
 
             HStack(spacing: 0) {
-                metaField("Date") {
+                metaField(ls.dateLabel) {
                     DatePicker("", selection: Binding(
                         get: { date },
                         set: { date = $0; datePickerID = UUID() }
@@ -185,7 +186,7 @@ struct AddFlightView: View {
                     .fill(FDColor.border)
                     .frame(width: 1)
                     .padding(.vertical, 12)
-                metaField("Distance") {
+                metaField(ls.distanceLabel) {
                     if let km = distanceKm {
                         Text("\(Int(km).formatted()) km")
                             .font(FDFont.ui(15, weight: .medium))
@@ -248,7 +249,7 @@ struct AddFlightView: View {
                 if let airport {
                     Text(airport.iata)
                         .font(FDFont.display(34, weight: .bold))
-                        .foregroundStyle(label == "TO" ? FDColor.gold : FDColor.text)
+                        .foregroundStyle(alignment == .trailing ? FDColor.gold : FDColor.text)
                     Text(airport.city)
                         .font(FDFont.ui(11))
                         .foregroundStyle(FDColor.textMuted)
@@ -272,7 +273,7 @@ struct AddFlightView: View {
                             Spacer(minLength: 0)
                         }
                     }
-                    Text("Tap to search")
+                    Text(ls.tapToSearch)
                         .font(FDFont.ui(11))
                         .foregroundStyle(FDColor.gold.opacity(0.6))
                 }
@@ -313,11 +314,11 @@ struct AddFlightView: View {
     private var airlineField: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 6) {
-                Text("AIRLINE")
+                Text(ls.airlineLabel)
                     .font(FDFont.ui(10, weight: .medium))
                     .foregroundStyle(FDColor.textDim)
                     .tracking(1.2)
-                TextField("e.g. Lufthansa, Ryanair…", text: $airline)
+                TextField(ls.airlineFieldPlaceholder, text: $airline)
                     .font(FDFont.ui(15, weight: .medium))
                     .foregroundStyle(FDColor.text)
                     .tint(FDColor.gold)
@@ -370,7 +371,7 @@ struct AddFlightView: View {
 
     private var seatPicker: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("SEAT")
+            Text(ls.seatLabel)
                 .font(FDFont.ui(10, weight: .medium))
                 .foregroundStyle(FDColor.textDim)
                 .tracking(1.2)
@@ -409,7 +410,7 @@ struct AddFlightView: View {
 
     private var classPicker: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("CLASS")
+            Text(ls.classLabel)
                 .font(FDFont.ui(10, weight: .medium))
                 .foregroundStyle(FDColor.textDim)
                 .tracking(1.2)
@@ -455,7 +456,7 @@ struct AddFlightView: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(FDColor.textMuted)
                     .font(.system(size: 16))
-                TextField("City, airport or IATA code…", text: $searchQuery)
+                TextField(ls.searchFieldPlaceholder, text: $searchQuery)
                     .foregroundStyle(FDColor.text)
                     .tint(FDColor.gold)
                     .autocorrectionDisabled()
@@ -488,10 +489,10 @@ struct AddFlightView: View {
                     Image(systemName: "airplane")
                         .font(.system(size: 36))
                         .foregroundStyle(FDColor.textDim)
-                    Text("Search for an airport")
+                    Text(ls.searchPromptTitle)
                         .font(FDFont.display(18))
                         .foregroundStyle(FDColor.text)
-                    Text("Type a city, country or IATA code.")
+                    Text(ls.searchPromptSub)
                         .font(FDFont.ui(13))
                         .foregroundStyle(FDColor.textMuted)
                         .multilineTextAlignment(.center)
@@ -503,7 +504,7 @@ struct AddFlightView: View {
                     Image(systemName: "airplane.slash")
                         .font(.system(size: 36))
                         .foregroundStyle(FDColor.textDim)
-                    Text("No airports found")
+                    Text(ls.noAirportsFound)
                         .font(FDFont.display(18))
                         .foregroundStyle(FDColor.text)
                 }
@@ -549,7 +550,7 @@ struct AddFlightView: View {
 
     private var saveButton: some View {
         Button(action: save) {
-            Text(editingFlight != nil ? "Save Changes" : "Save Flight")
+            Text(editingFlight != nil ? ls.saveChangesButton : ls.saveFlightButton)
                 .font(FDFont.ui(15, weight: .bold))
                 .tracking(0.5)
                 .foregroundStyle(FDColor.black)

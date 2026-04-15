@@ -12,6 +12,7 @@ struct HomeView: View {
 
     @State private var selectedFlight: Flight?
     @State private var showSettings = false
+    @Environment(LocalizationService.self) private var ls
     private let previewCount = 3
 
     private var upcomingFlights: [Flight] {
@@ -33,13 +34,13 @@ struct HomeView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         if !pastFlights.isEmpty {
                             HStack {
-                                Text("THIS YEAR")
+                                Text(ls.thisYear)
                                     .font(FDFont.ui(11, weight: .medium))
                                     .foregroundStyle(FDColor.textMuted)
                                     .tracking(1.5)
                                 Spacer()
                                 Button(action: onViewStats) {
-                                    Text("Stats →")
+                                    Text(ls.statsArrow)
                                         .font(FDFont.ui(12, weight: .medium))
                                         .foregroundStyle(FDColor.gold)
                                 }
@@ -50,7 +51,7 @@ struct HomeView: View {
 
                         // Upcoming flights section
                         if !upcomingFlights.isEmpty {
-                            Text("UPCOMING FLIGHTS")
+                            Text(ls.upcomingFlights)
                                 .font(FDFont.ui(11, weight: .medium))
                                 .foregroundStyle(FDColor.gold)
                                 .tracking(1.5)
@@ -64,14 +65,14 @@ struct HomeView: View {
                         }
 
                         HStack {
-                            Text("RECENT FLIGHTS")
+                            Text(ls.recentFlights)
                                 .font(FDFont.ui(11, weight: .medium))
                                 .foregroundStyle(FDColor.textMuted)
                                 .tracking(1.5)
                             Spacer()
                             if pastFlights.count > previewCount {
                                 Button(action: onViewAll) {
-                                    Text("History →")
+                                    Text(ls.historyArrow)
                                         .font(FDFont.ui(12, weight: .medium))
                                         .foregroundStyle(FDColor.gold)
                                 }
@@ -83,7 +84,7 @@ struct HomeView: View {
                             emptyState
                         } else if pastFlights.isEmpty {
                             // Only upcoming flights exist — show a hint
-                            Text("Your past flights will appear here.")
+                            Text(ls.pastFlightsHint)
                                 .font(FDFont.ui(13))
                                 .foregroundStyle(FDColor.textDim)
                                 .padding(.vertical, 16)
@@ -97,7 +98,7 @@ struct HomeView: View {
                             if pastFlights.count > previewCount {
                                 Button(action: onViewAll) {
                                     HStack {
-                                        Text("All \(pastFlights.count) flights")
+                                        Text(ls.allFlightsCount(pastFlights.count))
                                             .font(FDFont.ui(14, weight: .medium))
                                             .foregroundStyle(FDColor.textMuted)
                                         Spacer()
@@ -170,12 +171,12 @@ struct HomeView: View {
             HeroArcsView()
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("✦ FLYGRAM")
+                Text("✦ FLYGRAM") // app name — not translated
                     .font(FDFont.ui(11, weight: .medium))
                     .foregroundStyle(FDColor.gold)
                     .tracking(2.5)
 
-                Text("Your\nFlight Diary")
+                Text(ls.heroTitle)
                     .font(FDFont.display(36, weight: .bold))
                     .foregroundStyle(FDColor.text)
                     .lineSpacing(4)
@@ -225,9 +226,9 @@ struct HomeView: View {
     private var statsRow: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
-                statCard(value: "\(thisYearFlights.count)", label: "Flights", highlight: false)
-                statCard(value: thisYearKm >= 1000 ? "\(thisYearKm / 1000)k" : "\(thisYearKm)", label: "Km Flown", highlight: true)
-                statCard(value: "\(thisYearCountries)", label: "Countries", highlight: false)
+                statCard(value: "\(thisYearFlights.count)", label: ls.flightsStatLabel, highlight: false)
+                statCard(value: thisYearKm >= 1000 ? "\(thisYearKm / 1000)k" : "\(thisYearKm)", label: ls.kmFlownLabel, highlight: true)
+                statCard(value: "\(thisYearCountries)", label: ls.countriesLabel, highlight: false)
             }
         }
     }
@@ -257,10 +258,10 @@ struct HomeView: View {
                 .font(.system(size: 40))
                 .foregroundStyle(FDColor.textDim)
                 .padding(.bottom, 4)
-            Text("No flights yet")
+            Text(ls.noFlightsTitle)
                 .font(FDFont.display(20))
                 .foregroundStyle(FDColor.text)
-            Text("Tap Add below to log your first flight.")
+            Text(ls.noFlightsSub)
                 .font(FDFont.ui(13))
                 .foregroundStyle(FDColor.textMuted)
                 .multilineTextAlignment(.center)

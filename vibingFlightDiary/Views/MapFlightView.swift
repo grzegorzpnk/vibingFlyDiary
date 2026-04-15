@@ -248,6 +248,8 @@ struct MapFlightView: View {
             Text(label)
                 .font(FDFont.ui(12, weight: .medium))
                 .foregroundStyle(active ? Color(hex: "E8C98A") : FDColor.textMuted)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 6)
                 .background(active ? FDColor.gold.opacity(0.15) : FDColor.surface2)
@@ -318,10 +320,14 @@ struct MapFlightView: View {
             Text(value)
                 .font(FDFont.display(20, weight: .bold))
                 .foregroundStyle(FDColor.text)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
             Text(label)
                 .font(FDFont.ui(10, weight: .medium))
                 .foregroundStyle(FDColor.gold)
                 .tracking(1.2)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
     }
 

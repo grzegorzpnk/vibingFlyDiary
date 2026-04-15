@@ -45,7 +45,7 @@ struct SettingsView: View {
                                         .font(.system(size: 14, weight: .medium))
                                         .foregroundStyle(FDColor.gold)
                                         .frame(width: 24)
-                                    Text(ls.languageSection)
+                                    Text(ls.languageRow)
                                         .font(FDFont.ui(14))
                                         .foregroundStyle(FDColor.text)
                                     Spacer()

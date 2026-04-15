@@ -6,6 +6,7 @@ struct FlightDetailView: View {
     var detents: Set<PresentationDetent> = [.large]
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(LocalizationService.self) private var ls
 
     private var origin: Airport? { airportService.airport(for: flight.originIATA) }
     private var dest: Airport?   { airportService.airport(for: flight.destinationIATA) }
@@ -103,7 +104,7 @@ struct FlightDetailView: View {
     private var metaSection: some View {
         HStack(spacing: 0) {
             metaCell(
-                label: "DATE",
+                label: ls.dateLabel.uppercased(),
                 value: flight.date.formatted(date: .long, time: .omitted)
             )
 
@@ -113,7 +114,7 @@ struct FlightDetailView: View {
                 .padding(.vertical, 16)
 
             metaCell(
-                label: "DISTANCE",
+                label: ls.distanceLabel.uppercased(),
                 value: "\(Int(flight.distanceKm).formatted()) km"
             )
 
@@ -123,7 +124,7 @@ struct FlightDetailView: View {
                 .padding(.vertical, 16)
 
             metaCell(
-                label: "EST. DURATION",
+                label: ls.estDurationLabel,
                 value: flight.estimatedDurationFormatted
             )
         }
@@ -136,11 +137,15 @@ struct FlightDetailView: View {
                 .font(FDFont.ui(10, weight: .medium))
                 .foregroundStyle(FDColor.textDim)
                 .tracking(1.5)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
             Text(value)
-                .font(FDFont.ui(15, weight: .medium))
+                .font(FDFont.ui(14, weight: .medium))
                 .foregroundStyle(FDColor.text)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
-        .padding(20)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -148,9 +153,9 @@ struct FlightDetailView: View {
 
     private var travelSection: some View {
         let items: [(label: String, value: String, icon: String)] = [
-            flight.airline.map { ("AIRLINE", $0, "airplane.circle") },
-            flight.flightClass.map { ("CLASS", $0.label, $0.icon) },
-            flight.seatType.map { ("SEAT", $0.label, $0.icon) }
+            flight.airline.map { (ls.airlineLabel, $0, "airplane.circle") },
+            flight.flightClass.map { (ls.classLabel, ls.flightClassLabel($0), $0.icon) },
+            flight.seatType.map { (ls.seatLabel, ls.seatTypeLabel($0), $0.icon) }
         ].compactMap { $0 }
 
         return HStack(spacing: 0) {
@@ -178,9 +183,11 @@ struct FlightDetailView: View {
                     .font(FDFont.ui(10, weight: .medium))
                     .foregroundStyle(FDColor.textDim)
                     .tracking(1.5)
+                    .lineLimit(1)
                 Text(value)
-                    .font(FDFont.ui(15, weight: .medium))
+                    .font(FDFont.ui(14, weight: .medium))
                     .foregroundStyle(FDColor.text)
+                    .lineLimit(1)
             }
         }
         .padding(20)
@@ -192,11 +199,11 @@ struct FlightDetailView: View {
     private var airportSection: some View {
         VStack(spacing: 0) {
             if let o = origin {
-                airportRow(label: "ORIGIN", airport: o)
+                airportRow(label: ls.originLabel, airport: o)
                 Divider().background(FDColor.border).padding(.horizontal, 24)
             }
             if let d = dest {
-                airportRow(label: "DESTINATION", airport: d)
+                airportRow(label: ls.destinationLabel, airport: d)
             }
         }
     }
@@ -211,6 +218,7 @@ struct FlightDetailView: View {
                 Text(airport.name)
                     .font(FDFont.ui(15, weight: .medium))
                     .foregroundStyle(FDColor.text)
+                    .lineLimit(2)
                 Text("\(airport.city), \(airport.country)")
                     .font(FDFont.ui(12))
                     .foregroundStyle(FDColor.textMuted)

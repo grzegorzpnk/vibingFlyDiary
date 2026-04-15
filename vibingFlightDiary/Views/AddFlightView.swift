@@ -303,6 +303,8 @@ struct AddFlightView: View {
                 .font(FDFont.ui(10, weight: .medium))
                 .foregroundStyle(FDColor.textDim)
                 .tracking(1.2)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
             content()
         }
         .padding(16)
@@ -380,14 +382,16 @@ struct AddFlightView: View {
                     Button {
                         seatType = seatType == type ? nil : type
                     } label: {
-                        HStack(spacing: 6) {
+                        HStack(spacing: 5) {
                             Image(systemName: type.icon)
-                                .font(.system(size: 12))
-                            Text(type.label)
-                                .font(FDFont.ui(13, weight: .medium))
+                                .font(.system(size: 11))
+                            Text(ls.seatTypeLabel(type))
+                                .font(FDFont.ui(12, weight: .medium))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
                         }
                         .foregroundStyle(seatType == type ? FDColor.black : FDColor.textMuted)
-                        .padding(.horizontal, 14)
+                        .padding(.horizontal, 10)
                         .padding(.vertical, 8)
                         .frame(maxWidth: .infinity)
                         .background(
@@ -420,12 +424,13 @@ struct AddFlightView: View {
                     Button {
                         flightClass = flightClass == cls ? nil : cls
                     } label: {
-                        HStack(spacing: 6) {
+                        HStack(spacing: 5) {
                             Image(systemName: cls.icon)
-                                .font(.system(size: 12))
-                            Text(cls.label)
-                                .font(FDFont.ui(13, weight: .medium))
+                                .font(.system(size: 11))
+                            Text(ls.flightClassLabel(cls))
+                                .font(FDFont.ui(12, weight: .medium))
                                 .lineLimit(1)
+                                .minimumScaleFactor(0.7)
                         }
                         .foregroundStyle(flightClass == cls ? FDColor.black : FDColor.textMuted)
                         .padding(.horizontal, 12)

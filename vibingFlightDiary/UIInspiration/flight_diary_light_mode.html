@@ -1,0 +1,570 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#F5F0E8;
+  --bg2:#EDE7D9;
+  --bg3:#E4DDD0;
+  --s1:#FFFFFF;
+  --s2:#F9F6F0;
+  --s3:#F0EBE1;
+  --brd:rgba(60,45,20,0.09);
+  --brdhi:rgba(60,45,20,0.18);
+  --brdfocus:rgba(60,45,20,0.3);
+  --gld:#8B5E2A;
+  --gld2:#A87040;
+  --glda:rgba(139,94,42,0.12);
+  --gldt:#6B4418;
+  --acc:#2A6080;
+  --accl:#3A7A9E;
+  --tx:#1A1410;
+  --txm:rgba(26,20,16,0.5);
+  --txd:rgba(26,20,16,0.28);
+  --serif:'Playfair Display',Georgia,serif;
+  --sans:'DM Sans',system-ui,sans-serif;
+  --sky1:#C8DFF0;
+  --sky2:#DAEAF6;
+  --sky3:#EBF4FA;
+}
+body{background:transparent;font-family:var(--sans);color:var(--tx);}
+
+.wrap{display:flex;justify-content:center;gap:28px;padding:28px 16px 40px;background:var(--bg2);border-radius:16px;flex-wrap:wrap;align-items:flex-start;}
+
+.phone{width:375px;background:var(--s1);border-radius:48px;border:1.5px solid var(--brdhi);overflow:hidden;position:relative;flex-shrink:0;}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:110px;height:30px;background:var(--tx);border-radius:0 0 18px 18px;z-index:50;opacity:0.85;}
+.screen{display:none;flex-direction:column;height:780px;overflow:hidden;}
+.screen.active{display:flex;}
+.sbar{display:flex;justify-content:space-between;padding:38px 24px 0;font-size:12px;color:var(--txm);flex-shrink:0;}
+
+.scroll-body{flex:1;overflow-y:auto;overflow-x:hidden;}
+.scroll-body::-webkit-scrollbar{display:none;}
+
+/* NAV */
+.nav{display:flex;background:rgba(245,240,232,0.95);border-top:1px solid var(--brd);padding:10px 0 22px;flex-shrink:0;backdrop-filter:blur(12px);}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:opacity .2s;}
+.ni:hover{opacity:.75;}
+.ni .ic{font-size:18px;opacity:.28;color:var(--tx);}
+.ni .lb{font-size:10px;color:var(--txm);font-weight:500;}
+.ni.act .ic{opacity:1;}
+.ni.act .lb{color:var(--gld);}
+.nav-fab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;margin-top:-18px;}
+.fab{width:50px;height:50px;border-radius:50%;background:var(--gld);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;font-weight:300;transition:transform .2s;box-shadow:0 4px 16px rgba(139,94,42,0.35);}
+.fab:hover{transform:scale(1.1);}
+.nav-fab .lb{font-size:10px;color:var(--gld);font-weight:500;}
+
+/* ── HOME HERO ── */
+.hero{position:relative;height:290px;flex-shrink:0;overflow:hidden;}
+.sky{position:absolute;inset:0;background:linear-gradient(175deg,#8DC8E8 0%,#B8DCF0 35%,#D8EDF8 65%,#EDF5FB 100%);}
+.clouds{position:absolute;inset:0;}
+.cloud{position:absolute;background:#fff;border-radius:50px;opacity:0.75;}
+.c1{width:140px;height:36px;top:60px;left:20px;}
+.c2{width:90px;height:24px;top:52px;left:100px;}
+.c3{width:120px;height:30px;top:80px;right:30px;}
+.c4{width:180px;height:40px;top:110px;left:60px;opacity:0.55;}
+.c5{width:70px;height:20px;top:44px;right:100px;opacity:0.6;}
+.horizon{position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(to bottom,transparent,rgba(245,240,232,0.6));}
+.sbar-light{display:flex;justify-content:space-between;position:absolute;top:14px;left:24px;right:24px;font-size:12px;color:rgba(26,20,16,0.55);z-index:10;}
+.hero-cnt{position:absolute;bottom:22px;left:24px;right:24px;z-index:10;}
+.greeting{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gld);margin-bottom:5px;font-weight:500;}
+.h-title{font-family:var(--serif);font-size:30px;font-weight:700;line-height:1.1;color:var(--tx);margin-bottom:3px;}
+.h-sub{font-size:13px;color:var(--txm);}
+
+/* hero arc SVG */
+.hero-arc{position:absolute;top:30px;left:0;right:0;height:200px;z-index:5;}
+
+/* BODY */
+.home-body{padding:0 18px 12px;background:var(--s1);}
+.sec-hdr{display:flex;justify-content:space-between;align-items:baseline;margin:18px 0 10px;}
+.sec-t{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--txm);}
+.sec-a{font-size:12px;color:var(--gld);cursor:pointer;font-weight:500;}
+
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:2px;}
+.stat-c{background:var(--s2);border:1px solid var(--brd);border-radius:14px;padding:12px 10px;text-align:center;}
+.stat-n{font-family:var(--serif);font-size:20px;font-weight:700;line-height:1;margin-bottom:3px;color:var(--tx);}
+.stat-l{font-size:10px;color:var(--txm);text-transform:uppercase;letter-spacing:.07em;}
+.stat-c.hi .stat-n{color:var(--gld);}
+
+.fc{background:var(--s1);border:1px solid var(--brd);border-radius:16px;padding:14px;display:flex;align-items:center;gap:10px;margin-bottom:8px;cursor:pointer;transition:border-color .2s,background .2s;}
+.fc:hover{border-color:var(--brdhi);background:var(--s2);}
+.fdot{width:6px;height:6px;border-radius:50%;background:var(--gld);flex-shrink:0;}
+.fdot.blue{background:var(--accl);}
+.fr{flex:1;}
+.ra{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+.ac{font-family:var(--serif);font-size:17px;font-weight:700;color:var(--tx);}
+.rl{flex:1;height:1px;background:var(--brdhi);position:relative;}
+.rl::after{content:'✈';font-size:10px;position:absolute;top:-7px;left:50%;transform:translateX(-50%);color:var(--gld);}
+.fm{font-size:11px;color:var(--txm);}
+.fd{font-size:11px;color:var(--txd);text-align:right;white-space:nowrap;}
+
+/* ── MAP ── */
+.map-bg{flex:1;background:#D4E8F5;position:relative;overflow:hidden;}
+.map-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(42,96,128,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(42,96,128,.08) 1px,transparent 1px);background-size:28px 28px;}
+.map-hdr{position:absolute;top:0;left:0;right:0;padding:44px 18px 16px;background:linear-gradient(to bottom,rgba(212,232,245,.97) 55%,transparent);z-index:10;}
+.map-title{font-family:var(--serif);font-size:22px;font-weight:700;margin-bottom:10px;color:var(--tx);}
+.chips{display:flex;gap:7px;flex-wrap:nowrap;overflow-x:auto;}
+.chip{padding:5px 13px;border-radius:18px;font-size:12px;font-weight:500;border:1px solid var(--brdhi);background:rgba(255,255,255,0.7);color:var(--txm);white-space:nowrap;cursor:pointer;transition:all .2s;}
+.chip.act{background:var(--glda);border-color:var(--gld);color:var(--gldt);}
+.map-ftr{position:absolute;bottom:0;left:0;right:0;padding:14px 18px 16px;background:linear-gradient(to top,rgba(212,232,245,.97) 55%,transparent);z-index:10;}
+.vcount{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--txm);margin-bottom:7px;}
+.ctags{display:flex;gap:5px;flex-wrap:wrap;}
+.ctag{padding:4px 9px;border-radius:18px;font-size:11px;background:rgba(255,255,255,0.8);border:1px solid var(--brd);color:var(--txm);}
+
+/* ── MEMORIES ── */
+.mem-hdr{padding:48px 24px 16px;border-bottom:1px solid var(--brd);flex-shrink:0;background:var(--s1);}
+.mem-title{font-family:var(--serif);font-size:26px;font-weight:900;margin-bottom:3px;color:var(--tx);}
+.mem-sub{font-size:13px;color:var(--txm);}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:auto;gap:8px;padding:14px;background:var(--s2);}
+.mi{border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .2s;}
+.mi:hover{transform:scale(.98);}
+.mi.tall{grid-row:span 2;}
+.mi.wide{grid-column:span 2;}
+.mbg{width:100%;display:flex;flex-direction:column;justify-content:flex-end;padding:10px;position:relative;min-height:130px;}
+.mi.tall .mbg{min-height:280px;}
+.mi.wide .mbg{min-height:110px;}
+.mov{position:absolute;inset:0;background:linear-gradient(to top,rgba(26,20,16,.6) 0%,rgba(26,20,16,.1) 55%,transparent 100%);}
+.mic{position:absolute;top:12px;right:12px;font-size:22px;opacity:.8;}
+.mrt{font-family:var(--serif);font-size:13px;font-weight:700;position:relative;z-index:1;margin-bottom:1px;color:#fff;}
+.mcy{font-size:11px;position:relative;z-index:1;color:rgba(255,255,255,0.75);}
+.bg1{background:linear-gradient(150deg,#7AAFC8,#3A7498);}
+.bg2{background:linear-gradient(150deg,#C4855A,#8B4E2A);}
+.bg3{background:linear-gradient(150deg,#6B9E7A,#3A6B4A);}
+.bg4{background:linear-gradient(150deg,#8B7AAF,#504878);}
+.bg5{background:linear-gradient(150deg,#C4A45A,#8B6C2A);}
+
+/* ── ADD ── */
+.add-hdr{padding:48px 24px 20px;background:var(--s1);border-bottom:1px solid var(--brd);flex-shrink:0;}
+.back{font-size:13px;color:var(--gld);margin-bottom:10px;cursor:pointer;display:inline-block;font-weight:500;}
+.add-title{font-family:var(--serif);font-size:26px;font-weight:700;line-height:1.1;color:var(--tx);}
+.add-body{padding:20px 18px 12px;background:var(--s2);}
+.rp{background:var(--s1);border:1px solid var(--brd);border-radius:18px;padding:18px;margin-bottom:14px;}
+.rv{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.aig{flex:1;}
+.albl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--txd);margin-bottom:3px;}
+.acode{font-family:var(--serif);font-size:26px;font-weight:700;color:var(--tx);}
+.aname{font-size:11px;color:var(--txm);margin-top:1px;}
+.swap{width:34px;height:34px;border-radius:50%;background:var(--s2);border:1px solid var(--brdhi);display:flex;align-items:center;justify-content:center;color:var(--gld);font-size:15px;cursor:pointer;flex-shrink:0;transition:transform .3s;}
+.swap:hover{transform:rotate(180deg);}
+.divh{height:1px;background:var(--brd);margin:0 -18px;}
+.mf{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+.mflbl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--txd);margin-bottom:4px;}
+.mfv{font-size:14px;font-weight:500;color:var(--tx);}
+.memo{background:var(--s1);border:1px solid var(--brd);border-radius:18px;padding:14px;margin-bottom:14px;}
+.memo-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--txd);margin-bottom:7px;}
+.memo textarea{background:none;border:none;outline:none;color:var(--txm);font-size:13px;font-family:var(--sans);width:100%;resize:none;line-height:1.6;}
+.cta{background:var(--gld);color:#fff;border:none;border-radius:14px;padding:16px;width:100%;font-family:var(--sans);font-size:15px;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:opacity .2s;}
+.cta:hover{opacity:.9;}
+
+/* STATS */
+.stats-hdr{padding:48px 24px 16px;border-bottom:1px solid var(--brd);flex-shrink:0;background:var(--s1);}
+.stats-title{font-family:var(--serif);font-size:26px;font-weight:900;margin-bottom:3px;color:var(--tx);}
+.sbody{padding:16px 18px;background:var(--s2);}
+.big-stat{background:var(--s1);border:1px solid var(--brd);border-radius:18px;padding:20px;margin-bottom:10px;display:flex;align-items:center;gap:16px;}
+.bs-num{font-family:var(--serif);font-size:42px;font-weight:900;color:var(--gld);line-height:1;}
+.bs-label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--txm);margin-bottom:3px;}
+.bs-sub{font-size:13px;color:var(--txd);}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.sc{background:var(--s1);border:1px solid var(--brd);border-radius:14px;padding:14px;}
+.sc-n{font-family:var(--serif);font-size:24px;font-weight:700;margin-bottom:2px;color:var(--tx);}
+.sc-l{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--txm);}
+.top-route{background:var(--s1);border:1px solid var(--brd);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.tr-rank{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--txd);width:24px;flex-shrink:0;}
+.tr-route{font-family:var(--serif);font-size:15px;font-weight:700;margin-bottom:2px;color:var(--tx);}
+.tr-ct{font-size:11px;color:var(--txm);}
+.tr-cnt{font-size:13px;color:var(--gld);font-weight:500;}
+
+/* toast */
+.toast{position:absolute;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--gld);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;opacity:0;pointer-events:none;transition:all .3s;white-space:nowrap;z-index:200;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* PALETTE PANEL */
+.palette-panel{max-width:240px;display:flex;flex-direction:column;gap:18px;padding-top:16px;}
+.brand{font-family:'Playfair Display',Georgia,serif;font-size:32px;font-weight:900;color:#1A1410;line-height:1;margin-bottom:2px;}
+.brand-tag{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--gld);font-family:var(--sans);font-weight:500;}
+.pal-section{}
+.pal-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(26,20,16,0.45);margin-bottom:8px;font-family:var(--sans);}
+.swatch-row{display:flex;gap:6px;}
+.sw{border-radius:10px;flex:1;height:32px;position:relative;}
+.sw-label{font-size:9px;text-align:center;margin-top:4px;color:rgba(26,20,16,0.45);font-family:var(--sans);}
+.type-block{border-top:1px solid rgba(26,20,16,0.1);padding-top:14px;}
+.type-serif{font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;color:#1A1410;line-height:1.2;}
+.type-body{font-size:12px;color:rgba(26,20,16,0.5);margin-top:6px;font-family:var(--sans);line-height:1.5;}
+.principle{background:rgba(139,94,42,0.08);border-left:2px solid rgba(139,94,42,0.4);padding:10px 12px;border-radius:0 10px 10px 0;}
+.principle-t{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--gld);margin-bottom:5px;font-family:var(--sans);}
+.principle-b{font-size:12px;color:rgba(26,20,16,0.6);line-height:1.55;font-family:var(--sans);}
+</style>
+
+<h2 class="sr-only">Flight Diary light day mode UI — four clickable phone screens plus a color palette panel.</h2>
+
+<div class="wrap">
+
+<!-- ── PHONE 1: HOME ── -->
+<div style="display:flex;flex-direction:column;align-items:center;">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen active" id="s-home">
+    <div class="hero">
+      <div class="sky"></div>
+      <div class="clouds">
+        <div class="cloud c1"></div>
+        <div class="cloud c2"></div>
+        <div class="cloud c3"></div>
+        <div class="cloud c4"></div>
+        <div class="cloud c5"></div>
+      </div>
+      <svg class="hero-arc" viewBox="0 0 375 200" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 55,170 Q 140,30 300,90" fill="none" stroke="rgba(139,94,42,0.55)" stroke-width="2" stroke-dasharray="6,10" stroke-linecap="round"/>
+        <circle cx="55"  cy="170" r="4" fill="#8B5E2A" opacity=".8"/>
+        <circle cx="300" cy="90"  r="4" fill="#8B5E2A" opacity=".8"/>
+        <circle cx="55"  cy="170" r="8" fill="none" stroke="#8B5E2A" stroke-width="1" opacity=".3"/>
+        <text x="175" y="52" font-size="14" fill="#8B5E2A" opacity=".9" text-anchor="middle">✈</text>
+        <path d="M 30,145 Q 180,15 340,75" fill="none" stroke="rgba(42,96,128,0.3)" stroke-width="1.2" stroke-dasharray="3,12" stroke-linecap="round"/>
+      </svg>
+      <div class="sbar-light"><span>9:41</span><span>●●●</span></div>
+      <div class="hero-cnt">
+        <div class="greeting">✦ Welcome back, Alex</div>
+        <div class="h-title">Your<br>Flight Diary</div>
+        <div class="h-sub">47 flights · 28 countries</div>
+      </div>
+      <div class="horizon"></div>
+    </div>
+    <div class="scroll-body">
+      <div class="home-body">
+        <div class="sec-hdr"><span class="sec-t">This Year</span><span class="sec-a" onclick="go('s-stats')">View all →</span></div>
+        <div class="stats-row">
+          <div class="stat-c hi"><div class="stat-n">47</div><div class="stat-l">Flights</div></div>
+          <div class="stat-c"><div class="stat-n">89k</div><div class="stat-l">km</div></div>
+          <div class="stat-c"><div class="stat-n">28</div><div class="stat-l">Countries</div></div>
+        </div>
+        <div class="sec-hdr"><span class="sec-t">Recent Flights</span><span class="sec-a">History →</span></div>
+        <div class="fc" onclick="go('s-add')">
+          <div class="fdot"></div>
+          <div class="fr">
+            <div class="ra"><span class="ac">WAW</span><div class="rl"></div><span class="ac">JFK</span></div>
+            <div class="fm">LOT Polish · Economy · 9h 15m</div>
+          </div>
+          <div class="fd">Apr 3<br>2025</div>
+        </div>
+        <div class="fc" onclick="go('s-add')" style="opacity:.7">
+          <div class="fdot blue"></div>
+          <div class="fr">
+            <div class="ra"><span class="ac">DXB</span><div class="rl"></div><span class="ac">WAW</span></div>
+            <div class="fm">Emirates · Business · 5h 40m</div>
+          </div>
+          <div class="fd">Mar 18<br>2025</div>
+        </div>
+        <div class="fc" onclick="go('s-add')" style="opacity:.45">
+          <div class="fdot" style="background:var(--accl)"></div>
+          <div class="fr">
+            <div class="ra"><span class="ac">NRT</span><div class="rl"></div><span class="ac">WAW</span></div>
+            <div class="fm">JAL · Economy · 11h 20m</div>
+          </div>
+          <div class="fd">Jan 12<br>2025</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="ni act" onclick="go('s-home')"><span class="ic">⌂</span><span class="lb">Home</span></div>
+      <div class="ni" onclick="go('s-map')"><span class="ic">◉</span><span class="lb">Map</span></div>
+      <div class="nav-fab" onclick="go('s-add')"><div class="fab">+</div><span class="lb">Log</span></div>
+      <div class="ni" onclick="go('s-mem')"><span class="ic">✦</span><span class="lb">Memories</span></div>
+      <div class="ni" onclick="go('s-stats')"><span class="ic">◎</span><span class="lb">Stats</span></div>
+    </div>
+    <div class="toast" id="t1"></div>
+  </div>
+
+  <!-- MAP -->
+  <div class="screen" id="s-map">
+    <div class="map-bg" style="flex:1;position:relative;">
+      <div class="map-grid"></div>
+      <svg style="position:absolute;inset:0;width:100%;height:100%;" viewBox="0 0 375 580" xmlns="http://www.w3.org/2000/svg" opacity="0.55">
+        <g fill="rgba(42,96,128,0.22)" stroke="rgba(42,96,128,0.45)" stroke-width="0.6">
+          <path d="M 30,115 L 90,95 L 108,138 L 98,178 L 78,196 L 50,186 L 30,158 Z"/>
+          <path d="M 72,208 L 98,198 L 108,248 L 93,298 L 73,288 L 58,248 Z"/>
+          <path d="M 158,98 L 198,88 L 208,118 L 188,133 L 163,128 Z"/>
+          <path d="M 163,143 L 203,138 L 213,198 L 198,238 L 173,243 L 156,208 L 153,168 Z"/>
+          <path d="M 213,78 L 318,68 L 338,108 L 318,148 L 248,158 L 218,138 L 203,108 Z"/>
+          <path d="M 288,228 L 328,223 L 333,258 L 313,268 L 288,253 Z"/>
+        </g>
+        <g fill="none" stroke-width="2">
+          <path d="M 70,133 Q 113,68 163,106" stroke="rgba(139,94,42,.8)" stroke-dasharray="3,5"/>
+          <path d="M 163,106 Q 248,58 293,86" stroke="rgba(139,94,42,.6)" stroke-dasharray="3,5"/>
+          <path d="M 70,133 Q 108,198 167,176" stroke="rgba(42,96,128,.5)" stroke-dasharray="2,6"/>
+        </g>
+        <g fill="#8B5E2A">
+          <circle cx="70" cy="133" r="5"/><circle cx="163" cy="106" r="5"/>
+          <circle cx="293" cy="86" r="4"/><circle cx="288" cy="253" r="3.5"/>
+        </g>
+        <text x="120" y="88" font-size="13" fill="#8B5E2A">✈</text>
+      </svg>
+      <div class="map-hdr">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--txm);margin-bottom:12px;"><span>9:41</span><span>●●●</span></div>
+        <div class="map-title">Flight Map</div>
+        <div class="chips">
+          <div class="chip act" onclick="chipSel(this)">All Time</div>
+          <div class="chip" onclick="chipSel(this)">2025</div>
+          <div class="chip" onclick="chipSel(this)">2024</div>
+          <div class="chip" onclick="chipSel(this)">Long-haul</div>
+          <div class="chip" onclick="chipSel(this)">Europe</div>
+        </div>
+      </div>
+      <div class="map-ftr">
+        <div class="vcount">28 countries visited</div>
+        <div class="ctags">
+          <span class="ctag">🇵🇱 Poland</span><span class="ctag">🇺🇸 USA</span>
+          <span class="ctag">🇦🇪 UAE</span><span class="ctag">🇯🇵 Japan</span>
+          <span class="ctag">+24 more</span>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="ni" onclick="go('s-home')"><span class="ic">⌂</span><span class="lb">Home</span></div>
+      <div class="ni act"><span class="ic">◉</span><span class="lb">Map</span></div>
+      <div class="nav-fab" onclick="go('s-add')"><div class="fab">+</div><span class="lb">Log</span></div>
+      <div class="ni" onclick="go('s-mem')"><span class="ic">✦</span><span class="lb">Memories</span></div>
+      <div class="ni" onclick="go('s-stats')"><span class="ic">◎</span><span class="lb">Stats</span></div>
+    </div>
+  </div>
+
+  <!-- ADD -->
+  <div class="screen" id="s-add">
+    <div class="add-hdr">
+      <span class="back" onclick="go('s-home')">← Back</span>
+      <div class="add-title">Log a<br>New Flight</div>
+    </div>
+    <div class="scroll-body">
+      <div class="add-body">
+        <div class="rp">
+          <div class="rv">
+            <div class="aig">
+              <div class="albl">From</div>
+              <div class="acode" id="fc1">WAW</div>
+              <div class="aname" id="fn1">Warsaw Chopin</div>
+            </div>
+            <div class="swap" onclick="swp()" title="Swap">⇄</div>
+            <div class="aig" style="text-align:right">
+              <div class="albl" style="text-align:right">To</div>
+              <div class="acode" id="tc1" style="color:var(--gld)">NRT</div>
+              <div class="aname" id="tn1" style="text-align:right">Narita Intl</div>
+            </div>
+          </div>
+          <div class="divh"></div>
+          <div class="mf">
+            <div><div class="mflbl">Date</div><div class="mfv">Apr 10, 2025</div></div>
+            <div><div class="mflbl">Airline</div><div class="mfv">LOT Polish</div></div>
+            <div><div class="mflbl">Duration</div><div class="mfv">11h 30m</div></div>
+            <div><div class="mflbl">Class</div><div class="mfv">Economy</div></div>
+          </div>
+        </div>
+        <div class="memo">
+          <div class="memo-lbl">Memory Note</div>
+          <textarea rows="3" placeholder="Add a note about this trip...">First time in Tokyo — cherry blossoms were incredible.</textarea>
+        </div>
+        <button class="cta" onclick="save()">Save Flight</button>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="ni" onclick="go('s-home')"><span class="ic">⌂</span><span class="lb">Home</span></div>
+      <div class="ni" onclick="go('s-map')"><span class="ic">◉</span><span class="lb">Map</span></div>
+      <div class="nav-fab" onclick="go('s-home')"><div class="fab" style="background:var(--bg3);color:var(--tx);box-shadow:none;font-size:16px;">✕</div><span class="lb" style="color:var(--txm)">Cancel</span></div>
+      <div class="ni" onclick="go('s-mem')"><span class="ic">✦</span><span class="lb">Memories</span></div>
+      <div class="ni" onclick="go('s-stats')"><span class="ic">◎</span><span class="lb">Stats</span></div>
+    </div>
+  </div>
+
+  <!-- MEMORIES -->
+  <div class="screen" id="s-mem">
+    <div class="mem-hdr">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--txm);margin-bottom:14px;"><span>9:41</span><span>●●●</span></div>
+      <div class="mem-title">Memories</div>
+      <div class="mem-sub">Stories from your journeys</div>
+    </div>
+    <div class="scroll-body">
+      <div class="mgrid">
+        <div class="mi tall" onclick="toast('Tokyo, Japan')">
+          <div class="mbg bg1" style="min-height:280px"><div class="mov"></div><div class="mic">🗼</div><div class="mrt">CDG → NRT</div><div class="mcy">Tokyo · Jan 2025</div></div>
+        </div>
+        <div class="mi" onclick="toast('Dubai, UAE')">
+          <div class="mbg bg2"><div class="mov"></div><div class="mic">🏜️</div><div class="mrt">WAW → DXB</div><div class="mcy">Mar 2025</div></div>
+        </div>
+        <div class="mi" onclick="toast('New York')">
+          <div class="mbg bg3"><div class="mov"></div><div class="mic">🗽</div><div class="mrt">WAW → JFK</div><div class="mcy">Apr 2025</div></div>
+        </div>
+        <div class="mi wide" onclick="toast('Sydney, Australia')">
+          <div class="mbg bg4" style="min-height:110px"><div class="mov"></div><div class="mic">🌏</div><div class="mrt">SYD → SIN → WAW</div><div class="mcy">Australia · 2023</div></div>
+        </div>
+        <div class="mi" onclick="toast('London, UK')">
+          <div class="mbg bg5"><div class="mov"></div><div class="mic">🎡</div><div class="mrt">WAW → LHR</div><div class="mcy">London · 2024</div></div>
+        </div>
+        <div class="mi" onclick="toast('Bangkok')">
+          <div class="mbg bg1" style="background:linear-gradient(150deg,#8BAF6B,#4A6B38)"><div class="mov"></div><div class="mic">🛕</div><div class="mrt">WAW → BKK</div><div class="mcy">Bangkok · 2024</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="ni" onclick="go('s-home')"><span class="ic">⌂</span><span class="lb">Home</span></div>
+      <div class="ni" onclick="go('s-map')"><span class="ic">◉</span><span class="lb">Map</span></div>
+      <div class="nav-fab" onclick="go('s-add')"><div class="fab">+</div><span class="lb">Log</span></div>
+      <div class="ni act"><span class="ic">✦</span><span class="lb">Memories</span></div>
+      <div class="ni" onclick="go('s-stats')"><span class="ic">◎</span><span class="lb">Stats</span></div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="screen" id="s-stats">
+    <div class="stats-hdr">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--txm);margin-bottom:14px;"><span>9:41</span><span>●●●</span></div>
+      <div class="stats-title">Your Stats</div>
+      <div class="mem-sub">All time · since 2019</div>
+    </div>
+    <div class="scroll-body">
+      <div class="sbody">
+        <div class="big-stat">
+          <div class="bs-num">47</div>
+          <div><div class="bs-label">Total Flights</div><div class="bs-sub">+12 vs last year</div></div>
+        </div>
+        <div class="sg">
+          <div class="sc"><div class="sc-n" style="color:var(--gld)">89k</div><div class="sc-l">km flown</div></div>
+          <div class="sc"><div class="sc-n">28</div><div class="sc-l">countries</div></div>
+          <div class="sc"><div class="sc-n">187</div><div class="sc-l">hours airborne</div></div>
+          <div class="sc"><div class="sc-n" style="color:var(--accl)">3</div><div class="sc-l">continents</div></div>
+        </div>
+        <div class="sec-hdr" style="margin-top:4px"><span class="sec-t">Top Routes</span></div>
+        <div class="top-route"><div class="tr-rank">1</div><div style="flex:1"><div class="tr-route">WAW → LHR</div><div class="tr-ct">Warsaw → London</div></div><div class="tr-cnt">8x</div></div>
+        <div class="top-route"><div class="tr-rank" style="opacity:.5">2</div><div style="flex:1"><div class="tr-route">WAW → DXB</div><div class="tr-ct">Warsaw → Dubai</div></div><div class="tr-cnt">5x</div></div>
+        <div class="top-route"><div class="tr-rank" style="opacity:.3">3</div><div style="flex:1"><div class="tr-route">WAW → JFK</div><div class="tr-ct">Warsaw → New York</div></div><div class="tr-cnt">3x</div></div>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="ni" onclick="go('s-home')"><span class="ic">⌂</span><span class="lb">Home</span></div>
+      <div class="ni" onclick="go('s-map')"><span class="ic">◉</span><span class="lb">Map</span></div>
+      <div class="nav-fab" onclick="go('s-add')"><div class="fab">+</div><span class="lb">Log</span></div>
+      <div class="ni" onclick="go('s-mem')"><span class="ic">✦</span><span class="lb">Memories</span></div>
+      <div class="ni act"><span class="ic">◎</span><span class="lb">Stats</span></div>
+    </div>
+  </div>
+</div>
+<div style="text-align:center;margin-top:12px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(26,20,16,0.3);font-family:var(--sans);">Day Mode</div>
+</div>
+
+<!-- PALETTE PANEL -->
+<div class="palette-panel">
+  <div>
+    <div class="brand">Aloft</div>
+    <div class="brand-tag">✦ Day palette</div>
+  </div>
+
+  <div class="pal-section">
+    <div class="pal-label">Backgrounds</div>
+    <div class="swatch-row">
+      <div>
+        <div class="sw" style="background:#F5F0E8;border:1px solid rgba(60,45,20,0.12)"></div>
+        <div class="sw-label">Linen</div>
+      </div>
+      <div>
+        <div class="sw" style="background:#EDE7D9;border:1px solid rgba(60,45,20,0.1)"></div>
+        <div class="sw-label">Warm gray</div>
+      </div>
+      <div>
+        <div class="sw" style="background:#FFFFFF;border:1px solid rgba(60,45,20,0.12)"></div>
+        <div class="sw-label">White</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pal-section">
+    <div class="pal-label">Sky & map</div>
+    <div class="swatch-row">
+      <div>
+        <div class="sw" style="background:#8DC8E8"></div>
+        <div class="sw-label">Horizon</div>
+      </div>
+      <div>
+        <div class="sw" style="background:#B8DCF0"></div>
+        <div class="sw-label">Mid sky</div>
+      </div>
+      <div>
+        <div class="sw" style="background:#D4E8F5"></div>
+        <div class="sw-label">Pale sky</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pal-section">
+    <div class="pal-label">Accent & action</div>
+    <div class="swatch-row">
+      <div>
+        <div class="sw" style="background:#8B5E2A"></div>
+        <div class="sw-label">Cognac</div>
+      </div>
+      <div>
+        <div class="sw" style="background:#A87040"></div>
+        <div class="sw-label">Warm gold</div>
+      </div>
+      <div>
+        <div class="sw" style="background:#2A6080"></div>
+        <div class="sw-label">Steel blue</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pal-section">
+    <div class="pal-label">Typography</div>
+    <div class="swatch-row">
+      <div>
+        <div class="sw" style="background:#1A1410"></div>
+        <div class="sw-label">Ink</div>
+      </div>
+      <div>
+        <div class="sw" style="background:rgba(26,20,16,0.5);border:1px solid rgba(60,45,20,0.1)"></div>
+        <div class="sw-label">Muted</div>
+      </div>
+      <div>
+        <div class="sw" style="background:rgba(26,20,16,0.22);border:1px solid rgba(60,45,20,0.08)"></div>
+        <div class="sw-label">Hint</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="type-block">
+    <div class="type-serif">Playfair<br>Display</div>
+    <div class="type-body">Display & headings<br><br><span style="font-family:'DM Sans',sans-serif">DM Sans — UI & body copy</span></div>
+  </div>
+
+  <div class="principle">
+    <div class="principle-t">Design philosophy</div>
+    <div class="principle-b">
+      — Linen base, never pure white<br>
+      — Cognac replaces gold in light<br>
+      — Sky blue hero, not flat color<br>
+      — Warm ink, never pure black<br>
+      — Memory cards keep full color
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function chipSel(el){
+  el.closest('.chips').querySelectorAll('.chip').forEach(c=>c.classList.remove('act'));
+  el.classList.add('act');
+}
+function swp(){
+  const fc=document.getElementById('fc1'),tc=document.getElementById('tc1');
+  const fn=document.getElementById('fn1'),tn=document.getElementById('tn1');
+  [fc.textContent,tc.textContent]=[tc.textContent,fc.textContent];
+  [fn.textContent,tn.textContent]=[tn.textContent,fn.textContent];
+  toast('Route swapped');
+}
+function save(){toast('Flight saved! ✈');setTimeout(()=>go('s-home'),900);}
+function toast(msg){
+  const t=document.getElementById('t1');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1800);
+}
+</script>

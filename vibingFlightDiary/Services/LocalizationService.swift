@@ -158,6 +158,53 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     // MARK: - Stats
     var statsComingSoon: String { t("Coming soon", "Wkrótce", "Próximamente", "Bientôt", "近日公開") }
 
+    // MARK: - Hero subtitle
+    func heroSubtitle(flights: Int, countries: Int) -> String {
+        switch language {
+        case .english:  return "\(flights) flight\(flights == 1 ? "" : "s") across \(countries) \(countries == 1 ? "country" : "countries")"
+        case .polish:   return "\(flights) lot\(flights == 1 ? "" : "ów") w \(countries) kraju/krajach"
+        case .spanish:  return "\(flights) vuelo\(flights == 1 ? "" : "s") en \(countries) país\(countries == 1 ? "" : "es")"
+        case .french:   return "\(flights) vol\(flights == 1 ? "" : "s") dans \(countries) pays"
+        case .japanese: return "\(flights)フライト・\(countries)カ国"
+        }
+    }
+
+    // MARK: - Countdown
+    var countdownToday:    String { t("Today",    "Dziś",  "Hoy",    "Aujourd'hui", "今日") }
+    var countdownTomorrow: String { t("Tomorrow", "Jutro", "Mañana", "Demain",      "明日") }
+    func countdownDays(_ n: Int) -> String {
+        switch language {
+        case .english:  return "In \(n)d"
+        case .polish:   return "Za \(n)d"
+        case .spanish:  return "En \(n)d"
+        case .french:   return "Dans \(n)j"
+        case .japanese: return "\(n)日後"
+        }
+    }
+
+    // MARK: - Flight Detail labels
+    var estDurationLabel: String { t("EST. DURATION", "CZAS LOTU",   "DURACIÓN EST.", "DURÉE EST.",  "推定時間") }
+    var originLabel:      String { t("ORIGIN",        "SKĄD",        "ORIGEN",        "DÉPART",      "出発地") }
+    var destinationLabel: String { t("DESTINATION",   "DOKĄD",       "DESTINO",       "DESTINATION", "目的地") }
+
+    // MARK: - SeatType / FlightClass localized labels
+    func seatTypeLabel(_ type: SeatType) -> String {
+        switch type {
+        case .window: return t("Window",  "Okno",       "Ventana",  "Hublot",   "窓側")
+        case .middle: return t("Middle",  "Środek",     "Centro",   "Milieu",   "中央")
+        case .aisle:  return t("Aisle",   "Przejście",  "Pasillo",  "Couloir",  "通路")
+        }
+    }
+
+    func flightClassLabel(_ cls: FlightClass) -> String {
+        switch cls {
+        case .economy:        return t("Economy",     "Ekonomiczna",  "Económica",   "Économique",  "エコノミー")
+        case .premiumEconomy: return t("Premium Eco", "Premium Eko",  "Premium Eco", "Premium Éco", "プレミアムエコ")
+        case .business:       return t("Business",    "Biznes",       "Negocios",    "Affaires",    "ビジネス")
+        case .first:          return t("First",       "Pierwsza",     "Primera",     "Première",    "ファースト")
+        }
+    }
+
     // MARK: - Add / Edit Flight (extended)
     var cancelButton:         String { t("Cancel",              "Anuluj",           "Cancelar",          "Annuler",           "キャンセル") }
     var backButton:           String { t("Back",                "Powrót",           "Atrás",             "Retour",            "戻る") }

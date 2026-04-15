@@ -60,6 +60,8 @@ struct FDTabBar: View {
                         Text(ls.tabAdd)
                             .font(FDFont.ui(10, weight: .semibold))
                             .foregroundStyle(FDColor.gold)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
                             .offset(y: -8)
                     }
                 }
@@ -86,6 +88,8 @@ struct FDTabBar: View {
                     .font(FDFont.ui(10, weight: .medium))
                     .foregroundStyle(active ? FDColor.gold : FDColor.textMuted)
                     .tracking(0.5)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
             }
         }
         .frame(maxWidth: .infinity)

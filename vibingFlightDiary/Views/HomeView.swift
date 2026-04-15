@@ -182,7 +182,7 @@ struct HomeView: View {
                     .lineSpacing(4)
 
                 if !pastFlights.isEmpty {
-                    Text("\(pastFlights.count) flight\(pastFlights.count == 1 ? "" : "s") across \(allCountries) \(allCountries == 1 ? "country" : "countries")")
+                    Text(ls.heroSubtitle(flights: pastFlights.count, countries: allCountries))
                         .font(FDFont.ui(13))
                         .foregroundStyle(FDColor.textMuted)
                         .padding(.top, 2)
@@ -244,6 +244,8 @@ struct HomeView: View {
                 .font(FDFont.ui(10, weight: .medium))
                 .foregroundStyle(FDColor.textMuted)
                 .tracking(0.8)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
@@ -279,6 +281,8 @@ struct FlightCard: View {
     var onTap: (() -> Void)? = nil
     var isUpcoming: Bool = false
 
+    @Environment(LocalizationService.self) private var ls
+
     private var origin: Airport? { airportService.airport(for: flight.originIATA) }
     private var dest: Airport?   { airportService.airport(for: flight.destinationIATA) }
 
@@ -292,9 +296,9 @@ struct FlightCard: View {
 
     private var countdownText: String {
         switch daysUntil {
-        case 0: return "Today"
-        case 1: return "Tomorrow"
-        default: return "In \(daysUntil)d"
+        case 0: return ls.countdownToday
+        case 1: return ls.countdownTomorrow
+        default: return ls.countdownDays(daysUntil)
         }
     }
 
@@ -351,22 +355,27 @@ struct FlightCard: View {
                             Text("\(o.city) → \(d.city)")
                                 .font(FDFont.ui(11))
                                 .foregroundStyle(FDColor.textMuted)
+                                .lineLimit(1)
                         }
                     }
 
                     HStack(spacing: 6) {
                         if let airline = flight.airline {
                             Text(airline)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
                             Text("·")
                         }
                         if let cls = flight.flightClass {
-                            Text(cls.label)
+                            Text(ls.flightClassLabel(cls))
                             Text("·")
                         }
                         Text(flight.estimatedDurationFormatted)
+                        Spacer(minLength: 0)
                     }
                     .font(FDFont.ui(10))
                     .foregroundStyle(FDColor.textDim)
+                    .lineLimit(1)
                 }
 
                 Spacer(minLength: 8)

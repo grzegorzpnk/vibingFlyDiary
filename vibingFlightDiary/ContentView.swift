@@ -11,9 +11,10 @@ struct ContentView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $selectedTab) {
-                HomeView(onViewAll: { selectedTab = 2 }).tag(0)
+                HomeView(onViewAll: { selectedTab = 2 }, onViewStats: { selectedTab = 3 }).tag(0)
                 MapFlightView().tag(1)
                 FlightListView().tag(2)
+                StatsView().tag(3)
             }
             .ignoresSafeArea()
 
@@ -39,7 +40,7 @@ struct FDTabBar: View {
                 .frame(height: 0.5)
 
             HStack(spacing: 0) {
-                tabButton(icon: "house.fill", label: "Home", tab: 0)
+                tabButton(icon: "book.fill", label: "Diary", tab: 0)
                 tabButton(icon: "map.fill", label: "Map", tab: 1)
 
                 Button { showAddFlight = true } label: {
@@ -64,7 +65,7 @@ struct FDTabBar: View {
                 .frame(maxWidth: .infinity)
 
                 tabButton(icon: "list.bullet", label: "Flights", tab: 2)
-                Color.clear.frame(maxWidth: .infinity)
+                tabButton(icon: "chart.bar.fill", label: "Stats", tab: 3)
             }
             .frame(height: 60)
             .padding(.bottom, 2)

@@ -16,4 +16,11 @@ struct Airport: Codable, Identifiable, Hashable {
     }
 
     var displayName: String { "\(iata) – \(city), \(country)" }
+
+    /// Converts ISO-2 country code to emoji flag (e.g. "PL" → "🇵🇱")
+    var flagEmoji: String {
+        country.uppercased().unicodeScalars
+            .compactMap { UnicodeScalar(127397 + $0.value) }
+            .reduce("") { $0 + String($1) }
+    }
 }

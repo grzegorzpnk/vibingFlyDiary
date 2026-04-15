@@ -5,11 +5,13 @@ import SwiftData
 
 struct HomeView: View {
     var onViewAll: () -> Void = {}
+    var onViewStats: () -> Void = {}
 
     @Query(sort: \Flight.date, order: .reverse) private var flights: [Flight]
     @Environment(AirportService.self) private var airportService
 
     @State private var selectedFlight: Flight?
+    @State private var showSettings = false
     private let previewCount = 3
 
     private var upcomingFlights: [Flight] {
@@ -30,8 +32,20 @@ struct HomeView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 12) {
                         if !pastFlights.isEmpty {
+                            HStack {
+                                Text("THIS YEAR")
+                                    .font(FDFont.ui(11, weight: .medium))
+                                    .foregroundStyle(FDColor.textMuted)
+                                    .tracking(1.5)
+                                Spacer()
+                                Button(action: onViewStats) {
+                                    Text("Stats →")
+                                        .font(FDFont.ui(12, weight: .medium))
+                                        .foregroundStyle(FDColor.gold)
+                                }
+                            }
+                            .padding(.top, 20)
                             statsRow
-                                .padding(.top, 20)
                         }
 
                         // Upcoming flights section
@@ -109,12 +123,28 @@ struct HomeView: View {
         .sheet(item: $selectedFlight) { flight in
             FlightDetailView(flight: flight, airportService: airportService)
         }
+        .sheet(isPresented: $showSettings) {
+            SettingsView()
+        }
     }
 
     // MARK: Hero
 
     private var heroSection: some View {
         ZStack(alignment: .bottomLeading) {
+            // Settings button top-right
+            Button { showSettings = true } label: {
+                Image(systemName: "line.3.horizontal")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(FDColor.text.opacity(0.6))
+                    .frame(width: 36, height: 36)
+                    .background(.ultraThinMaterial, in: Circle())
+            }
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            .padding(.top, 12)
+            .padding(.trailing, 20)
+            .zIndex(1)
             LinearGradient(
                 colors: [
                     Color(red: 0.05, green: 0.10, blue: 0.17),
@@ -140,7 +170,7 @@ struct HomeView: View {
             HeroArcsView()
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("✦ FLIGHT DIARY")
+                Text("✦ FLYGRAM")
                     .font(FDFont.ui(11, weight: .medium))
                     .foregroundStyle(FDColor.gold)
                     .tracking(2.5)
@@ -160,7 +190,7 @@ struct HomeView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 32)
         }
-        .frame(height: 310)
+        .frame(height: 250)
         .clipped()
     }
 
@@ -194,10 +224,6 @@ struct HomeView: View {
 
     private var statsRow: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("THIS YEAR")
-                .font(FDFont.ui(11, weight: .medium))
-                .foregroundStyle(FDColor.textMuted)
-                .tracking(1.5)
             HStack(spacing: 10) {
                 statCard(value: "\(thisYearFlights.count)", label: "Flights", highlight: false)
                 statCard(value: thisYearKm >= 1000 ? "\(thisYearKm / 1000)k" : "\(thisYearKm)", label: "Km Flown", highlight: true)
@@ -276,24 +302,18 @@ struct FlightCard: View {
             onTap?()
         } label: {
             HStack(spacing: 12) {
-                if isUpcoming {
-                    Image(systemName: "airplane.departure")
-                        .font(.system(size: 9))
-                        .foregroundStyle(FDColor.blue)
-                        .padding(.top, 2)
-                } else {
-                    Circle()
-                        .fill(flight.flightClass == .business || flight.flightClass == .first ? FDColor.blue : FDColor.gold)
-                        .frame(width: 6, height: 6)
-                        .padding(.top, 2)
-                        .alignmentGuide(.top) { d in d[.top] }
-                }
-
                 VStack(alignment: .leading, spacing: 5) {
                     HStack(spacing: 6) {
-                        Text(flight.originIATA)
-                            .font(FDFont.display(18, weight: .bold))
-                            .foregroundStyle(FDColor.text)
+                        // Flag at card left edge, inline with route
+                        HStack(spacing: 4) {
+                            if let o = origin {
+                                Text(o.flagEmoji)
+                                    .font(.system(size: 14))
+                            }
+                            Text(flight.originIATA)
+                                .font(FDFont.display(18, weight: .bold))
+                                .foregroundStyle(FDColor.text)
+                        }
 
                         ZStack {
                             Rectangle()
@@ -305,15 +325,32 @@ struct FlightCard: View {
                         }
                         .frame(maxWidth: .infinity)
 
-                        Text(flight.destinationIATA)
-                            .font(FDFont.display(18, weight: .bold))
-                            .foregroundStyle(FDColor.text)
+                        HStack(spacing: 3) {
+                            Text(flight.destinationIATA)
+                                .font(FDFont.display(18, weight: .bold))
+                                .foregroundStyle(FDColor.text)
+                            if let d = dest {
+                                Text(d.flagEmoji)
+                                    .font(.system(size: 14))
+                            }
+                        }
                     }
 
                     if let o = origin, let d = dest {
-                        Text("\(o.city) → \(d.city)")
-                            .font(FDFont.ui(11))
-                            .foregroundStyle(FDColor.textMuted)
+                        HStack(spacing: 5) {
+                            if isUpcoming {
+                                Image(systemName: "airplane.departure")
+                                    .font(.system(size: 8))
+                                    .foregroundStyle(FDColor.blue)
+                            } else {
+                                Circle()
+                                    .fill(flight.flightClass == .business || flight.flightClass == .first ? FDColor.blue : FDColor.gold)
+                                    .frame(width: 5, height: 5)
+                            }
+                            Text("\(o.city) → \(d.city)")
+                                .font(FDFont.ui(11))
+                                .foregroundStyle(FDColor.textMuted)
+                        }
                     }
 
                     HStack(spacing: 6) {

@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @State private var selectedTab = 0
     @State private var showAddFlight = false
+    @Environment(LocalizationService.self) private var ls
 
     init() {
         UITabBar.appearance().isHidden = true
@@ -23,7 +24,8 @@ struct ContentView: View {
         .sheet(isPresented: $showAddFlight) {
             AddFlightView()
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(ls.preferredColorScheme)
+        .onAppear { ls.applyWindowStyle() }
     }
 }
 

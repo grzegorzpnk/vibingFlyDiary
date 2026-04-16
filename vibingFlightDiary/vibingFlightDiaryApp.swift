@@ -20,6 +20,11 @@ struct vibingFlightDiaryApp: App {
             ContentView()
                 .environment(airportService)
                 .environment(localization)
+                .onAppear {
+                    #if DEBUG
+                    DebugDataSeeder.reseed(context: modelContainer.mainContext)
+                    #endif
+                }
         }
         .modelContainer(modelContainer)
     }

@@ -9,7 +9,22 @@ struct MapFlightView: View {
     @State private var selectedYear: Int? = nil
     @State private var beenMode: Bool = false
     @State private var selectedFlight: Flight?
+    @State private var mapStyleChoice: MapStyleChoice = .auto
+    @State private var showStylePicker = false
     @Environment(LocalizationService.self) private var ls
+    @Environment(\.colorScheme) private var colorScheme
+
+    enum MapStyleChoice: String, CaseIterable {
+        case auto, satellite, hybrid, standard
+        var icon: String {
+            switch self {
+            case .auto:      "wand.and.stars"
+            case .satellite: "globe.americas.fill"
+            case .hybrid:    "map"
+            case .standard:  "map.fill"
+            }
+        }
+    }
 
     /// Unique ISO-A2 country codes touched by filteredFlights (both origin + destination)
     private var visitedIsoCodes: Set<String> {
@@ -75,9 +90,8 @@ struct MapFlightView: View {
         Int(filteredFlights.reduce(0) { $0 + $1.distanceKm })
     }
 
-    private var kmFormatted: String {
-        totalKm >= 1000 ? "\(totalKm / 1000)k" : "\(totalKm)"
-    }
+    private var distanceFormatted: String { ls.formatDistanceShort(Double(totalKm)) }
+    private var distanceStatLabel: String { ls.distanceUnit == .km ? ls.distanceStat + " (km)" : ls.distanceStat + " (mi)" }
 
     var body: some View {
         ZStack {
@@ -87,8 +101,8 @@ struct MapFlightView: View {
                 if beenMode {
                     ForEach(countryRings) { ring in
                         MapPolygon(coordinates: ring.coordinates)
-                            .foregroundStyle(Color(hex: "C9A96E").opacity(0.42))
-                            .stroke(Color(hex: "C9A96E").opacity(0.85), lineWidth: 1.5)
+                            .foregroundStyle(FDColor.gold.opacity(0.42))
+                            .stroke(FDColor.gold.opacity(0.85), lineWidth: 1.5)
                     }
                 }
 
@@ -130,13 +144,25 @@ struct MapFlightView: View {
                     }
                 }
             }
-            .mapStyle(.hybrid(elevation: .flat, pointsOfInterest: .excludingAll, showsTraffic: false))
+            .mapStyle({
+                switch mapStyleChoice {
+                case .satellite: return .imagery(elevation: .flat)
+                case .hybrid:    return .hybrid(elevation: .flat, pointsOfInterest: .excludingAll, showsTraffic: false)
+                case .standard:  return .standard(elevation: .flat, emphasis: .muted, pointsOfInterest: .excludingAll, showsTraffic: false)
+                case .auto:      return colorScheme == .dark
+                    ? .hybrid(elevation: .flat, pointsOfInterest: .excludingAll, showsTraffic: false)
+                    : .standard(elevation: .flat, emphasis: .muted, pointsOfInterest: .excludingAll, showsTraffic: false)
+                }
+            }())
             .ignoresSafeArea()
 
             // Top gradient + title + year chips
             VStack {
                 LinearGradient(
-                    colors: [Color(hex: "0D1520").opacity(0.96), .clear],
+                    colors: [
+                        (colorScheme == .dark ? Color(hex: "0D1520") : Color(hex: "D4E8F5")).opacity(0.97),
+                        .clear
+                    ],
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -212,30 +238,86 @@ struct MapFlightView: View {
                 }
             }
 
-            // Recenter button
+            // Map style + recenter buttons
             VStack {
                 Spacer()
                 HStack {
                     Spacer()
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.6)) {
-                            position = .camera(MapCamera(
-                                centerCoordinate: CLLocationCoordinate2D(latitude: 47, longitude: 13),
-                                distance: 15_000_000, heading: 0, pitch: 0
-                            ))
+                    VStack(spacing: 10) {
+                        Button {
+                            withAnimation(.spring(duration: 0.25)) { showStylePicker.toggle() }
+                        } label: {
+                            Image(systemName: mapStyleChoice.icon)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(mapStyleChoice == .auto ? FDColor.textMuted : FDColor.gold)
+                                .frame(width: 40, height: 40)
+                                .background(.ultraThinMaterial, in: Circle())
+                                .overlay(Circle().stroke(
+                                    (mapStyleChoice == .auto ? FDColor.borderBright : FDColor.gold).opacity(0.4),
+                                    lineWidth: 1
+                                ))
                         }
-                    } label: {
-                        Image(systemName: "location.north.fill")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(FDColor.gold)
-                            .frame(width: 40, height: 40)
-                            .background(.ultraThinMaterial, in: Circle())
-                            .overlay(Circle().stroke(FDColor.gold.opacity(0.3), lineWidth: 1))
+                        .buttonStyle(.plain)
+
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.6)) {
+                                position = .camera(MapCamera(
+                                    centerCoordinate: CLLocationCoordinate2D(latitude: 47, longitude: 13),
+                                    distance: 15_000_000, heading: 0, pitch: 0
+                                ))
+                            }
+                        } label: {
+                            Image(systemName: "location.north.fill")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(FDColor.gold)
+                                .frame(width: 40, height: 40)
+                                .background(.ultraThinMaterial, in: Circle())
+                                .overlay(Circle().stroke(FDColor.gold.opacity(0.3), lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                     .padding(.trailing, 20)
                     .padding(.bottom, 120)
                 }
+            }
+            // Map style floating picker
+            if showStylePicker {
+                VStack(spacing: 2) {
+                    ForEach(MapStyleChoice.allCases, id: \.self) { choice in
+                        Button {
+                            mapStyleChoice = choice
+                            withAnimation(.spring(duration: 0.25)) { showStylePicker = false }
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: choice.icon)
+                                    .font(.system(size: 13, weight: .medium))
+                                    .frame(width: 18)
+                                Text(choice.rawValue.capitalized)
+                                    .font(FDFont.ui(13, weight: .medium))
+                                Spacer()
+                                if mapStyleChoice == choice {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 11, weight: .bold))
+                                }
+                            }
+                            .foregroundStyle(mapStyleChoice == choice ? FDColor.gold : FDColor.text)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        if choice != MapStyleChoice.allCases.last {
+                            Divider().overlay(FDColor.border)
+                        }
+                    }
+                }
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(FDColor.border, lineWidth: 1))
+                .frame(width: 170)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                .padding(.trailing, 70)
+                .padding(.bottom, 170)
+                .transition(.scale(scale: 0.85, anchor: .bottomTrailing).combined(with: .opacity))
             }
         }
         .sheet(item: $selectedFlight) { flight in
@@ -296,7 +378,7 @@ struct MapFlightView: View {
             HStack(spacing: 20) {
                 statItem(value: "\(filteredFlights.count)", label: ls.flightsStat)
                 statDivider
-                statItem(value: "\(kmFormatted) km", label: ls.distanceStat)
+                statItem(value: distanceFormatted, label: distanceStatLabel)
                 statDivider
                 statItem(value: "\(visited) / \(total)", label: ls.countriesStat)
             }

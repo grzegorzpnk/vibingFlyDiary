@@ -20,7 +20,7 @@ struct FlightDetailView: View {
                     routeHeader
                     Divider().background(FDColor.border).padding(.horizontal, 24)
                     metaSection
-                    if flight.airline != nil || flight.seatType != nil || flight.flightClass != nil {
+                    if flight.airline != nil || flight.seatType != nil || flight.flightClass != nil || flight.aircraftType != nil || flight.flightNumber != nil {
                         Divider().background(FDColor.border).padding(.horizontal, 24)
                         travelSection
                     }
@@ -45,7 +45,7 @@ struct FlightDetailView: View {
         .presentationBackground(FDColor.surface)
         .presentationDetents(detents)
         .presentationDragIndicator(.visible)
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(ls.preferredColorScheme)
     }
 
     // MARK: - Route Header
@@ -53,7 +53,7 @@ struct FlightDetailView: View {
     private var routeHeader: some View {
         VStack(spacing: 0) {
             // Decorative arc
-            RouteArcView()
+            RouteArcView(arcColor: FDColor.gold)
                 .frame(height: 80)
                 .padding(.top, 32)
 
@@ -115,7 +115,7 @@ struct FlightDetailView: View {
 
             metaCell(
                 label: ls.distanceLabel.uppercased(),
-                value: "\(Int(flight.distanceKm).formatted()) km"
+                value: ls.formatDistance(flight.distanceKm)
             )
 
             Rectangle()
@@ -153,23 +153,33 @@ struct FlightDetailView: View {
 
     private var travelSection: some View {
         let items: [(label: String, value: String, icon: String)] = [
+            flight.flightNumber.map { (ls.flightNumberLabel, $0, "number") },
             flight.airline.map { (ls.airlineLabel, $0, "airplane.circle") },
+            flight.aircraftType.map { (ls.aircraftLabel, $0, "airplane") },
             flight.flightClass.map { (ls.classLabel, ls.flightClassLabel($0), $0.icon) },
             flight.seatType.map { (ls.seatLabel, ls.seatTypeLabel($0), $0.icon) }
         ].compactMap { $0 }
 
-        return HStack(spacing: 0) {
-            ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                if index > 0 {
-                    Rectangle()
-                        .fill(FDColor.border)
-                        .frame(width: 1)
-                        .padding(.vertical, 16)
+        // Chunk into rows of 2
+        let rows = stride(from: 0, to: items.count, by: 2).map {
+            Array(items[$0..<min($0 + 2, items.count)])
+        }
+
+        return VStack(spacing: 0) {
+            ForEach(Array(rows.enumerated()), id: \.offset) { rowIndex, row in
+                if rowIndex > 0 {
+                    Rectangle().fill(FDColor.border).frame(height: 1).padding(.horizontal, 24)
                 }
-                travelCell(label: item.label, value: item.value, icon: item.icon)
+                HStack(spacing: 0) {
+                    ForEach(Array(row.enumerated()), id: \.offset) { colIndex, item in
+                        if colIndex > 0 {
+                            Rectangle().fill(FDColor.border).frame(width: 1).padding(.vertical, 16)
+                        }
+                        travelCell(label: item.label, value: item.value, icon: item.icon)
+                    }
+                }
             }
         }
-        .padding(.vertical, 4)
     }
 
     private func travelCell(label: String, value: String, icon: String) -> some View {
@@ -238,12 +248,13 @@ struct FlightDetailView: View {
 // MARK: - Decorative Arc
 
 private struct RouteArcView: View {
+    let arcColor: Color
+
     var body: some View {
         Canvas { ctx, size in
             let w = size.width
             let h = size.height
 
-            // Dashed arc
             var arc = Path()
             arc.move(to: CGPoint(x: w * 0.12, y: h * 0.85))
             arc.addQuadCurve(
@@ -251,14 +262,13 @@ private struct RouteArcView: View {
                 control: CGPoint(x: w * 0.50, y: -h * 0.20)
             )
             ctx.stroke(arc,
-                       with: .color(Color(hex: "C9A96E").opacity(0.4)),
+                       with: .color(arcColor.opacity(0.4)),
                        style: StrokeStyle(lineWidth: 1.5, dash: [5, 6]))
 
-            // Endpoint dots
             let r: Double = 4
             func dot(_ x: Double, _ y: Double) {
                 ctx.fill(Path(ellipseIn: CGRect(x: x - r, y: y - r, width: r*2, height: r*2)),
-                         with: .color(Color(hex: "C9A96E").opacity(0.85)))
+                         with: .color(arcColor.opacity(0.85)))
             }
             dot(w * 0.12, h * 0.85)
             dot(w * 0.88, h * 0.85)

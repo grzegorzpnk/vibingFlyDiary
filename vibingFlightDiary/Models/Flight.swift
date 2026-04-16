@@ -64,6 +64,8 @@ class Flight {
     var seatType: SeatType?
     var flightClass: FlightClass?
     var airline: String?
+    var aircraftType: String?
+    var flightNumber: String?
 
     /// Approximate flight time based on distance at 850 km/h + 30 min overhead
     var estimatedDurationFormatted: String {
@@ -80,7 +82,9 @@ class Flight {
         distanceKm: Double,
         seatType: SeatType? = nil,
         flightClass: FlightClass? = nil,
-        airline: String? = nil
+        airline: String? = nil,
+        aircraftType: String? = nil,
+        flightNumber: String? = nil
     ) {
         self.id = UUID()
         self.originIATA = originIATA
@@ -90,5 +94,7 @@ class Flight {
         self.seatType = seatType
         self.flightClass = flightClass
         self.airline = airline
+        self.aircraftType = aircraftType
+        self.flightNumber = flightNumber
     }
 }

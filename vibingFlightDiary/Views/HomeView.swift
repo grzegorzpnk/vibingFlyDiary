@@ -13,7 +13,22 @@ struct HomeView: View {
     @State private var selectedFlight: Flight?
     @State private var showSettings = false
     @Environment(LocalizationService.self) private var ls
+    @Environment(\.colorScheme) private var colorScheme
     private let previewCount = 3
+
+    private var isLight: Bool {
+        switch ls.theme {
+        case .light: return true
+        case .dark:  return false
+        case .system: return colorScheme == .light
+        }
+    }
+
+    private var topSafeAreaInset: CGFloat {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.windows.first?.safeAreaInsets.top ?? 44
+    }
 
     private var upcomingFlights: [Flight] {
         flights.filter { $0.date > .now }.reversed()
@@ -26,6 +41,7 @@ struct HomeView: View {
     var body: some View {
         ZStack {
             FDColor.black.ignoresSafeArea()
+
 
             VStack(spacing: 0) {
                 heroSection
@@ -121,6 +137,7 @@ struct HomeView: View {
                 .background(FDColor.black)
             }
         }
+        .ignoresSafeArea(edges: .top)
         .sheet(item: $selectedFlight) { flight in
             FlightDetailView(flight: flight, airportService: airportService)
         }
@@ -143,32 +160,60 @@ struct HomeView: View {
             }
             .buttonStyle(.plain)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-            .padding(.top, 12)
+            .padding(.top, topSafeAreaInset + 12)
             .padding(.trailing, 20)
             .zIndex(1)
-            LinearGradient(
-                colors: [
-                    Color(red: 0.05, green: 0.10, blue: 0.17),
-                    Color(red: 0.10, green: 0.06, blue: 0.18),
-                    FDColor.black
-                ],
-                startPoint: .topTrailing,
-                endPoint: .bottomLeading
-            )
-            .ignoresSafeArea(edges: .top)
+            if !isLight {
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.05, green: 0.10, blue: 0.17),
+                        Color(red: 0.10, green: 0.06, blue: 0.18),
+                        FDColor.black
+                    ],
+                    startPoint: .topTrailing,
+                    endPoint: .bottomLeading
+                )
+                .ignoresSafeArea(edges: .top)
 
-            StarsView()
+                StarsView()
 
-            Ellipse()
-                .fill(RadialGradient(
-                    colors: [FDColor.blue.opacity(0.22), .clear],
-                    center: .center, startRadius: 0, endRadius: 140
-                ))
-                .frame(width: 280, height: 140)
-                .offset(y: 50)
-                .frame(maxWidth: .infinity, alignment: .center)
+                Ellipse()
+                    .fill(RadialGradient(
+                        colors: [FDColor.blue.opacity(0.22), .clear],
+                        center: .center, startRadius: 0, endRadius: 140
+                    ))
+                    .frame(width: 280, height: 140)
+                    .offset(y: 50)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            } else {
+                LinearGradient(
+                    colors: [
+                        Color(hex: "8DC8E8"),
+                        Color(hex: "B8DCF0"),
+                        Color(hex: "D8EDF8"),
+                        Color(hex: "EDF5FB")
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea(edges: .top)
 
-            HeroArcsView()
+                CloudsView()
+
+                // Strong gradient: clears sky above, solid linen below for readable text
+                LinearGradient(
+                    stops: [
+                        .init(color: .clear, location: 0.32),
+                        .init(color: Color(hex: "F5F0E8").opacity(0.65), location: 0.58),
+                        .init(color: Color(hex: "F5F0E8"), location: 0.82)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+
+            HeroArcsView(goldColor: FDColor.gold, blueColor: FDColor.blue,
+                         isLight: isLight)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("✦ FLYGRAM") // app name — not translated
@@ -191,7 +236,7 @@ struct HomeView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 32)
         }
-        .frame(height: 250)
+        .frame(height: 250 + topSafeAreaInset)
         .clipped()
     }
 
@@ -227,7 +272,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
                 statCard(value: "\(thisYearFlights.count)", label: ls.flightsStatLabel, highlight: false)
-                statCard(value: thisYearKm >= 1000 ? "\(thisYearKm / 1000)k" : "\(thisYearKm)", label: ls.kmFlownLabel, highlight: true)
+                statCard(value: ls.formatDistanceShort(Double(thisYearKm)), label: ls.kmFlownLabel, highlight: true)
                 statCard(value: "\(thisYearCountries)", label: ls.countriesLabel, highlight: false)
             }
         }
@@ -446,39 +491,94 @@ struct StarsView: View {
 // MARK: - Hero Arcs Canvas
 
 struct HeroArcsView: View {
+    let goldColor: Color
+    let blueColor: Color
+    var isLight: Bool = false
+
     var body: some View {
         Canvas { ctx, size in
             let w = size.width
             let h = size.height
 
-            var p1 = Path()
-            p1.move(to: CGPoint(x: w * 0.16, y: h * 0.82))
-            p1.addQuadCurve(to: CGPoint(x: w * 0.78, y: h * 0.52),
-                            control: CGPoint(x: w * 0.35, y: h * 0.18))
-            ctx.stroke(p1, with: .color(Color(hex: "C9A96E").opacity(0.35)),
-                       style: StrokeStyle(lineWidth: 1, dash: [4, 6]))
+            if isLight {
+                // Light mode: arcs stay in the upper sky zone only (y < 0.50)
+                var p1 = Path()
+                p1.move(to: CGPoint(x: w * 0.08, y: h * 0.50))
+                p1.addQuadCurve(to: CGPoint(x: w * 0.82, y: h * 0.22),
+                                control: CGPoint(x: w * 0.42, y: h * -0.05))
+                ctx.stroke(p1, with: .color(goldColor.opacity(0.55)),
+                           style: StrokeStyle(lineWidth: 1.5, dash: [5, 8]))
 
-            let dotRadius: Double = 3
-            func dot(_ px: Double, _ py: Double) {
-                let r = CGRect(x: px - dotRadius, y: py - dotRadius, width: dotRadius * 2, height: dotRadius * 2)
-                ctx.fill(Path(ellipseIn: r), with: .color(Color(hex: "C9A96E").opacity(0.9)))
+                let dotRadius: Double = 3.5
+                func dot(_ px: Double, _ py: Double) {
+                    let r = CGRect(x: px - dotRadius, y: py - dotRadius,
+                                   width: dotRadius * 2, height: dotRadius * 2)
+                    ctx.fill(Path(ellipseIn: r), with: .color(goldColor.opacity(0.85)))
+                }
+                dot(w * 0.08, h * 0.50)
+                dot(w * 0.82, h * 0.22)
+
+                var p2 = Path()
+                p2.move(to: CGPoint(x: w * 0.18, y: h * 0.45))
+                p2.addQuadCurve(to: CGPoint(x: w * 0.90, y: h * 0.38),
+                                control: CGPoint(x: w * 0.55, y: h * 0.10))
+                ctx.stroke(p2, with: .color(blueColor.opacity(0.20)),
+                           style: StrokeStyle(lineWidth: 1, dash: [3, 9]))
+            } else {
+                // Dark mode: arcs span the full hero height
+                var p1 = Path()
+                p1.move(to: CGPoint(x: w * 0.16, y: h * 0.82))
+                p1.addQuadCurve(to: CGPoint(x: w * 0.78, y: h * 0.52),
+                                control: CGPoint(x: w * 0.35, y: h * 0.18))
+                ctx.stroke(p1, with: .color(goldColor.opacity(0.35)),
+                           style: StrokeStyle(lineWidth: 1, dash: [4, 6]))
+
+                let dotRadius: Double = 3
+                func dot(_ px: Double, _ py: Double) {
+                    let r = CGRect(x: px - dotRadius, y: py - dotRadius,
+                                   width: dotRadius * 2, height: dotRadius * 2)
+                    ctx.fill(Path(ellipseIn: r), with: .color(goldColor.opacity(0.9)))
+                }
+                dot(w * 0.16, h * 0.82)
+                dot(w * 0.78, h * 0.52)
+
+                var p2 = Path()
+                p2.move(to: CGPoint(x: w * 0.08, y: h * 0.65))
+                p2.addQuadCurve(to: CGPoint(x: w * 0.92, y: h * 0.38),
+                                control: CGPoint(x: w * 0.52, y: h * 0.08))
+                ctx.stroke(p2, with: .color(blueColor.opacity(0.20)),
+                           style: StrokeStyle(lineWidth: 1, dash: [3, 8]))
+
+                var p3 = Path()
+                p3.move(to: CGPoint(x: w * 0.22, y: h * 0.88))
+                p3.addQuadCurve(to: CGPoint(x: w * 0.84, y: h * 0.68),
+                                control: CGPoint(x: w * 0.44, y: h * 0.48))
+                ctx.stroke(p3, with: .color(goldColor.opacity(0.08)),
+                           style: StrokeStyle(lineWidth: 0.5, dash: [2, 10]))
             }
-            dot(w * 0.16, h * 0.82)
-            dot(w * 0.78, h * 0.52)
+        }
+    }
+}
 
-            var p2 = Path()
-            p2.move(to: CGPoint(x: w * 0.08, y: h * 0.65))
-            p2.addQuadCurve(to: CGPoint(x: w * 0.92, y: h * 0.38),
-                            control: CGPoint(x: w * 0.52, y: h * 0.08))
-            ctx.stroke(p2, with: .color(Color(hex: "4A7FA5").opacity(0.20)),
-                       style: StrokeStyle(lineWidth: 1, dash: [3, 8]))
+// MARK: - Clouds Canvas (light mode hero)
+// All clouds are kept in the top 40% of the frame so they never overlap the title text.
 
-            var p3 = Path()
-            p3.move(to: CGPoint(x: w * 0.22, y: h * 0.88))
-            p3.addQuadCurve(to: CGPoint(x: w * 0.84, y: h * 0.68),
-                            control: CGPoint(x: w * 0.44, y: h * 0.48))
-            ctx.stroke(p3, with: .color(Color.white.opacity(0.07)),
-                       style: StrokeStyle(lineWidth: 0.5, dash: [2, 10]))
+struct CloudsView: View {
+    var body: some View {
+        Canvas { ctx, size in
+            let w = size.width
+            let h = size.height
+            func cloud(_ cx: CGFloat, _ cy: CGFloat, _ cw: CGFloat, _ ch: CGFloat, _ opacity: Double) {
+                let rect = CGRect(x: cx - cw / 2, y: cy - ch / 2, width: cw, height: ch)
+                ctx.fill(Path(roundedRect: rect, cornerRadius: 50),
+                         with: .color(Color.white.opacity(opacity)))
+            }
+            // Strictly upper sky — all y positions < 0.38
+            cloud(w * 0.17, h * 0.17, 145, 34, 0.78)
+            cloud(w * 0.34, h * 0.10, 82,  22, 0.70)
+            cloud(w * 0.80, h * 0.24, 125, 30, 0.65)
+            cloud(w * 0.60, h * 0.34, 155, 32, 0.45)
+            cloud(w * 0.68, h * 0.08, 68,  20, 0.62)
         }
     }
 }

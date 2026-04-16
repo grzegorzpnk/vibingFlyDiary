@@ -1,5 +1,23 @@
 import Foundation
 import Observation
+import SwiftUI
+
+// MARK: - Distance Unit
+
+enum DistanceUnit: String, CaseIterable, Identifiable {
+    case km    = "km"
+    case miles = "miles"
+    var id: String { rawValue }
+}
+
+// MARK: - App Theme
+
+enum AppTheme: String, CaseIterable, Identifiable {
+    case dark   = "dark"
+    case light  = "light"
+    case system = "system"
+    var id: String { rawValue }
+}
 
 // MARK: - Supported Languages
 
@@ -40,9 +58,62 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         didSet { UserDefaults.standard.set(language.rawValue, forKey: "appLanguage") }
     }
 
+    var theme: AppTheme {
+        didSet {
+            UserDefaults.standard.set(theme.rawValue, forKey: "appTheme")
+            applyWindowStyle()
+        }
+    }
+
+    var distanceUnit: DistanceUnit {
+        didSet { UserDefaults.standard.set(distanceUnit.rawValue, forKey: "distanceUnit") }
+    }
+
+    /// Format a km value for display using the user's chosen unit.
+    func formatDistance(_ km: Double) -> String {
+        switch distanceUnit {
+        case .km:    return "\(Int(km).formatted()) km"
+        case .miles: return "\(Int(km * 0.621371).formatted()) mi"
+        }
+    }
+
+    /// Compact format (e.g. "59k") without unit label — use distanceFlownLabel separately.
+    func formatDistanceShort(_ km: Double) -> String {
+        let value = distanceUnit == .miles ? km * 0.621371 : km
+        let i = Int(value)
+        return i >= 1000 ? "\(i / 1000)k" : "\(i)"
+    }
+
+    func applyWindowStyle() {
+        let style: UIUserInterfaceStyle = switch theme {
+        case .dark:   .dark
+        case .light:  .light
+        case .system: .unspecified
+        }
+        DispatchQueue.main.async {
+            UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .flatMap { $0.windows }
+                .forEach { $0.overrideUserInterfaceStyle = style }
+        }
+    }
+
+    /// Returns the SwiftUI ColorScheme to apply, or nil to follow system.
+    var preferredColorScheme: ColorScheme? {
+        switch theme {
+        case .dark:   return .dark
+        case .light:  return .light
+        case .system: return nil
+        }
+    }
+
     init() {
         let saved = UserDefaults.standard.string(forKey: "appLanguage") ?? "en"
         self.language = AppLanguage(rawValue: saved) ?? .english
+        let savedTheme = UserDefaults.standard.string(forKey: "appTheme") ?? "dark"
+        self.theme = AppTheme(rawValue: savedTheme) ?? .dark
+        let savedUnit = UserDefaults.standard.string(forKey: "distanceUnit") ?? "km"
+        self.distanceUnit = DistanceUnit(rawValue: savedUnit) ?? .km
     }
 
     // Shorthand helper
@@ -67,7 +138,9 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var heroTitle:        String { t("Your\nFlight Diary",  "Twój\nDziennik Lotów",    "Tu\nDiario de Vuelos",    "Votre\nJournal de Vols",     "あなたの\n飛行日誌") }
     var thisYear:         String { t("THIS YEAR",           "W TYM ROKU",              "ESTE AÑO",                "CETTE ANNÉE",                "今年") }
     var flightsStatLabel: String { t("Flights",             "Loty",                    "Vuelos",                  "Vols",                       "フライト") }
-    var kmFlownLabel:     String { t("Km Flown",            "Km Przelatane",           "Km Volados",              "Km Parcourus",               "飛行 km") }
+    var kmFlownLabel:     String { distanceUnit == .km
+                                    ? t("Km Flown",  "Km Przelatane", "Km Volados", "Km Parcourus", "飛行 km")
+                                    : t("Mi Flown",  "Mi Przebyte",   "Mi Voladas", "Mi Parcourues","飛行 mi") }
     var countriesLabel:   String { t("Countries",           "Kraje",                   "Países",                  "Pays",                       "訪問国") }
     var statsArrow:       String { t("Stats →",             "Statystyki →",            "Estadísticas →",          "Statistiques →",             "統計 →") }
     var upcomingFlights:  String { t("UPCOMING FLIGHTS",    "NADCHODZĄCE LOTY",        "PRÓXIMOS VUELOS",         "VOLS À VENIR",               "予定フライト") }
@@ -146,6 +219,9 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var syncRow:            String { t("Sync & Backup",   "Sync i Kopia",    "Sync y Copia",    "Sync et Sauvegarde", "同期とバックアップ") }
     var appearanceSection:  String { t("APPEARANCE",      "WYGLĄD",          "APARIENCIA",      "APPARENCE",          "外観") }
     var themeRow:           String { t("Theme",           "Motyw",           "Tema",            "Thème",              "テーマ") }
+    var themeDark:          String { t("Dark",            "Ciemny",          "Oscuro",          "Sombre",             "ダーク") }
+    var themeLight:         String { t("Light",           "Jasny",           "Claro",           "Clair",              "ライト") }
+    var themeSystem:        String { t("System",          "Systemowy",       "Sistema",         "Système",            "システム") }
     var unitsRow:           String { t("Units",           "Jednostki",       "Unidades",        "Unités",             "単位") }
     var languageSection:    String { t("LANGUAGE",        "JĘZYK",           "IDIOMA",          "LANGUE",             "言語") }
     var languageRow:        String { t("Language",        "Język",           "Idioma",          "Langue",             "言語") }
@@ -156,7 +232,26 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var comingSoon:         String { t("Soon",            "Wkrótce",         "Pronto",          "Bientôt",            "近日公開") }
 
     // MARK: - Stats
-    var statsComingSoon: String { t("Coming soon", "Wkrótce", "Próximamente", "Bientôt", "近日公開") }
+    var statsComingSoon:       String { t("Coming soon",          "Wkrótce",               "Próximamente",         "Bientôt",               "近日公開") }
+    var statsYourJourney:      String { t("YOUR JOURNEY",         "TWOJA PODRÓŻ",          "TU VIAJE",             "VOTRE VOYAGE",          "あなたの旅") }
+    var statsAroundEarth:      String { t("around the Earth",     "dookoła Ziemi",         "alrededor de la Tierra","autour de la Terre",   "地球一周") }
+    var statsFlightsLabel:     String { t("FLIGHTS",              "LOTY",                  "VUELOS",               "VOLS",                  "フライト") }
+    var statsCountriesLabel:   String { t("COUNTRIES",            "KRAJE",                 "PAÍSES",               "PAYS",                  "カ国") }
+    var statsAirportsLabel:    String { t("AIRPORTS",             "LOTNISKA",              "AEROPUERTOS",          "AÉROPORTS",             "空港") }
+    var statsInTheAir:         String { t("IN THE AIR",           "W POWIETRZU",           "EN EL AIRE",           "EN VOL",                "飛行時間") }
+    var statsRecords:          String { t("PERSONAL RECORDS",     "REKORDY",               "RÉCORDS",              "RECORDS",               "記録") }
+    var statsLongestFlight:    String { t("LONGEST FLIGHT",       "NAJDŁUŻSZY LOT",        "VUELO MÁS LARGO",      "VOL LE PLUS LONG",      "最長フライト") }
+    var statsShortestFlight:   String { t("SHORTEST FLIGHT",      "NAJKRÓTSZY LOT",        "VUELO MÁS CORTO",      "VOL LE PLUS COURT",     "最短フライト") }
+    var statsFavorites:        String { t("YOUR FAVORITES",       "TWOJE ULUBIONE",        "TUS FAVORITOS",        "VOS FAVORIS",           "お気に入り") }
+    var statsTopAirline:       String { t("TOP AIRLINE",          "ULUBIONA LINIA",        "AEROLÍNEA TOP",        "COMPAGNIE PRÉFÉRÉE",    "よく使う航空会社") }
+    var statsTopAircraft:      String { t("TOP AIRCRAFT",         "ULUBIONY SAMOLOT",      "AERONAVE TOP",         "APPAREIL PRÉFÉRÉ",      "よく乗る機体") }
+    var statsFlyingStyle:      String { t("FLYING STYLE",         "STYL LATANIA",          "ESTILO DE VUELO",      "STYLE DE VOL",          "フライトスタイル") }
+    var statsClassBreakdown:   String { t("BY CLASS",             "KLASY",                 "POR CLASE",            "PAR CLASSE",            "クラス別") }
+    var statsSeatPreference:   String { t("SEAT PREFERENCE",      "PREFERENCJA MIEJSCA",   "PREFERENCIA ASIENTO",  "PRÉFÉRENCE SIÈGE",      "座席の好み") }
+    var statsWorldCoverage:    String { t("WORLD COVERAGE",       "ZASIĘG",                "COBERTURA MUNDIAL",    "COUVERTURE MONDIALE",   "世界カバレッジ") }
+    var statsContinents:       String { t("continents",           "kontynenty",            "continentes",          "continents",            "大陸") }
+    var statsFlightsCount:     String { t("flights",              "lotów",                 "vuelos",               "vols",                  "フライト") }
+    var statsHoursShort:       String { t("h",                    "g",                     "h",                    "h",                     "時間") }
 
     // MARK: - Hero subtitle
     func heroSubtitle(flights: Int, countries: Int) -> String {
@@ -227,5 +322,12 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var searchPromptTitle:    String { t("Search for an airport","Szukaj lotniska",  "Buscar aeropuerto", "Rechercher aéroport","空港を検索") }
     var searchPromptSub:      String { t("Type a city, country or IATA code.","Wpisz miasto, kraj lub kod IATA.","Escribe ciudad, país o código IATA.","Tapez ville, pays ou code IATA.","都市・国・IATAコードを入力") }
     var noAirportsFound:      String { t("No airports found",   "Nie znaleziono lotnisk","No se encontraron aeropuertos","Aucun aéroport trouvé","空港が見つかりません") }
-    var saveChangesButton:    String { t("Save Changes",        "Zapisz zmiany",    "Guardar cambios",   "Enregistrer les modifications","変更を保存") }
+    var saveChangesButton:         String { t("Save Changes",       "Zapisz zmiany",    "Guardar cambios",    "Enregistrer les modifications", "変更を保存") }
+    var autoFilledBadge:           String { t("auto-filled",         "auto-uzupełnione", "autocompletado",     "auto-rempli",                   "自動入力") }
+    var flightNumberLabel:         String { t("FLIGHT NO.",          "NR LOTU",          "N.° VUELO",          "N° DE VOL",                     "便名") }
+    var flightNumberPlaceholder:   String { t("e.g. LO273, FR1234…", "np. LO273, FR1234…","p.ej. IB3141…",      "ex. AF447…",                    "例：NH006…") }
+    var aircraftLabel:             String { t("AIRCRAFT",            "SAMOLOT",          "AERONAVE",           "APPAREIL",                      "機体") }
+    var aircraftPlaceholder:       String { t("Select aircraft…",    "Wybierz samolot…", "Seleccionar avión…", "Choisir l'appareil…",           "機体を選択…") }
+    var aircraftSearchPlaceholder: String { t("Search aircraft…",    "Szukaj samolotu…", "Buscar aeronave…",   "Rechercher appareil…",          "機体を検索…") }
+    var clearAircraft:             String { t("Clear selection",     "Wyczyść wybór",    "Borrar selección",   "Effacer la sélection",          "選択をクリア") }
 }

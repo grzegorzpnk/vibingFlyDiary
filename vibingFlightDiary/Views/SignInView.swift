@@ -25,7 +25,7 @@ struct SignInView: View {
                         .foregroundStyle(Color(hex: "#C9A96E"))
                         .shadow(color: Color(hex: "#C9A96E").opacity(0.4), radius: 24)
 
-                    Text("Flight Diary")
+                    Text("Flygram")
                         .font(.system(size: 34, weight: .bold, design: .serif))
                         .foregroundStyle(Color(hex: "#F0EEE8"))
 

@@ -321,7 +321,7 @@ struct MapFlightView: View {
             }
         }
         .sheet(item: $selectedFlight) { flight in
-            FlightDetailView(flight: flight, airportService: airportService, detents: [.fraction(0.6)])
+            FlightDetailView(flight: flight, airportService: airportService, detents: [.fraction(0.55), .large])
         }
     }
 

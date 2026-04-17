@@ -6,13 +6,15 @@ struct StatsView: View {
     @Environment(AirportService.self) private var airportService
     @Environment(LocalizationService.self) private var ls
 
+    @State private var animateCharts = false
+
     // MARK: - Computed Stats
 
     private var past: [Flight] { flights.filter { $0.date <= .now } }
-
+    private var upcoming: [Flight] { flights.filter { $0.date > .now } }
     private var totalKm: Double { past.reduce(0) { $0 + $1.distanceKm } }
-
     private var earthLaps: Double { totalKm / 40_075.0 }
+    private var moonTrips: Double { totalKm / 384_400.0 }
 
     private var totalHours: Int {
         Int(past.reduce(0.0) { $0 + ($1.distanceKm / 850.0 + 0.5) })
@@ -67,6 +69,126 @@ struct StatsView: View {
         }
     }
 
+    // MARK: - Flights Deep-Dive
+
+    private var flightsByYear: [(year: Int, count: Int)] {
+        let grouped = Dictionary(grouping: past) { Calendar.current.component(.year, from: $0.date) }
+        return grouped.map { ($0.key, $0.value.count) }.sorted { $0.0 < $1.0 }
+    }
+
+    private var busiestMonth: (name: String, count: Int)? {
+        let grouped = Dictionary(grouping: past) { Calendar.current.component(.month, from: $0.date) }
+        guard let best = grouped.max(by: { $0.value.count < $1.value.count }) else { return nil }
+        return (Calendar.current.monthSymbols[best.key - 1], best.value.count)
+    }
+
+    private var avgPerMonth: Double {
+        guard past.count > 1,
+              let first = past.min(by: { $0.date < $1.date }),
+              let last  = past.max(by: { $0.date < $1.date }) else { return Double(past.count) }
+        let months = max(1, Calendar.current.dateComponents([.month], from: first.date, to: last.date).month ?? 1)
+        return Double(past.count) / Double(months)
+    }
+
+    private var avgPerYear: Double {
+        guard past.count > 1,
+              let first = past.min(by: { $0.date < $1.date }),
+              let last  = past.max(by: { $0.date < $1.date }) else { return Double(past.count) }
+        let years = Calendar.current.dateComponents([.year], from: first.date, to: last.date).year ?? 0
+        return years > 0 ? Double(past.count) / Double(years) : Double(past.count)
+    }
+
+    private var longestStreak: Int {
+        let cal = Calendar.current
+        let monthKeys = Set(past.map { f -> String in
+            let c = cal.dateComponents([.year, .month], from: f.date)
+            return "\(c.year!)-\(String(format: "%02d", c.month!))"
+        }).sorted()
+        let dates: [Date] = monthKeys.compactMap { s in
+            let parts = s.split(separator: "-")
+            guard parts.count == 2, let y = Int(parts[0]), let m = Int(parts[1]) else { return nil }
+            return cal.date(from: DateComponents(year: y, month: m, day: 1))
+        }
+        guard !dates.isEmpty else { return 0 }
+        var maxS = 1, cur = 1
+        for i in 1..<dates.count {
+            let diff = cal.dateComponents([.month], from: dates[i - 1], to: dates[i]).month ?? 0
+            cur = diff == 1 ? cur + 1 : 1
+            maxS = max(maxS, cur)
+        }
+        return maxS
+    }
+
+    // MARK: - Countries Deep-Dive
+
+    private var countryFlagPairs: [(iso: String, flag: String)] {
+        visitedCountries.sorted().compactMap { iso -> (String, String)? in
+            let flag = iso.uppercased().unicodeScalars
+                .compactMap { UnicodeScalar(127397 + $0.value) }
+                .reduce("") { $0 + String($1) }
+            return flag.isEmpty ? nil : (iso, flag)
+        }
+    }
+
+    private var continentBreakdown: [(continent: String, count: Int)] {
+        var counts: [String: Int] = [:]
+        for iso in visitedCountries {
+            if let continent = Self.continentMap[iso] { counts[continent, default: 0] += 1 }
+        }
+        return counts.map { ($0.key, $0.value) }.sorted { $0.count > $1.count }
+    }
+
+    private var topCountries: [(iso: String, flag: String, name: String, count: Int)] {
+        var counts: [String: Int] = [:]
+        for f in past {
+            if let o = airportService.airport(for: f.originIATA)      { counts[o.country, default: 0] += 1 }
+            if let d = airportService.airport(for: f.destinationIATA) { counts[d.country, default: 0] += 1 }
+        }
+        let locale = Locale(identifier: ls.language.rawValue)
+        return counts.sorted { $0.value > $1.value }
+            .prefix(5)
+            .compactMap { iso, count -> (String, String, String, Int)? in
+                let flag = iso.uppercased().unicodeScalars
+                    .compactMap { UnicodeScalar(127397 + $0.value) }
+                    .reduce("") { $0 + String($1) }
+                let name = locale.localizedString(forRegionCode: iso) ?? iso
+                return (iso, flag, name, count)
+            }
+    }
+
+    private var totalCountries: Int { CountryShapeService.shared.shapes.count }
+    private var countryProgress: Double {
+        totalCountries > 0 ? Double(visitedCountries.count) / Double(totalCountries) : 0
+    }
+
+    // MARK: - Airports Deep-Dive
+
+    private var topAirportsList: [(airport: Airport, count: Int)] {
+        var counts: [String: Int] = [:]
+        for f in past {
+            counts[f.originIATA, default: 0] += 1
+            counts[f.destinationIATA, default: 0] += 1
+        }
+        return counts.sorted { $0.value > $1.value }
+            .prefix(8)
+            .compactMap { iata, count in airportService.airport(for: iata).map { ($0, count) } }
+    }
+
+    // MARK: - Hours Deep-Dive
+
+    private var avgHoursPerFlight: Double {
+        guard !past.isEmpty else { return 0 }
+        return Double(totalHours) / Double(past.count)
+    }
+
+    private var hoursByYear: [(year: Int, hours: Int)] {
+        let grouped = Dictionary(grouping: past) { Calendar.current.component(.year, from: $0.date) }
+        return grouped.map { year, flights in
+            let h = Int(flights.reduce(0.0) { $0 + ($1.distanceKm / 850.0 + 0.5) })
+            return (year, h)
+        }.sorted { $0.year < $1.year }
+    }
+
     // MARK: - Body
 
     var body: some View {
@@ -87,11 +209,29 @@ struct StatsView: View {
                             flyingStyleSection
                         }
                         worldSection
+
+                        deepDiveDivider(ls.statsFlightsLabel)
+                        flightsDeepSection
+
+                        deepDiveDivider(ls.statsCountriesLabel)
+                        countriesDeepSection
+
+                        deepDiveDivider(ls.statsAirportsLabel)
+                        airportsDeepSection
+
+                        deepDiveDivider(ls.statsInTheAir)
+                        hoursDeepSection
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
                     .padding(.bottom, 110)
                 }
+                .onAppear {
+                    withAnimation(.spring(response: 0.7, dampingFraction: 0.82).delay(0.15)) {
+                        animateCharts = true
+                    }
+                }
+                .onDisappear { animateCharts = false }
             }
         }
     }
@@ -100,7 +240,6 @@ struct StatsView: View {
 
     private var heroCard: some View {
         ZStack(alignment: .bottomLeading) {
-            // Deep navy→purple gradient (from inspiration)
             LinearGradient(
                 colors: [
                     Color(hex: "0d1a2a"),
@@ -111,7 +250,6 @@ struct StatsView: View {
                 endPoint: .bottomTrailing
             )
 
-            // Blue glow ellipse (earth glow from inspiration)
             Ellipse()
                 .fill(RadialGradient(
                     colors: [Color(hex: "4A7FA5").opacity(0.3), .clear],
@@ -121,7 +259,6 @@ struct StatsView: View {
                 .offset(x: 60, y: 30)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
 
-            // Content
             VStack(alignment: .leading, spacing: 0) {
                 Text(ls.statsYourJourney)
                     .font(FDFont.ui(11, weight: .medium))
@@ -129,7 +266,6 @@ struct StatsView: View {
                     .tracking(2)
                     .padding(.bottom, 14)
 
-                // Big distance in gold
                 HStack(alignment: .lastTextBaseline, spacing: 8) {
                     Text(ls.distanceUnit == .miles
                          ? Int(totalKm * 0.621371).formatted()
@@ -203,6 +339,7 @@ struct StatsView: View {
                 .font(FDFont.ui(10, weight: .medium))
                 .foregroundStyle(FDColor.textMuted)
                 .tracking(1.5)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -210,7 +347,6 @@ struct StatsView: View {
             ZStack(alignment: .topLeading) {
                 FDColor.surface2
                 if highlight {
-                    // Subtle gold top-left glow
                     RadialGradient(
                         colors: [FDColor.gold.opacity(0.08), .clear],
                         center: .topLeading, startRadius: 0, endRadius: 80
@@ -244,7 +380,6 @@ struct StatsView: View {
         let dest   = airportService.airport(for: flight.destinationIATA)
 
         return HStack(spacing: 0) {
-            // Left accent strip (boarding-pass style)
             accentColor
                 .frame(width: 4)
                 .clipShape(RoundedRectangle(cornerRadius: 2))
@@ -257,7 +392,6 @@ struct StatsView: View {
                     .foregroundStyle(FDColor.textDim)
                     .tracking(1.5)
 
-                // Route
                 HStack(alignment: .center) {
                     VStack(alignment: .leading, spacing: 3) {
                         Text(flight.originIATA)
@@ -269,7 +403,6 @@ struct StatsView: View {
                             .lineLimit(1)
                     }
                     Spacer()
-                    // Route line with plane
                     HStack(spacing: 0) {
                         Rectangle()
                             .fill(LinearGradient(colors: [FDColor.border, accentColor.opacity(0.5)], startPoint: .leading, endPoint: .center))
@@ -295,7 +428,6 @@ struct StatsView: View {
                     }
                 }
 
-                // Meta row
                 HStack(spacing: 0) {
                     Text(ls.formatDistance(flight.distanceKm))
                         .font(FDFont.ui(13, weight: .semibold))
@@ -346,7 +478,6 @@ struct StatsView: View {
 
     private func favoriteCard(label: String, icon: String, value: String, count: Int, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Icon badge
             Image(systemName: icon)
                 .font(.system(size: 18, weight: .medium))
                 .foregroundStyle(color)
@@ -395,7 +526,6 @@ struct StatsView: View {
     private var flyingStyleSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionHeader(ls.statsFlyingStyle)
-
             if !classBreakdown.isEmpty {
                 styleBreakdownCard(
                     title: ls.statsClassBreakdown,
@@ -439,7 +569,6 @@ struct StatsView: View {
                             .foregroundStyle(FDColor.text)
                             .frame(width: 88, alignment: .leading)
 
-                        // Gradient bar
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
                                 RoundedRectangle(cornerRadius: 4)
@@ -480,16 +609,12 @@ struct StatsView: View {
             sectionHeader(ls.statsWorldCoverage)
 
             ZStack(alignment: .bottomTrailing) {
-                // Background with blue glow
                 FDColor.surface2
-
                 RadialGradient(
                     colors: [Color(hex: "4A7FA5").opacity(0.12), .clear],
                     center: .bottomTrailing, startRadius: 0, endRadius: 160
                 )
-
                 VStack(alignment: .leading, spacing: 16) {
-                    // Big counts
                     HStack(spacing: 20) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("\(visitedContinents.count)")
@@ -500,9 +625,7 @@ struct StatsView: View {
                                 .foregroundStyle(FDColor.textDim)
                                 .tracking(1.5)
                         }
-                        Rectangle()
-                            .fill(FDColor.border)
-                            .frame(width: 1, height: 36)
+                        Rectangle().fill(FDColor.border).frame(width: 1, height: 36)
                         VStack(alignment: .leading, spacing: 4) {
                             Text("\(visitedCountries.count)")
                                 .font(FDFont.display(28, weight: .semibold))
@@ -513,20 +636,15 @@ struct StatsView: View {
                                 .tracking(1.5)
                         }
                     }
-
-                    // Flag strip
                     if !countryFlags.isEmpty {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 6) {
                                 ForEach(countryFlags, id: \.self) { flag in
-                                    Text(flag)
-                                        .font(.system(size: 22))
+                                    Text(flag).font(.system(size: 22))
                                 }
                             }
                         }
                     }
-
-                    // Continent tags — blue accent
                     FlowLayout(spacing: 8) {
                         ForEach(visitedContinents.sorted(), id: \.self) { continent in
                             Text(continent)
@@ -547,6 +665,441 @@ struct StatsView: View {
         }
     }
 
+    // MARK: - Deep-Dive: Flights
+
+    private var flightsDeepSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .lastTextBaseline, spacing: 14) {
+                Text("\(past.count)")
+                    .font(FDFont.display(56, weight: .bold))
+                    .foregroundStyle(FDColor.text)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(ls.flightsLogged)
+                        .font(FDFont.ui(14))
+                        .foregroundStyle(FDColor.textMuted)
+                    if !upcoming.isEmpty {
+                        Text(ls.upcomingBadge(upcoming.count))
+                            .font(FDFont.ui(11, weight: .medium))
+                            .foregroundStyle(FDColor.gold)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(FDColor.gold.opacity(0.12))
+                            .overlay(Capsule().stroke(FDColor.gold.opacity(0.3), lineWidth: 1))
+                            .clipShape(Capsule())
+                    }
+                }
+            }
+
+            if !flightsByYear.isEmpty {
+                let maxCount = flightsByYear.map(\.count).max() ?? 1
+                VStack(alignment: .leading, spacing: 14) {
+                    sectionHeader(ls.statsFlightsPerYear)
+                    VStack(spacing: 10) {
+                        ForEach(Array(flightsByYear.enumerated()), id: \.offset) { idx, item in
+                            HStack(spacing: 12) {
+                                Text("\(item.year)")
+                                    .font(FDFont.ui(12, weight: .medium))
+                                    .foregroundStyle(FDColor.textMuted)
+                                    .frame(width: 42, alignment: .leading)
+                                GeometryReader { geo in
+                                    ZStack(alignment: .leading) {
+                                        RoundedRectangle(cornerRadius: 6).fill(FDColor.surface3).frame(height: 34)
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .fill(LinearGradient(
+                                                colors: [FDColor.gold, FDColor.gold.opacity(0.5)],
+                                                startPoint: .leading, endPoint: .trailing
+                                            ))
+                                            .frame(
+                                                width: animateCharts
+                                                    ? max(34, geo.size.width * CGFloat(item.count) / CGFloat(maxCount))
+                                                    : 0,
+                                                height: 34
+                                            )
+                                            .animation(.spring(response: 0.65, dampingFraction: 0.82).delay(Double(idx) * 0.08), value: animateCharts)
+                                        Text("\(item.count)")
+                                            .font(FDFont.ui(12, weight: .semibold))
+                                            .foregroundStyle(FDColor.black)
+                                            .padding(.leading, 12)
+                                            .opacity(animateCharts ? 1 : 0)
+                                            .animation(.easeIn(duration: 0.2).delay(Double(idx) * 0.08 + 0.35), value: animateCharts)
+                                    }
+                                }
+                                .frame(height: 34)
+                            }
+                        }
+                    }
+                    .padding(20)
+                    .background(FDColor.surface2)
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 14) {
+                sectionHeader(ls.statsYourPace)
+                HStack(spacing: 12) {
+                    paceCell(value: String(format: "%.1f", avgPerMonth), label: ls.statsAvgMonth)
+                    paceCell(value: String(format: "%.0f", avgPerYear),  label: ls.statsAvgYear)
+                }
+            }
+
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 8) {
+                    sectionHeader(ls.statsBusiestMonth)
+                    if let m = busiestMonth {
+                        Text(m.name)
+                            .font(FDFont.display(20, weight: .bold))
+                            .foregroundStyle(FDColor.gold)
+                            .lineLimit(1).minimumScaleFactor(0.7)
+                        Text("\(m.count) \(ls.statsFlightsCount)")
+                            .font(FDFont.ui(12)).foregroundStyle(FDColor.textMuted)
+                    } else {
+                        Text("—").font(FDFont.display(20, weight: .bold)).foregroundStyle(FDColor.textDim)
+                    }
+                }
+                .padding(20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(FDColor.surface2)
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                VStack(alignment: .leading, spacing: 8) {
+                    sectionHeader(ls.statsMonthStreak)
+                    HStack(alignment: .lastTextBaseline, spacing: 4) {
+                        Text("\(longestStreak)")
+                            .font(FDFont.display(20, weight: .bold)).foregroundStyle(FDColor.blue)
+                        Text(ls.statsMonthShort)
+                            .font(FDFont.ui(12)).foregroundStyle(FDColor.textMuted)
+                    }
+                    Text(ls.statsConsecutive)
+                        .font(FDFont.ui(12)).foregroundStyle(FDColor.textMuted)
+                }
+                .padding(20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(FDColor.surface2)
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+            }
+        }
+    }
+
+    private func paceCell(value: String, label: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(value)
+                .font(FDFont.display(28, weight: .semibold))
+                .foregroundStyle(FDColor.text)
+                .lineLimit(1).minimumScaleFactor(0.7)
+            Text(label)
+                .font(FDFont.ui(10, weight: .medium))
+                .foregroundStyle(FDColor.textMuted)
+                .tracking(1.2)
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(FDColor.surface2)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    // MARK: - Deep-Dive: Countries
+
+    private var countriesDeepSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .lastTextBaseline, spacing: 14) {
+                    Text("\(visitedCountries.count)")
+                        .font(FDFont.display(56, weight: .bold))
+                        .foregroundStyle(FDColor.text)
+                    Text(ls.countriesVisited)
+                        .font(FDFont.ui(14)).foregroundStyle(FDColor.textMuted)
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Capsule().fill(FDColor.surface2).frame(height: 6)
+                            Capsule()
+                                .fill(LinearGradient(
+                                    colors: [FDColor.gold, FDColor.gold.opacity(0.5)],
+                                    startPoint: .leading, endPoint: .trailing
+                                ))
+                                .frame(width: animateCharts ? geo.size.width * countryProgress : 0, height: 6)
+                                .animation(.spring(response: 0.8, dampingFraction: 0.8).delay(0.1), value: animateCharts)
+                        }
+                    }
+                    .frame(height: 6)
+                    Text(ls.ofCountries(totalCountries))
+                        .font(FDFont.ui(11)).foregroundStyle(FDColor.textDim)
+                }
+                .padding(.top, 4)
+            }
+
+            if !countryFlagPairs.isEmpty {
+                VStack(alignment: .leading, spacing: 14) {
+                    sectionHeader(ls.statsAllFlags)
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 38, maximum: 48))], spacing: 10) {
+                        ForEach(countryFlagPairs, id: \.iso) { item in
+                            Text(item.flag).font(.system(size: 28))
+                        }
+                    }
+                    .padding(16)
+                    .background(FDColor.surface2)
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+            }
+
+            if !continentBreakdown.isEmpty {
+                let maxCount = continentBreakdown.map(\.count).max() ?? 1
+                VStack(alignment: .leading, spacing: 14) {
+                    sectionHeader(ls.statsByContinent)
+                    VStack(spacing: 10) {
+                        ForEach(Array(continentBreakdown.enumerated()), id: \.offset) { idx, item in
+                            HStack(spacing: 12) {
+                                Text(item.continent)
+                                    .font(FDFont.ui(12, weight: .medium))
+                                    .foregroundStyle(FDColor.textMuted)
+                                    .frame(width: 80, alignment: .leading)
+                                    .lineLimit(1).minimumScaleFactor(0.7)
+                                GeometryReader { geo in
+                                    ZStack(alignment: .leading) {
+                                        RoundedRectangle(cornerRadius: 6).fill(FDColor.surface3).frame(height: 30)
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .fill(LinearGradient(
+                                                colors: [FDColor.gold, FDColor.gold.opacity(0.5)],
+                                                startPoint: .leading, endPoint: .trailing
+                                            ))
+                                            .frame(
+                                                width: animateCharts
+                                                    ? max(30, geo.size.width * CGFloat(item.count) / CGFloat(maxCount))
+                                                    : 0,
+                                                height: 30
+                                            )
+                                            .animation(.spring(response: 0.65, dampingFraction: 0.82).delay(Double(idx) * 0.08), value: animateCharts)
+                                        Text("\(item.count)")
+                                            .font(FDFont.ui(12, weight: .semibold))
+                                            .foregroundStyle(FDColor.black)
+                                            .padding(.leading, 10)
+                                            .opacity(animateCharts ? 1 : 0)
+                                            .animation(.easeIn(duration: 0.2).delay(Double(idx) * 0.08 + 0.35), value: animateCharts)
+                                    }
+                                }
+                                .frame(height: 30)
+                            }
+                        }
+                    }
+                    .padding(20)
+                    .background(FDColor.surface2)
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+            }
+
+            if !topCountries.isEmpty {
+                VStack(alignment: .leading, spacing: 14) {
+                    sectionHeader(ls.statsMostVisited)
+                    VStack(spacing: 0) {
+                        ForEach(Array(topCountries.enumerated()), id: \.offset) { idx, item in
+                            if idx > 0 {
+                                Rectangle().fill(FDColor.border).frame(height: 1).padding(.leading, 56)
+                            }
+                            HStack(spacing: 14) {
+                                Text(item.flag).font(.system(size: 26)).frame(width: 38)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(item.name)
+                                        .font(FDFont.ui(14, weight: .medium))
+                                        .foregroundStyle(FDColor.text).lineLimit(1)
+                                    Text("\(item.count) \(ls.statsFlightsCount)")
+                                        .font(FDFont.ui(11)).foregroundStyle(FDColor.textMuted)
+                                }
+                                Spacer()
+                                Text("#\(idx + 1)")
+                                    .font(FDFont.ui(11, weight: .medium))
+                                    .foregroundStyle(idx == 0 ? FDColor.gold : FDColor.textDim)
+                                    .padding(.horizontal, 8).padding(.vertical, 4)
+                                    .background(idx == 0 ? FDColor.gold.opacity(0.12) : FDColor.surface3)
+                                    .clipShape(Capsule())
+                            }
+                            .padding(.horizontal, 16).padding(.vertical, 14)
+                        }
+                    }
+                    .background(FDColor.surface2)
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+            }
+        }
+    }
+
+    // MARK: - Deep-Dive: Airports
+
+    private var airportsDeepSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .lastTextBaseline, spacing: 14) {
+                Text("\(visitedAirports.count)")
+                    .font(FDFont.display(56, weight: .bold))
+                    .foregroundStyle(FDColor.text)
+                Text(ls.airportsVisited)
+                    .font(FDFont.ui(14)).foregroundStyle(FDColor.textMuted)
+            }
+
+            if !topAirportsList.isEmpty {
+                let maxCount = topAirportsList.map(\.count).max() ?? 1
+                VStack(alignment: .leading, spacing: 14) {
+                    sectionHeader(ls.statsTopAirports)
+                    VStack(spacing: 12) {
+                        ForEach(Array(topAirportsList.enumerated()), id: \.offset) { idx, item in
+                            HStack(spacing: 12) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    HStack(spacing: 5) {
+                                        Text(item.airport.flagEmoji).font(.system(size: 13))
+                                        Text(item.airport.iata)
+                                            .font(FDFont.display(14, weight: .bold))
+                                            .foregroundStyle(FDColor.gold)
+                                    }
+                                    Text(item.airport.city)
+                                        .font(FDFont.ui(9)).foregroundStyle(FDColor.textDim).lineLimit(1)
+                                }
+                                .frame(width: 72, alignment: .leading)
+
+                                GeometryReader { geo in
+                                    ZStack(alignment: .leading) {
+                                        RoundedRectangle(cornerRadius: 6).fill(FDColor.surface3).frame(height: 30)
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .fill(LinearGradient(
+                                                colors: [FDColor.gold, FDColor.gold.opacity(0.5)],
+                                                startPoint: .leading, endPoint: .trailing
+                                            ))
+                                            .frame(
+                                                width: animateCharts
+                                                    ? max(30, geo.size.width * CGFloat(item.count) / CGFloat(maxCount))
+                                                    : 0,
+                                                height: 30
+                                            )
+                                            .animation(.spring(response: 0.65, dampingFraction: 0.82).delay(Double(idx) * 0.07), value: animateCharts)
+                                        Text("\(item.count)")
+                                            .font(FDFont.ui(11, weight: .semibold))
+                                            .foregroundStyle(FDColor.black)
+                                            .padding(.leading, 10)
+                                            .opacity(animateCharts ? 1 : 0)
+                                            .animation(.easeIn(duration: 0.2).delay(Double(idx) * 0.07 + 0.3), value: animateCharts)
+                                    }
+                                }
+                                .frame(height: 30)
+                            }
+                        }
+                    }
+                    .padding(20)
+                    .background(FDColor.surface2)
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+            }
+        }
+    }
+
+    // MARK: - Deep-Dive: Hours
+
+    private var hoursDeepSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .lastTextBaseline, spacing: 6) {
+                Text("\(totalHours)")
+                    .font(FDFont.display(56, weight: .bold)).foregroundStyle(FDColor.text)
+                Text(ls.statsHoursShort)
+                    .font(FDFont.display(28, weight: .bold)).foregroundStyle(FDColor.textMuted)
+            }
+            Text(ls.hoursInTheAir)
+                .font(FDFont.ui(14)).foregroundStyle(FDColor.textMuted)
+
+            VStack(alignment: .leading, spacing: 14) {
+                sectionHeader(ls.statsDistanceFacts)
+                HStack(spacing: 12) {
+                    funCard(emoji: "🌍", value: String(format: "%.1f×", earthLaps), label: ls.statsAroundEarth)
+                    funCard(emoji: "🌙", value: String(format: "%.2f×", moonTrips), label: ls.statsMoonTrip)
+                }
+            }
+
+            if !hoursByYear.isEmpty {
+                let maxHours = hoursByYear.map(\.hours).max() ?? 1
+                VStack(alignment: .leading, spacing: 14) {
+                    sectionHeader(ls.statsHoursPerYear)
+                    VStack(spacing: 10) {
+                        ForEach(Array(hoursByYear.enumerated()), id: \.offset) { idx, item in
+                            HStack(spacing: 12) {
+                                Text("\(item.year)")
+                                    .font(FDFont.ui(12, weight: .medium))
+                                    .foregroundStyle(FDColor.textMuted)
+                                    .frame(width: 42, alignment: .leading)
+                                GeometryReader { geo in
+                                    ZStack(alignment: .leading) {
+                                        RoundedRectangle(cornerRadius: 6).fill(FDColor.surface3).frame(height: 34)
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .fill(LinearGradient(
+                                                colors: [FDColor.blue, FDColor.blue.opacity(0.5)],
+                                                startPoint: .leading, endPoint: .trailing
+                                            ))
+                                            .frame(
+                                                width: animateCharts
+                                                    ? max(34, geo.size.width * CGFloat(item.hours) / CGFloat(maxHours))
+                                                    : 0,
+                                                height: 34
+                                            )
+                                            .animation(.spring(response: 0.65, dampingFraction: 0.82).delay(Double(idx) * 0.08), value: animateCharts)
+                                        Text("\(item.hours)\(ls.statsHoursShort)")
+                                            .font(FDFont.ui(11, weight: .semibold))
+                                            .foregroundStyle(Color.white.opacity(0.9))
+                                            .padding(.leading, 10)
+                                            .opacity(animateCharts ? 1 : 0)
+                                            .animation(.easeIn(duration: 0.2).delay(Double(idx) * 0.08 + 0.35), value: animateCharts)
+                                    }
+                                }
+                                .frame(height: 34)
+                            }
+                        }
+                    }
+                    .padding(20)
+                    .background(FDColor.surface2)
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 14) {
+                sectionHeader(ls.statsAvgPerFlight)
+                HStack(alignment: .lastTextBaseline, spacing: 6) {
+                    Text(String(format: "%.1f", avgHoursPerFlight))
+                        .font(FDFont.display(28, weight: .semibold)).foregroundStyle(FDColor.text)
+                    Text(ls.statsHoursShort)
+                        .font(FDFont.ui(16)).foregroundStyle(FDColor.textMuted)
+                }
+                .padding(20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(FDColor.surface2)
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+            }
+        }
+    }
+
+    private func funCard(emoji: String, value: String, label: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(emoji).font(.system(size: 28))
+            Text(value)
+                .font(FDFont.display(22, weight: .bold))
+                .foregroundStyle(FDColor.gold)
+                .lineLimit(1).minimumScaleFactor(0.6)
+            Text(label)
+                .font(FDFont.ui(10, weight: .medium))
+                .foregroundStyle(FDColor.textMuted)
+                .tracking(0.5).lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(FDColor.surface2)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
     // MARK: - Empty State
 
     private var emptyState: some View {
@@ -555,15 +1108,25 @@ struct StatsView: View {
                 .font(.system(size: 36, weight: .light))
                 .foregroundStyle(FDColor.gold.opacity(0.5))
             Text(ls.tabStats)
-                .font(FDFont.display(22, weight: .bold))
-                .foregroundStyle(FDColor.text)
+                .font(FDFont.display(22, weight: .bold)).foregroundStyle(FDColor.text)
             Text(ls.statsComingSoon)
-                .font(FDFont.ui(13))
-                .foregroundStyle(FDColor.textMuted)
+                .font(FDFont.ui(13)).foregroundStyle(FDColor.textMuted)
         }
     }
 
     // MARK: - Helpers
+
+    private func deepDiveDivider(_ title: String) -> some View {
+        HStack(spacing: 12) {
+            Rectangle().fill(FDColor.border).frame(height: 1)
+            Text(title.uppercased())
+                .font(FDFont.ui(10, weight: .semibold))
+                .foregroundStyle(FDColor.textDim)
+                .tracking(2).lineLimit(1).fixedSize()
+            Rectangle().fill(FDColor.border).frame(height: 1)
+        }
+        .padding(.top, 8)
+    }
 
     private func sectionHeader(_ title: String) -> some View {
         HStack(spacing: 8) {
@@ -594,13 +1157,13 @@ struct StatsView: View {
                   "EE","IS","AL","MK","BA","ME","MT","CY","MD","UA","BY","RU","TR"] { m[c] = "Europe" }
         for c in ["JP","CN","IN","SG","TH","MY","ID","PH","VN","KR","HK","TW","AE","SA",
                   "QA","KW","BH","OM","IL","JO","LB","IQ","IR","PK","BD","LK","NP","MM",
-                  "KH","LA","MN","KZ","UZ","GE","AM","AZ","MV","BT","TM","TJ","KG"] { m[c] = "Asia" }
+                  "KH","LA","MN","KZ","UZ","GE","AM","AZ","MV","BT","TM","TJ","KG"]        { m[c] = "Asia" }
         for c in ["US","CA","MX","BR","AR","CL","CO","PE","VE","EC","BO","PY","UY","GY",
                   "SR","CU","DO","PR","JM","TT","HT","GT","HN","SV","NI","CR","PA","BS",
-                  "BB","BZ","LC","VC","GD","AG","DM","KN"] { m[c] = "Americas" }
+                  "BB","BZ","LC","VC","GD","AG","DM","KN"]                                  { m[c] = "Americas" }
         for c in ["ZA","EG","MA","TN","DZ","NG","KE","ET","TZ","GH","SN","CI","CM","AO",
-                  "MZ","ZM","ZW","MU","RW","UG","LY","SD","SO","MG","BW"] { m[c] = "Africa" }
-        for c in ["AU","NZ","FJ","PG","SB","VU","WS","TO","NR","KI"]       { m[c] = "Oceania" }
+                  "MZ","ZM","ZW","MU","RW","UG","LY","SD","SO","MG","BW"]                   { m[c] = "Africa" }
+        for c in ["AU","NZ","FJ","PG","SB","VU","WS","TO","NR","KI"]                        { m[c] = "Oceania" }
         return m
     }()
 }

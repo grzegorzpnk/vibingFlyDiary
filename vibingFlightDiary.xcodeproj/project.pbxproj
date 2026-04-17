@@ -29,7 +29,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		34C158A62F7ECF59001AE5BE /* vibingFlightDiary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = vibingFlightDiary.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		34C158A62F7ECF59001AE5BE /* Flygram.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flygram.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		34C158B62F7ECF5A001AE5BE /* vibingFlightDiaryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = vibingFlightDiaryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		34C158C02F7ECF5A001AE5BE /* vibingFlightDiaryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = vibingFlightDiaryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -100,7 +100,7 @@
 		34C158A72F7ECF59001AE5BE /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				34C158A62F7ECF59001AE5BE /* vibingFlightDiary.app */,
+				34C158A62F7ECF59001AE5BE /* Flygram.app */,
 				34C158B62F7ECF5A001AE5BE /* vibingFlightDiaryTests.xctest */,
 				34C158C02F7ECF5A001AE5BE /* vibingFlightDiaryUITests.xctest */,
 			);
@@ -131,7 +131,7 @@
 				340DA4C62F91A678000C117D /* GoogleSignInSwift */,
 			);
 			productName = vibingFlightDiary;
-			productReference = 34C158A62F7ECF59001AE5BE /* vibingFlightDiary.app */;
+			productReference = 34C158A62F7ECF59001AE5BE /* Flygram.app */;
 			productType = "com.apple.product-type.application";
 		};
 		34C158B52F7ECF5A001AE5BE /* vibingFlightDiaryTests */ = {
@@ -430,8 +430,8 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = enso.vibingFlightDiary;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = enso.Flygram;
+				PRODUCT_NAME = Flygram;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -461,8 +461,8 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = enso.vibingFlightDiary;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = enso.Flygram;
+				PRODUCT_NAME = Flygram;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

@@ -253,6 +253,54 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var statsFlightsCount:     String { t("flights",              "lotów",                 "vuelos",               "vols",                  "フライト") }
     var statsHoursShort:       String { t("h",                    "g",                     "h",                    "h",                     "時間") }
 
+    // MARK: - Flights Detail Sheet
+    var flightsLogged:         String { t("flights logged",        "lotów zarejestrowanych", "vuelos registrados",    "vols enregistrés",      "フライト記録") }
+    var statsFlightsPerYear:   String { t("FLIGHTS PER YEAR",      "LOTY W ROKU",            "VUELOS POR AÑO",        "VOLS PAR AN",           "年別フライト") }
+    var statsYourPace:         String { t("YOUR PACE",             "TWOJE TEMPO",            "TU RITMO",              "VOTRE CADENCE",         "ペース") }
+    var statsAvgMonth:         String { t("avg / month",           "śr. / mies.",            "prom. / mes",           "moy. / mois",           "平均 / 月") }
+    var statsAvgYear:          String { t("avg / year",            "śr. / rok",              "prom. / año",           "moy. / an",             "平均 / 年") }
+    var statsBusiestMonth:     String { t("BUSIEST MONTH",         "NAJRUCHLIWSZY MIESIĄC",  "MES MÁS ACTIVO",        "MOIS LE PLUS ACTIF",    "最多フライト月") }
+    var statsMonthStreak:      String { t("MONTH STREAK",          "SERIA MIESIĘCY",         "RACHA MENSUAL",         "SÉRIE MENSUELLE",       "月間連続記録") }
+    var statsConsecutive:      String { t("consecutive",           "kolejnych",              "consecutivos",          "consécutifs",           "連続") }
+    var statsMonthShort:       String { t("mo",                    "mies.",                  "mes",                   "mois",                  "ヶ月") }
+
+    func upcomingBadge(_ n: Int) -> String {
+        switch language {
+        case .english:  return "+ \(n) upcoming"
+        case .polish:   return "+ \(n) nadchodzące"
+        case .spanish:  return "+ \(n) próximos"
+        case .french:   return "+ \(n) à venir"
+        case .japanese: return "+ \(n) 予定"
+        }
+    }
+
+    // MARK: - Countries Detail Sheet
+    var countriesVisited:   String { t("countries visited",  "odwiedzone kraje",     "países visitados",    "pays visités",         "訪問国") }
+    var statsAllFlags:      String { t("ALL FLAGS",          "WSZYSTKIE FLAGI",      "TODAS LAS BANDERAS",  "TOUS LES DRAPEAUX",    "すべての国旗") }
+    var statsByContinent:   String { t("BY CONTINENT",       "WG KONTYNENTU",        "POR CONTINENTE",      "PAR CONTINENT",        "大陸別") }
+    var statsMostVisited:   String { t("MOST VISITED",       "NAJCZĘŚCIEJ ODWIEDZANE","MÁS VISITADOS",      "PLUS VISITÉS",         "最多訪問") }
+
+    // Airports Detail Sheet
+    var airportsVisited:     String { t("airports visited",    "odwiedzone lotniska",    "aeropuertos visitados",    "aéroports visités",       "訪問空港") }
+    var statsTopAirports:    String { t("TOP AIRPORTS",        "GŁÓWNE LOTNISKA",        "PRINCIPALES AEROPUERTOS",  "PRINCIPAUX AÉROPORTS",    "主要空港") }
+
+    // Hours Detail Sheet
+    var hoursInTheAir:       String { t("hours in the air",    "godzin w powietrzu",     "horas en el aire",         "heures en vol",            "飛行時間") }
+    var statsHoursPerYear:   String { t("HOURS PER YEAR",      "GODZINY W ROKU",         "HORAS POR AÑO",            "HEURES PAR AN",            "年別時間") }
+    var statsAvgPerFlight:   String { t("AVG PER FLIGHT",      "ŚR. NA LOT",             "PROM. POR VUELO",          "MOY. PAR VOL",             "便あたり平均") }
+    var statsDistanceFacts:  String { t("DISTANCE FACTS",      "CIEKAWOSTKI",            "DATOS DE DISTANCIA",       "DONNÉES DISTANCE",         "距離データ") }
+    var statsMoonTrip:       String { t("to the Moon",         "do Księżyca",            "a la Luna",                "vers la Lune",             "月への距離") }
+
+    func ofCountries(_ n: Int) -> String {
+        switch language {
+        case .english:  return "of \(n) countries"
+        case .polish:   return "z \(n) krajów"
+        case .spanish:  return "de \(n) países"
+        case .french:   return "sur \(n) pays"
+        case .japanese: return "\(n)カ国中"
+        }
+    }
+
     // MARK: - Hero subtitle
     func heroSubtitle(flights: Int, countries: Int) -> String {
         switch language {

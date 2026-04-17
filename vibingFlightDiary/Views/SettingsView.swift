@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(LocalizationService.self) private var ls
+    @Environment(AuthService.self) private var auth
 
     @State private var languageExpanded = false
     @State private var themeExpanded = false
@@ -112,13 +113,31 @@ struct SettingsView: View {
 
                         // Account section
                         settingsSection(title: ls.accountSection) {
-                            settingsRow(icon: "person.fill", label: ls.profileRow) {
-                                comingSoonBadge
+                            settingsRow(icon: "person.circle.fill", label: auth.userProfile?.displayName ?? "Traveler") {
+                                if let email = auth.userProfile?.email {
+                                    Text(email)
+                                        .font(FDFont.ui(12))
+                                        .foregroundStyle(FDColor.textMuted)
+                                }
                             }
                             settingsDivider
-                            settingsRow(icon: "icloud.fill", label: ls.syncRow) {
-                                comingSoonBadge
+                            Button {
+                                auth.signOut()
+                            } label: {
+                                HStack(spacing: 14) {
+                                    Image(systemName: "rectangle.portrait.and.arrow.right")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundStyle(.red.opacity(0.8))
+                                        .frame(width: 24)
+                                    Text("Sign Out")
+                                        .font(FDFont.ui(14))
+                                        .foregroundStyle(.red.opacity(0.8))
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 14)
                             }
+                            .buttonStyle(.plain)
                         }
 
                         // Appearance section

@@ -6,6 +6,7 @@ struct vibingFlightDiaryApp: App {
     private let modelContainer: ModelContainer
     private let airportService = AirportService()
     private let localization = LocalizationService()
+    private let auth = AuthService()
 
     init() {
         do {
@@ -17,9 +18,10 @@ struct vibingFlightDiaryApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
                 .environment(airportService)
                 .environment(localization)
+                .environment(auth)
                 .onAppear {
                     #if DEBUG
                     DebugDataSeeder.reseed(context: modelContainer.mainContext)
@@ -30,3 +32,14 @@ struct vibingFlightDiaryApp: App {
     }
 }
 
+private struct RootView: View {
+    @Environment(AuthService.self) private var auth
+
+    var body: some View {
+        if auth.isAuthenticated {
+            ContentView()
+        } else {
+            SignInView()
+        }
+    }
+}

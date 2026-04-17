@@ -134,43 +134,104 @@ struct AddFlightView: View {
 
     private var routeCard: some View {
         VStack(spacing: 0) {
-            HStack(alignment: .center, spacing: 10) {
-                airportField(
-                    label: ls.fromLabel,
-                    airport: origin,
-                    placeholder: ls.originPlaceholder,
-                    alignment: .leading,
-                    isActive: activeSearch == .from
-                ) {
-                    openSearch(.from)
+            ZStack(alignment: .trailing) {
+                VStack(spacing: 0) {
+                    // FROM row
+                    Button { openSearch(.from) } label: {
+                        HStack(spacing: 16) {
+                            VStack(spacing: 0) {
+                                Circle()
+                                    .fill(FDColor.gold)
+                                    .frame(width: 10, height: 10)
+                                Rectangle()
+                                    .fill(FDColor.border)
+                                    .frame(width: 1.5, height: 34)
+                            }
+                            .frame(width: 24)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(ls.fromLabel)
+                                    .font(FDFont.ui(10, weight: .medium))
+                                    .foregroundStyle(FDColor.textDim)
+                                    .tracking(1.5)
+                                if let airport = origin {
+                                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                                        Text(airport.iata)
+                                            .font(FDFont.display(26, weight: .bold))
+                                            .foregroundStyle(FDColor.gold)
+                                        Text(airport.city)
+                                            .font(FDFont.ui(15, weight: .medium))
+                                            .foregroundStyle(FDColor.text)
+                                            .lineLimit(1)
+                                    }
+                                } else {
+                                    Text(ls.originPlaceholder)
+                                        .font(FDFont.ui(16))
+                                        .foregroundStyle(FDColor.textDim)
+                                }
+                            }
+                            Spacer()
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
+                        .padding(.bottom, 14)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+
+                    // TO row
+                    Button { openSearch(.to) } label: {
+                        HStack(spacing: 16) {
+                            Circle()
+                                .strokeBorder(FDColor.gold, lineWidth: 2)
+                                .frame(width: 10, height: 10)
+                                .frame(width: 24)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(ls.toLabel)
+                                    .font(FDFont.ui(10, weight: .medium))
+                                    .foregroundStyle(FDColor.textDim)
+                                    .tracking(1.5)
+                                if let airport = destination {
+                                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                                        Text(airport.iata)
+                                            .font(FDFont.display(26, weight: .bold))
+                                            .foregroundStyle(FDColor.gold)
+                                        Text(airport.city)
+                                            .font(FDFont.ui(15, weight: .medium))
+                                            .foregroundStyle(FDColor.text)
+                                            .lineLimit(1)
+                                    }
+                                } else {
+                                    Text(ls.destinationPlaceholder)
+                                        .font(FDFont.ui(16))
+                                        .foregroundStyle(FDColor.textDim)
+                                }
+                            }
+                            Spacer()
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 14)
+                        .padding(.bottom, 20)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                 }
 
-                // Swap button
+                // Swap button — right side, vertically centered
                 Button {
                     let tmp = origin
                     origin = destination
                     destination = tmp
                 } label: {
-                    Image(systemName: "arrow.left.arrow.right")
+                    Image(systemName: "arrow.up.arrow.down")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(FDColor.gold)
-                        .frame(width: 36, height: 36)
+                        .frame(width: 34, height: 34)
                         .background(FDColor.surface3)
                         .overlay(Circle().stroke(FDColor.borderBright, lineWidth: 1))
                         .clipShape(Circle())
                 }
-
-                airportField(
-                    label: ls.toLabel,
-                    airport: destination,
-                    placeholder: ls.destinationPlaceholder,
-                    alignment: .trailing,
-                    isActive: activeSearch == .to
-                ) {
-                    openSearch(.to)
-                }
+                .padding(.trailing, 20)
             }
-            .padding(20)
 
             Rectangle()
                 .fill(FDColor.border)
@@ -253,71 +314,7 @@ struct AddFlightView: View {
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 
-    @ViewBuilder
-    private func airportField(
-        label: String,
-        airport: Airport?,
-        placeholder: String,
-        alignment: HorizontalAlignment,
-        isActive: Bool,
-        onTap: @escaping () -> Void
-    ) -> some View {
-        Button(action: onTap) {
-            VStack(alignment: alignment, spacing: 6) {
-                Text(label)
-                    .font(FDFont.ui(10, weight: .medium))
-                    .foregroundStyle(isActive ? FDColor.gold : FDColor.textDim)
-                    .tracking(1.5)
 
-                if let airport {
-                    Text(airport.iata)
-                        .font(FDFont.display(34, weight: .bold))
-                        .foregroundStyle(alignment == .trailing ? FDColor.gold : FDColor.text)
-                    Text(airport.city)
-                        .font(FDFont.ui(11))
-                        .foregroundStyle(FDColor.textMuted)
-                        .lineLimit(1)
-                } else {
-                    // Empty — show prominent placeholder with search icon
-                    HStack(spacing: 6) {
-                        if alignment == .trailing {
-                            Spacer(minLength: 0)
-                            Image(systemName: "magnifyingglass")
-                                .font(.system(size: 12))
-                                .foregroundStyle(FDColor.gold.opacity(0.7))
-                        }
-                        Text(placeholder)
-                            .font(FDFont.display(24, weight: .bold))
-                            .foregroundStyle(FDColor.textDim)
-                        if alignment == .leading {
-                            Image(systemName: "magnifyingglass")
-                                .font(.system(size: 12))
-                                .foregroundStyle(FDColor.gold.opacity(0.7))
-                            Spacer(minLength: 0)
-                        }
-                    }
-                    Text(ls.tapToSearch)
-                        .font(FDFont.ui(11))
-                        .foregroundStyle(FDColor.gold.opacity(0.6))
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: Alignment(horizontal: alignment, vertical: .top))
-            .padding(12)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(airport == nil ? FDColor.gold.opacity(0.05) : Color.clear)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(
-                                airport == nil ? FDColor.gold.opacity(0.25) : Color.clear,
-                                lineWidth: 1
-                            )
-                    )
-            )
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
 
     @ViewBuilder
     private func metaField<Content: View>(_ label: String, @ViewBuilder content: () -> Content) -> some View {

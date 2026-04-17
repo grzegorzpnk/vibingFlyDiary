@@ -16,35 +16,46 @@ struct AirportSearchView: View {
             ZStack {
                 FDColor.surface.ignoresSafeArea()
 
-                List(results) { airport in
-                    Button {
-                        selection = airport
-                        dismiss()
-                    } label: {
-                        VStack(alignment: .leading, spacing: 5) {
-                            HStack(spacing: 10) {
-                                Text(airport.iata)
-                                    .font(FDFont.display(18, weight: .bold))
-                                    .foregroundStyle(FDColor.gold)
-                                Text(airport.city)
-                                    .font(FDFont.ui(16, weight: .medium))
-                                    .foregroundStyle(FDColor.text)
+                ScrollView {
+                    LazyVStack(spacing: 0) {
+                        ForEach(results) { airport in
+                            Button {
+                                selection = airport
+                                dismiss()
+                            } label: {
+                                HStack(spacing: 14) {
+                                    ZStack(alignment: .leading) {
+                                        // Invisible anchor — sets column width to widest possible IATA
+                                        Text("WWW")
+                                            .font(FDFont.display(18, weight: .bold))
+                                            .hidden()
+                                        Text(airport.iata)
+                                            .font(FDFont.display(18, weight: .bold))
+                                            .foregroundStyle(FDColor.gold)
+                                            .lineLimit(1)
+                                    }
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        Text(airport.city)
+                                            .font(FDFont.ui(15, weight: .medium))
+                                            .foregroundStyle(FDColor.text)
+                                            .lineLimit(1)
+                                        Text(airport.name)
+                                            .font(FDFont.ui(12))
+                                            .foregroundStyle(FDColor.textMuted)
+                                            .lineLimit(1)
+                                    }
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
                             }
-                            Text(airport.name)
-                                .font(FDFont.ui(12))
-                                .foregroundStyle(FDColor.textMuted)
-                            Text(airport.country)
-                                .font(FDFont.ui(11))
-                                .foregroundStyle(FDColor.textDim)
+                            .buttonStyle(.plain)
+                            Divider()
+                                .background(FDColor.border)
+                                .padding(.leading, 86)
                         }
-                        .padding(.vertical, 4)
                     }
-                    .buttonStyle(.plain)
-                    .listRowBackground(FDColor.surface)
-                    .listRowSeparatorTint(FDColor.border)
                 }
-                .listStyle(.plain)
-                .scrollContentBackground(.hidden)
 
                 // Empty states
                 if query.isEmpty {

@@ -7,6 +7,7 @@ struct StatsView: View {
     @Environment(LocalizationService.self) private var ls
 
     @State private var animateCharts = false
+    @State private var showShareCard = false
 
     // MARK: - Computed Stats
 
@@ -232,7 +233,31 @@ struct StatsView: View {
                     }
                 }
                 .onDisappear { animateCharts = false }
+
+                // Floating share button
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button {
+                            showShareCard = true
+                        } label: {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundStyle(FDColor.black)
+                                .frame(width: 48, height: 48)
+                                .background(FDColor.gold)
+                                .clipShape(Circle())
+                                .shadow(color: FDColor.gold.opacity(0.45), radius: 12, y: 3)
+                        }
+                        .padding(.trailing, 20)
+                        .padding(.bottom, 90)
+                    }
+                }
             }
+        }
+        .sheet(isPresented: $showShareCard) {
+            ShareCardSheet(flights: flights, airportService: airportService)
         }
     }
 

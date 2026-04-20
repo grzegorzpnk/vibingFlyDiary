@@ -1,6 +1,7 @@
 import Foundation
 import AuthenticationServices
 import Observation
+import FirebaseAuth
 
 @Observable
 final class AuthService: NSObject {
@@ -75,6 +76,7 @@ final class AuthService: NSObject {
     func continueAsGuest() {
         userProfile = nil
         isAuthenticated = true
+        ensureFirebaseAnonymousAuth()
     }
 
     // MARK: - Sign Out
@@ -83,6 +85,18 @@ final class AuthService: NSObject {
         clearKeychain()
         userProfile = nil
         isAuthenticated = false
+        try? Auth.auth().signOut()
+    }
+
+    // MARK: - Firebase Auth
+
+    /// Signs into Firebase anonymously if no Firebase user exists yet.
+    /// Called on guest flow and when Apple Sign-In hasn't been set up.
+    private func ensureFirebaseAnonymousAuth() {
+        guard Auth.auth().currentUser == nil else { return }
+        Auth.auth().signInAnonymously { _, error in
+            if let error { print("[Auth] Anonymous sign-in failed: \(error.localizedDescription)") }
+        }
     }
 
     // MARK: - Keychain helpers

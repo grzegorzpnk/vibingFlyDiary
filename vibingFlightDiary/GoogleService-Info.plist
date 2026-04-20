@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyC05iz8tvsCBQ1aJG8lB-YTJKuqiNRNzlM</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1015991118163</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>enso.Flightgram</string>
+	<key>PROJECT_ID</key>
+	<string>flydiary-b16b7</string>
+	<key>STORAGE_BUCKET</key>
+	<string>flydiary-b16b7.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1015991118163:ios:915bdda9f8cf5e703ed9a6</string>
+	<key>DATABASE_URL</key>
+	<string>https://flydiary-b16b7.firebaseio.com</string>
+</dict>
+</plist>

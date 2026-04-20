@@ -4,6 +4,7 @@ import SwiftData
 struct FlightListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AirportService.self) private var airportService
+    @Environment(SyncService.self) private var syncService
     @Query(sort: \Flight.date, order: .reverse) private var flights: [Flight]
 
     @State private var selectedFlight: Flight?
@@ -28,6 +29,7 @@ struct FlightListView: View {
                             .listRowInsets(EdgeInsets(top: 5, leading: 20, bottom: 5, trailing: 20))
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                 Button(role: .destructive) {
+                                    syncService.delete(flightId: flight.id)
                                     modelContext.delete(flight)
                                 } label: {
                                     Label(ls.deleteAction, systemImage: "trash")

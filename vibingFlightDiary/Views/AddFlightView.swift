@@ -7,6 +7,7 @@ struct AddFlightView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AirportService.self) private var airportService
     @Environment(LocalizationService.self) private var ls
+    @Environment(SyncService.self) private var syncService
 
     let editingFlight: Flight?
 
@@ -680,19 +681,34 @@ struct AddFlightView: View {
 
     private func save() {
         guard let o = origin, let d = destination, let km = distanceKm else { return }
+        let flightToSync: Flight
         if let ef = editingFlight {
-            ef.originIATA = o.iata
+            ef.originIATA      = o.iata
             ef.destinationIATA = d.iata
-            ef.date = date
-            ef.distanceKm = km
-            ef.seatType = seatType
-            ef.flightClass = flightClass
-            ef.airline = airline.isEmpty ? nil : airline
-            ef.aircraftType = aircraftType
-            ef.flightNumber = flightNumber.isEmpty ? nil : flightNumber
+            ef.date            = date
+            ef.distanceKm      = km
+            ef.seatType        = seatType
+            ef.flightClass     = flightClass
+            ef.airline         = airline.isEmpty ? nil : airline
+            ef.aircraftType    = aircraftType
+            ef.flightNumber    = flightNumber.isEmpty ? nil : flightNumber
+            flightToSync = ef
         } else {
-            modelContext.insert(Flight(originIATA: o.iata, destinationIATA: d.iata, date: date, distanceKm: km, seatType: seatType, flightClass: flightClass, airline: airline.isEmpty ? nil : airline, aircraftType: aircraftType, flightNumber: flightNumber.isEmpty ? nil : flightNumber))
+            let newFlight = Flight(
+                originIATA:      o.iata,
+                destinationIATA: d.iata,
+                date:            date,
+                distanceKm:      km,
+                seatType:        seatType,
+                flightClass:     flightClass,
+                airline:         airline.isEmpty ? nil : airline,
+                aircraftType:    aircraftType,
+                flightNumber:    flightNumber.isEmpty ? nil : flightNumber
+            )
+            modelContext.insert(newFlight)
+            flightToSync = newFlight
         }
+        syncService.push(flightToSync)
         dismiss()
     }
 

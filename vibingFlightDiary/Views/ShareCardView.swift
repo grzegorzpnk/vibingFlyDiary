@@ -96,22 +96,16 @@ struct FlightMapShareCard: View {
     }
 
     // MARK: - Projection
-    //
-    // Equirectangular, cropped to lat -60…+84 so Antarctica is trimmed
-    // and inhabited continents fill more of the frame.
-    // The map rect preserves the correct 360/(84+60) = 2.5:1 aspect ratio,
-    // centred vertically with a slight upward shift to leave room for stats.
 
     private let minLat = -60.0
     private let maxLat =  84.0
 
     private func mapRect(in size: CGSize) -> CGRect {
         let lonRange = 360.0
-        let latRange = maxLat - minLat          // 144°
-        let aspect   = lonRange / latRange       // ≈ 2.5
+        let latRange = maxLat - minLat
+        let aspect   = lonRange / latRange
         let mapW     = size.width
         let mapH     = mapW / aspect
-        // shift map slightly toward top (40 % of remaining vertical space above)
         let mapY     = (size.height - mapH) * 0.38
         return CGRect(x: 0, y: mapY, width: mapW, height: mapH)
     }
@@ -134,7 +128,7 @@ struct FlightMapShareCard: View {
             } else if abs(coord.longitude - ring[i - 1].longitude) < 180 {
                 path.addLine(to: pt)
             } else {
-                path.move(to: pt) // anti-meridian — lift pen
+                path.move(to: pt)
             }
         }
         path.closeSubpath()
@@ -228,37 +222,411 @@ struct FlightMapShareCard: View {
     }
 }
 
-// MARK: - Share Sheet
+// MARK: - Countries Share Card
+
+struct CountriesShareCard: View {
+    let flights: [Flight]
+    let airportService: AirportService
+
+    private var past: [Flight] { flights.filter { $0.date <= .now } }
+
+    private var visitedCountries: [String] {
+        var s = Set<String>()
+        for f in past {
+            if let o = airportService.airport(for: f.originIATA)      { s.insert(o.country) }
+            if let d = airportService.airport(for: f.destinationIATA) { s.insert(d.country) }
+        }
+        return s.sorted()
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+            ZStack {
+                Color(hex: "0A0A0F")
+                RadialGradient(
+                    colors: [Color(hex: "1A0A3A").opacity(0.6), .clear],
+                    center: .init(x: 0.5, y: 0.3),
+                    startRadius: 0,
+                    endRadius: w
+                )
+
+                VStack(spacing: 0) {
+                    // Branding
+                    HStack(spacing: w * 0.015) {
+                        Image(systemName: "airplane.circle.fill")
+                            .font(.system(size: w * 0.04, weight: .semibold))
+                            .foregroundStyle(Color(hex: "C9A96E"))
+                        Text("FLYGRAM")
+                            .font(.system(size: w * 0.032, weight: .semibold))
+                            .tracking(w * 0.009)
+                            .foregroundStyle(Color(hex: "F0EEE8").opacity(0.7))
+                    }
+                    .padding(.top, h * 0.052)
+
+                    Spacer()
+
+                    // Big number
+                    VStack(spacing: h * 0.008) {
+                        Text("\(visitedCountries.count)")
+                            .font(.system(size: w * 0.26, weight: .heavy, design: .rounded))
+                            .foregroundStyle(Color(hex: "C9A96E"))
+                        Text("COUNTRIES VISITED")
+                            .font(.system(size: w * 0.028, weight: .semibold))
+                            .tracking(w * 0.007)
+                            .foregroundStyle(Color(hex: "F0EEE8").opacity(0.4))
+                    }
+
+                    Spacer().frame(height: h * 0.045)
+
+                    // Flag grid
+                    flagGrid(countries: visitedCountries, w: w)
+
+                    Spacer()
+
+                    Text("flygram.app")
+                        .font(.system(size: w * 0.024, weight: .light))
+                        .tracking(w * 0.005)
+                        .foregroundStyle(Color(hex: "F0EEE8").opacity(0.18))
+                        .padding(.bottom, h * 0.065)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func flagGrid(countries: [String], w: CGFloat) -> some View {
+        let shown  = Array(countries.prefix(42))
+        let cols   = 7
+        let spacing = w * 0.012
+        let padH   = w * 0.06
+        let cellW  = (w - CGFloat(cols - 1) * spacing - padH * 2) / CGFloat(cols)
+        let rows: [[String]] = stride(from: 0, to: shown.count, by: cols).map { start in
+            Array(shown[start..<min(start + cols, shown.count)])
+        }
+
+        VStack(spacing: spacing) {
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                HStack(spacing: spacing) {
+                    ForEach(row, id: \.self) { iso in
+                        Text(flagFor(iso))
+                            .font(.system(size: cellW * 0.7))
+                            .frame(width: cellW, height: cellW * 0.75)
+                    }
+                    if row.count < cols { Spacer() }
+                }
+            }
+        }
+        .padding(.horizontal, padH)
+    }
+
+    private func flagFor(_ iso: String) -> String {
+        guard iso.count == 2 else { return "🌐" }
+        return iso.uppercased().unicodeScalars.compactMap {
+            Unicode.Scalar($0.value + 127397)
+        }.map(String.init).joined()
+    }
+}
+
+// MARK: - Top Routes Share Card
+
+struct TopRoutesShareCard: View {
+    let flights: [Flight]
+    let airportService: AirportService
+
+    private var past: [Flight] { flights.filter { $0.date <= .now } }
+
+    private var topRoutes: [(origin: String, dest: String, count: Int)] {
+        var counts: [String: Int] = [:]
+        for f in past {
+            counts["\(f.originIATA)|\(f.destinationIATA)", default: 0] += 1
+        }
+        return counts
+            .sorted { $0.value > $1.value }
+            .prefix(5)
+            .compactMap { kv -> (String, String, Int)? in
+                let parts = kv.key.split(separator: "|").map(String.init)
+                guard parts.count == 2 else { return nil }
+                return (parts[0], parts[1], kv.value)
+            }
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+            ZStack {
+                Color(hex: "0A0A0F")
+                RadialGradient(
+                    colors: [Color(hex: "0A2A1A").opacity(0.55), .clear],
+                    center: .init(x: 0.5, y: 0.4),
+                    startRadius: 0,
+                    endRadius: w * 0.9
+                )
+
+                VStack(spacing: 0) {
+                    // Branding
+                    HStack(spacing: w * 0.015) {
+                        Image(systemName: "airplane.circle.fill")
+                            .font(.system(size: w * 0.04, weight: .semibold))
+                            .foregroundStyle(Color(hex: "C9A96E"))
+                        Text("FLYGRAM")
+                            .font(.system(size: w * 0.032, weight: .semibold))
+                            .tracking(w * 0.009)
+                            .foregroundStyle(Color(hex: "F0EEE8").opacity(0.7))
+                    }
+                    .padding(.top, h * 0.052)
+
+                    Spacer().frame(height: h * 0.06)
+
+                    // Section header
+                    VStack(spacing: h * 0.008) {
+                        Text("TOP ROUTES")
+                            .font(.system(size: w * 0.028, weight: .semibold))
+                            .tracking(w * 0.008)
+                            .foregroundStyle(Color(hex: "F0EEE8").opacity(0.4))
+                        Rectangle()
+                            .fill(Color(hex: "C9A96E").opacity(0.35))
+                            .frame(width: w * 0.1, height: 1)
+                    }
+
+                    Spacer().frame(height: h * 0.055)
+
+                    // Route list
+                    VStack(spacing: h * 0.03) {
+                        if topRoutes.isEmpty {
+                            Text("No flights logged yet")
+                                .font(.system(size: w * 0.03, weight: .light))
+                                .foregroundStyle(Color(hex: "F0EEE8").opacity(0.3))
+                        } else {
+                            ForEach(Array(topRoutes.enumerated()), id: \.offset) { idx, route in
+                                routeRow(rank: idx + 1, origin: route.origin, dest: route.dest, count: route.count, w: w)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, w * 0.08)
+
+                    Spacer()
+
+                    Text("flygram.app")
+                        .font(.system(size: w * 0.024, weight: .light))
+                        .tracking(w * 0.005)
+                        .foregroundStyle(Color(hex: "F0EEE8").opacity(0.18))
+                        .padding(.bottom, h * 0.065)
+                }
+            }
+        }
+    }
+
+    private func routeRow(rank: Int, origin: String, dest: String, count: Int, w: CGFloat) -> some View {
+        HStack(spacing: w * 0.025) {
+            Text("#\(rank)")
+                .font(.system(size: w * 0.028, weight: .semibold))
+                .foregroundStyle(Color(hex: "C9A96E").opacity(0.5))
+                .frame(width: w * 0.065, alignment: .trailing)
+
+            HStack(spacing: w * 0.022) {
+                Text(origin)
+                    .font(.system(size: w * 0.068, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(hex: "F0EEE8"))
+                Image(systemName: "arrow.right")
+                    .font(.system(size: w * 0.028, weight: .semibold))
+                    .foregroundStyle(Color(hex: "C9A96E").opacity(0.7))
+                Text(dest)
+                    .font(.system(size: w * 0.068, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(hex: "F0EEE8"))
+            }
+
+            Spacer()
+
+            if count > 1 {
+                Text("×\(count)")
+                    .font(.system(size: w * 0.026, weight: .medium))
+                    .foregroundStyle(Color(hex: "C9A96E"))
+                    .padding(.horizontal, w * 0.022)
+                    .padding(.vertical, w * 0.01)
+                    .background(Color(hex: "C9A96E").opacity(0.12))
+                    .clipShape(Capsule())
+            }
+        }
+    }
+}
+
+// MARK: - Year Stats Share Card
+
+struct YearStatsShareCard: View {
+    let flights: [Flight]
+    let airportService: AirportService
+
+    private let year = Calendar.current.component(.year, from: .now)
+
+    private var past: [Flight] { flights.filter { $0.date <= .now } }
+
+    private var thisYear: [Flight] {
+        past.filter { Calendar.current.component(.year, from: $0.date) == year }
+    }
+
+    private var yearCountries: Int {
+        var s = Set<String>()
+        for f in thisYear {
+            if let o = airportService.airport(for: f.originIATA)      { s.insert(o.country) }
+            if let d = airportService.airport(for: f.destinationIATA) { s.insert(d.country) }
+        }
+        return s.count
+    }
+
+    private var yearKm: Int { Int(thisYear.reduce(0) { $0 + $1.distanceKm }) }
+    private var yearKmLabel: String { yearKm >= 1_000 ? "\(yearKm / 1_000)K" : "\(yearKm)" }
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+            ZStack {
+                Color(hex: "0A0A0F")
+                RadialGradient(
+                    colors: [Color(hex: "2A1A0A").opacity(0.55), .clear],
+                    center: .init(x: 0.5, y: 0.45),
+                    startRadius: 0,
+                    endRadius: w
+                )
+
+                VStack(spacing: 0) {
+                    // Branding
+                    HStack(spacing: w * 0.015) {
+                        Image(systemName: "airplane.circle.fill")
+                            .font(.system(size: w * 0.04, weight: .semibold))
+                            .foregroundStyle(Color(hex: "C9A96E"))
+                        Text("FLYGRAM")
+                            .font(.system(size: w * 0.032, weight: .semibold))
+                            .tracking(w * 0.009)
+                            .foregroundStyle(Color(hex: "F0EEE8").opacity(0.7))
+                    }
+                    .padding(.top, h * 0.052)
+
+                    Spacer()
+
+                    // Year headline
+                    VStack(spacing: h * 0.008) {
+                        Text("\(year)")
+                            .font(.system(size: w * 0.2, weight: .heavy, design: .rounded))
+                            .foregroundStyle(Color(hex: "C9A96E"))
+                        Text("YOUR YEAR IN REVIEW")
+                            .font(.system(size: w * 0.026, weight: .semibold))
+                            .tracking(w * 0.006)
+                            .foregroundStyle(Color(hex: "F0EEE8").opacity(0.4))
+                    }
+
+                    Spacer().frame(height: h * 0.055)
+
+                    // 2×2 grid
+                    let gutter = w * 0.04
+                    let cellW  = (w - gutter * 3) / 2
+
+                    VStack(spacing: gutter) {
+                        HStack(spacing: gutter) {
+                            statCell(value: "\(thisYear.count)", label: "FLIGHTS\nTHIS YEAR", cellW: cellW)
+                            statCell(value: yearKmLabel,         label: "KM\nFLOWN",        cellW: cellW)
+                        }
+                        HStack(spacing: gutter) {
+                            statCell(value: "\(yearCountries)", label: "COUNTRIES\nTHIS YEAR", cellW: cellW)
+                            statCell(value: "\(past.count)",    label: "TOTAL\nFLIGHTS",       cellW: cellW)
+                        }
+                    }
+                    .padding(.horizontal, gutter)
+
+                    Spacer()
+
+                    Text("flygram.app")
+                        .font(.system(size: w * 0.024, weight: .light))
+                        .tracking(w * 0.005)
+                        .foregroundStyle(Color(hex: "F0EEE8").opacity(0.18))
+                        .padding(.bottom, h * 0.065)
+                }
+            }
+        }
+    }
+
+    private func statCell(value: String, label: String, cellW: CGFloat) -> some View {
+        VStack(spacing: cellW * 0.06) {
+            Text(value)
+                .font(.system(size: cellW * 0.22, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(hex: "C9A96E"))
+            Text(label)
+                .font(.system(size: cellW * 0.065, weight: .medium))
+                .tracking(cellW * 0.004)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(Color(hex: "F0EEE8").opacity(0.38))
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: cellW * 1.1)
+        .background(Color(hex: "F0EEE8").opacity(0.04))
+        .clipShape(RoundedRectangle(cornerRadius: cellW * 0.1))
+        .overlay(
+            RoundedRectangle(cornerRadius: cellW * 0.1)
+                .stroke(Color(hex: "C9A96E").opacity(0.12), lineWidth: 1)
+        )
+    }
+}
+
+// MARK: - Share Card Sheet
 
 struct ShareCardSheet: View {
     let flights: [Flight]
     let airportService: AirportService
     @Environment(\.dismiss) private var dismiss
+    @State private var selectedCard = 0
 
-    // 4:5 portrait ratio — ideal for Instagram
     private let cardW: CGFloat = 1080
     private let cardH: CGFloat = 1350
+    private let previewW: CGFloat = 280
+
+    private var previewH: CGFloat { previewW * (cardH / cardW) }
+
+    private let cardLabels = ["Flight Map", "Countries Visited", "Top Routes", "Year in Review"]
 
     var body: some View {
         NavigationStack {
             ZStack {
                 Color(hex: "0A0A0F").ignoresSafeArea()
 
-                VStack(spacing: 28) {
-                    // Live preview
-                    let previewW: CGFloat = 280
-                    let previewH: CGFloat = previewW * (cardH / cardW)
+                VStack(spacing: 20) {
+                    // Paging card previews
+                    TabView(selection: $selectedCard) {
+                        ForEach(0..<4, id: \.self) { i in
+                            cardPreview(index: i)
+                                .frame(width: previewW, height: previewH)
+                                .clipShape(RoundedRectangle(cornerRadius: 18))
+                                .shadow(color: Color(hex: "C9A96E").opacity(0.2), radius: 30)
+                                .tag(i)
+                        }
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .frame(height: previewH + 40)
 
-                    FlightMapShareCard(flights: flights, airportService: airportService)
-                        .frame(width: previewW, height: previewH)
-                        .clipShape(RoundedRectangle(cornerRadius: 18))
-                        .shadow(color: Color(hex: "C9A96E").opacity(0.2), radius: 30)
+                    // Page indicator dots
+                    HStack(spacing: 8) {
+                        ForEach(0..<4, id: \.self) { i in
+                            Circle()
+                                .fill(selectedCard == i
+                                      ? Color(hex: "C9A96E")
+                                      : Color.white.opacity(0.2))
+                                .frame(width: 6, height: 6)
+                                .animation(.easeInOut, value: selectedCard)
+                        }
+                    }
 
-                    Text("Your route map — ready to share")
+                    // Card name
+                    Text(cardLabels[selectedCard])
                         .font(.system(size: 13, weight: .light))
                         .foregroundStyle(Color(hex: "F0EEE8").opacity(0.4))
+                        .animation(.easeInOut, value: selectedCard)
 
-                    Button(action: shareImage) {
+                    Spacer().frame(height: 4)
+
+                    // Share button
+                    Button(action: shareCurrentCard) {
                         HStack(spacing: 10) {
                             Image(systemName: "square.and.arrow.up")
                                 .font(.system(size: 16, weight: .semibold))
@@ -273,9 +641,9 @@ struct ShareCardSheet: View {
                     }
                     .padding(.horizontal, 24)
                 }
-                .padding(.top, 32)
+                .padding(.top, 24)
             }
-            .navigationTitle("Share Your Routes")
+            .navigationTitle("Share Your Story")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
@@ -287,18 +655,23 @@ struct ShareCardSheet: View {
         }
     }
 
-    private func shareImage() {
-        // Render at full resolution off-screen
-        let card = FlightMapShareCard(flights: flights, airportService: airportService)
-            .frame(width: cardW, height: cardH)
-        let renderer = ImageRenderer(content: card)
-        renderer.scale = 2.0   // → 2160 × 2700 px
+    @ViewBuilder
+    private func cardPreview(index: Int) -> some View {
+        switch index {
+        case 0: FlightMapShareCard(flights: flights, airportService: airportService)
+        case 1: CountriesShareCard(flights: flights, airportService: airportService)
+        case 2: TopRoutesShareCard(flights: flights, airportService: airportService)
+        default: YearStatsShareCard(flights: flights, airportService: airportService)
+        }
+    }
+
+    private func shareCurrentCard() {
+        let renderer = ImageRenderer(content: fullResCard(index: selectedCard))
+        renderer.scale = 2.0
         guard let image = renderer.uiImage else { return }
 
         let ac = UIActivityViewController(activityItems: [image], applicationActivities: nil)
 
-        // Walk up the presenter chain — ShareCardSheet itself is already presented,
-        // so rootViewController.presentedViewController is this sheet's nav stack.
         guard
             let scene  = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
             let window = scene.windows.first(where: { $0.isKeyWindow })
@@ -307,5 +680,15 @@ struct ShareCardSheet: View {
         var topVC = window.rootViewController
         while let next = topVC?.presentedViewController { topVC = next }
         topVC?.present(ac, animated: true)
+    }
+
+    @ViewBuilder
+    private func fullResCard(index: Int) -> some View {
+        switch index {
+        case 0: FlightMapShareCard(flights: flights, airportService: airportService).frame(width: cardW, height: cardH)
+        case 1: CountriesShareCard(flights: flights, airportService: airportService).frame(width: cardW, height: cardH)
+        case 2: TopRoutesShareCard(flights: flights, airportService: airportService).frame(width: cardW, height: cardH)
+        default: YearStatsShareCard(flights: flights, airportService: airportService).frame(width: cardW, height: cardH)
+        }
     }
 }

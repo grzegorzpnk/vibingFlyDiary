@@ -5,9 +5,18 @@ struct StatsView: View {
     @Query(sort: \Flight.date, order: .reverse) private var flights: [Flight]
     @Environment(AirportService.self) private var airportService
     @Environment(LocalizationService.self) private var ls
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var animateCharts = false
     @State private var showShareCard = false
+
+    private var isLight: Bool {
+        switch ls.theme {
+        case .light:  return true
+        case .dark:   return false
+        case .system: return colorScheme == .light
+        }
+    }
 
     // MARK: - Computed Stats
 
@@ -266,7 +275,11 @@ struct StatsView: View {
     private var heroCard: some View {
         ZStack(alignment: .bottomLeading) {
             LinearGradient(
-                colors: [
+                colors: isLight ? [
+                    Color(hex: "D8C9B8"),
+                    Color(hex: "E4D8C8"),
+                    Color(hex: "F0EAE0")
+                ] : [
                     Color(hex: "0d1a2a"),
                     Color(hex: "1a0f2e"),
                     Color(hex: "0a0a0f")
@@ -277,7 +290,7 @@ struct StatsView: View {
 
             Ellipse()
                 .fill(RadialGradient(
-                    colors: [Color(hex: "4A7FA5").opacity(0.3), .clear],
+                    colors: [Color(hex: "4A7FA5").opacity(isLight ? 0.18 : 0.3), .clear],
                     center: .center, startRadius: 0, endRadius: 120
                 ))
                 .frame(width: 240, height: 100)
@@ -307,7 +320,7 @@ struct StatsView: View {
 
                 Text("across \(past.count) \(ls.statsFlightsCount)")
                     .font(FDFont.ui(12))
-                    .foregroundStyle(Color.white.opacity(0.45))
+                    .foregroundStyle(FDColor.text.opacity(0.45))
                     .padding(.top, 5)
 
                 if earthLaps >= 0.1 {

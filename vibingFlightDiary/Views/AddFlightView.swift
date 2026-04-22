@@ -137,7 +137,7 @@ struct AddFlightView: View {
         VStack(spacing: 0) {
             ZStack(alignment: .trailing) {
                 VStack(spacing: 0) {
-                    // FROM row
+                    // FROM row — locked when editing an existing flight
                     Button { openSearch(.from) } label: {
                         HStack(spacing: 16) {
                             VStack(spacing: 0) {
@@ -150,10 +150,17 @@ struct AddFlightView: View {
                             }
                             .frame(width: 24)
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(ls.fromLabel)
-                                    .font(FDFont.ui(10, weight: .medium))
-                                    .foregroundStyle(FDColor.textDim)
-                                    .tracking(1.5)
+                                HStack(spacing: 6) {
+                                    Text(ls.fromLabel)
+                                        .font(FDFont.ui(10, weight: .medium))
+                                        .foregroundStyle(FDColor.textDim)
+                                        .tracking(1.5)
+                                    if editingFlight != nil {
+                                        Image(systemName: "lock.fill")
+                                            .font(.system(size: 9))
+                                            .foregroundStyle(FDColor.textDim)
+                                    }
+                                }
                                 if let airport = origin {
                                     HStack(alignment: .firstTextBaseline, spacing: 10) {
                                         Text(airport.iata)
@@ -178,8 +185,9 @@ struct AddFlightView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .disabled(editingFlight != nil)
 
-                    // TO row
+                    // TO row — locked when editing an existing flight
                     Button { openSearch(.to) } label: {
                         HStack(spacing: 16) {
                             Circle()
@@ -187,10 +195,17 @@ struct AddFlightView: View {
                                 .frame(width: 10, height: 10)
                                 .frame(width: 24)
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(ls.toLabel)
-                                    .font(FDFont.ui(10, weight: .medium))
-                                    .foregroundStyle(FDColor.textDim)
-                                    .tracking(1.5)
+                                HStack(spacing: 6) {
+                                    Text(ls.toLabel)
+                                        .font(FDFont.ui(10, weight: .medium))
+                                        .foregroundStyle(FDColor.textDim)
+                                        .tracking(1.5)
+                                    if editingFlight != nil {
+                                        Image(systemName: "lock.fill")
+                                            .font(.system(size: 9))
+                                            .foregroundStyle(FDColor.textDim)
+                                    }
+                                }
                                 if let airport = destination {
                                     HStack(alignment: .firstTextBaseline, spacing: 10) {
                                         Text(airport.iata)
@@ -215,23 +230,26 @@ struct AddFlightView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .disabled(editingFlight != nil)
                 }
 
-                // Swap button — right side, vertically centered
-                Button {
-                    let tmp = origin
-                    origin = destination
-                    destination = tmp
-                } label: {
-                    Image(systemName: "arrow.up.arrow.down")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(FDColor.gold)
-                        .frame(width: 34, height: 34)
-                        .background(FDColor.surface3)
-                        .overlay(Circle().stroke(FDColor.borderBright, lineWidth: 1))
-                        .clipShape(Circle())
+                // Swap button — hidden when editing an existing flight
+                if editingFlight == nil {
+                    Button {
+                        let tmp = origin
+                        origin = destination
+                        destination = tmp
+                    } label: {
+                        Image(systemName: "arrow.up.arrow.down")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(FDColor.gold)
+                            .frame(width: 34, height: 34)
+                            .background(FDColor.surface3)
+                            .overlay(Circle().stroke(FDColor.borderBright, lineWidth: 1))
+                            .clipShape(Circle())
+                    }
+                    .padding(.trailing, 20)
                 }
-                .padding(.trailing, 20)
             }
 
             Rectangle()

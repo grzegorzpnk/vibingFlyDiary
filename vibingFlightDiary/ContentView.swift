@@ -17,7 +17,6 @@ struct ContentView: View {
                 FlightListView().tag(2)
                 StatsView().tag(3)
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
             .ignoresSafeArea()
 
             FDTabBar(selectedTab: $selectedTab, showAddFlight: $showAddFlight)

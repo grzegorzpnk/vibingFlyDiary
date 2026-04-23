@@ -210,6 +210,7 @@ struct StatsView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 16) {
                         heroCard
+                        shareJourneyBanner
                         vitalsGrid
                         recordsSection
                         if topAirline != nil || topAircraft != nil {
@@ -242,27 +243,6 @@ struct StatsView: View {
                     }
                 }
                 .onDisappear { animateCharts = false }
-
-                // Floating share button
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        Button {
-                            showShareCard = true
-                        } label: {
-                            Image(systemName: "square.and.arrow.up")
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(FDColor.black)
-                                .frame(width: 48, height: 48)
-                                .background(FDColor.gold)
-                                .clipShape(Circle())
-                                .shadow(color: FDColor.gold.opacity(0.45), radius: 12, y: 3)
-                        }
-                        .padding(.trailing, 20)
-                        .padding(.bottom, 90)
-                    }
-                }
             }
         }
         .sheet(isPresented: $showShareCard) {
@@ -344,6 +324,50 @@ struct StatsView: View {
         .frame(height: 196)
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .overlay(RoundedRectangle(cornerRadius: 24).stroke(FDColor.gold.opacity(0.2), lineWidth: 1))
+    }
+
+    // MARK: - Share Banner
+
+    private var shareJourneyBanner: some View {
+        Button { showShareCard = true } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(FDColor.gold)
+
+                Text(ls.shareYourJourney)
+                    .font(FDFont.ui(13, weight: .medium))
+                    .foregroundStyle(FDColor.text.opacity(0.7))
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(FDColor.gold.opacity(0.6))
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 14)
+            .background(
+                LinearGradient(
+                    colors: [FDColor.gold.opacity(0.08), FDColor.gold.opacity(0.03)],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(
+                        LinearGradient(
+                            colors: [FDColor.gold.opacity(0.3), FDColor.gold.opacity(0.08)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        ),
+                        lineWidth: 1
+                    )
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Vitals Grid

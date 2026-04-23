@@ -9,8 +9,10 @@ struct MapFlightView: View {
     @State private var selectedYear: Int? = nil
     @State private var beenMode: Bool = false
     @State private var selectedFlight: Flight?
+    @State private var selectedRouteFlights: RouteFlights?
     @State private var mapStyleChoice: MapStyleChoice = .auto
     @State private var showStylePicker = false
+    @State private var arcCache: [String: [CLLocationCoordinate2D]] = [:]
     @Environment(LocalizationService.self) private var ls
     @Environment(\.colorScheme) private var colorScheme
 
@@ -72,6 +74,28 @@ struct MapFlightView: View {
         )
     )
 
+    /// Canonical route key — direction-independent (LAX-SFO == SFO-LAX)
+    private static func routeKey(_ a: String, _ b: String) -> String {
+        a < b ? "\(a)-\(b)" : "\(b)-\(a)"
+    }
+
+    /// Unique routes — one entry per airport pair (both directions merged).
+    private var uniqueRoutes: [(key: String, flights: [Flight], upcoming: Bool)] {
+        var grouped: [String: (flights: [Flight], upcoming: Bool)] = [:]
+        for flight in filteredFlights {
+            let key = Self.routeKey(flight.originIATA, flight.destinationIATA)
+            let up = flight.date > .now
+            if var existing = grouped[key] {
+                existing.flights.append(flight)
+                existing.upcoming = existing.upcoming || up
+                grouped[key] = existing
+            } else {
+                grouped[key] = ([flight], up)
+            }
+        }
+        return grouped.map { ($0.key, $0.value.flights, $0.value.upcoming) }
+    }
+
     /// Unique airports across filteredFlights. Bool = hasAnyUpcomingFlight using that airport.
     private var uniqueAirportDots: [(airport: Airport, upcoming: Bool)] {
         var seen: [String: Bool] = [:]
@@ -106,13 +130,10 @@ struct MapFlightView: View {
                     }
                 }
 
-                // Arcs + midpoint taps
-                ForEach(filteredFlights) { flight in
-                    if let origin = airportService.airport(for: flight.originIATA),
-                       let dest   = airportService.airport(for: flight.destinationIATA) {
-                        let arc = greatCirclePoints(from: origin.coordinate, to: dest.coordinate)
-                        let upcoming = flight.date > .now
-                        let arcColor = upcoming ? FDColor.blue : FDColor.gold
+                // Arcs + midpoint taps (one per unique route)
+                ForEach(uniqueRoutes, id: \.key) { route in
+                    if let arc = arcCache[route.key] {
+                        let arcColor = route.upcoming ? FDColor.blue : FDColor.gold
 
                         MapPolyline(coordinates: arc)
                             .stroke(arcColor.opacity(0.22), lineWidth: 5)
@@ -120,14 +141,19 @@ struct MapFlightView: View {
                             .stroke(arcColor.opacity(0.88), lineWidth: 2)
 
                         if arc.indices.contains(arc.count / 2) {
+                            let count = route.flights.count
                             Annotation("", coordinate: arc[arc.count / 2]) {
                                 Button {
-                                    selectedFlight = flight
+                                    if count == 1 {
+                                        selectedFlight = route.flights[0]
+                                    } else {
+                                        selectedRouteFlights = RouteFlights(flights: route.flights.sorted { $0.date > $1.date })
+                                    }
                                 } label: {
-                                    Image(systemName: "airplane")
-                                        .font(.system(size: 9, weight: .medium))
+                                    Text("\(count)")
+                                        .font(.system(size: 9, weight: .bold))
                                         .foregroundStyle(arcColor)
-                                        .frame(width: 22, height: 22)
+                                        .frame(width: 20, height: 20)
                                         .background(.ultraThinMaterial, in: Circle())
                                         .overlay(Circle().stroke(arcColor.opacity(0.4), lineWidth: 0.8))
                                 }
@@ -323,6 +349,28 @@ struct MapFlightView: View {
         .sheet(item: $selectedFlight) { flight in
             FlightDetailView(flight: flight, airportService: airportService, detents: [.fraction(0.55), .large], startDetent: .fraction(0.55))
         }
+        .sheet(item: $selectedRouteFlights) { route in
+            RouteFlightsSheet(flights: route.flights, airportService: airportService) { flight in
+                selectedRouteFlights = nil
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    selectedFlight = flight
+                }
+            }
+        }
+        .onAppear { rebuildArcCache() }
+        .onChange(of: flights.count) { rebuildArcCache() }
+    }
+
+    private func rebuildArcCache() {
+        var newCache: [String: [CLLocationCoordinate2D]] = [:]
+        for flight in flights {
+            let key = Self.routeKey(flight.originIATA, flight.destinationIATA)
+            guard newCache[key] == nil else { continue }
+            guard let origin = airportService.airport(for: flight.originIATA),
+                  let dest = airportService.airport(for: flight.destinationIATA) else { continue }
+            newCache[key] = greatCirclePoints(from: origin.coordinate, to: dest.coordinate)
+        }
+        arcCache = newCache
     }
 
     private func yearChip(label: String, active: Bool, action: @escaping () -> Void) -> some View {
@@ -447,5 +495,53 @@ struct MapFlightView: View {
                 longitude: atan2(y, x) * 180 / .pi
             )
         }
+    }
+}
+
+// MARK: - Route Flights Wrapper + Sheet
+
+struct RouteFlights: Identifiable {
+    let id = UUID()
+    let flights: [Flight]
+}
+
+private struct RouteFlightsSheet: View {
+    let flights: [Flight]
+    let airportService: AirportService
+    let onSelect: (Flight) -> Void
+
+    @Environment(LocalizationService.self) private var ls
+    @Environment(\.dismiss) private var dismiss
+
+    private var origin: Airport? { airportService.airport(for: flights.first?.originIATA ?? "") }
+    private var dest: Airport? { airportService.airport(for: flights.first?.destinationIATA ?? "") }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 8) {
+                    ForEach(flights) { flight in
+                        FlightCard(flight: flight, airportService: airportService) {
+                            onSelect(flight)
+                        }
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+            }
+            .background(FDColor.black)
+            .navigationTitle("\(flights.first?.originIATA ?? "") → \(flights.first?.destinationIATA ?? "")")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(FDColor.textMuted)
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
     }
 }

@@ -5,8 +5,12 @@ struct ContentView: View {
     @State private var showAddFlight = false
     @Environment(LocalizationService.self) private var ls
 
-    init() {
+    nonisolated(unsafe) private static let configureOnce: Void = {
         UITabBar.appearance().isHidden = true
+    }()
+
+    init() {
+        _ = Self.configureOnce
     }
 
     var body: some View {

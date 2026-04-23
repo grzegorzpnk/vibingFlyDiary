@@ -4,13 +4,14 @@ import Observation
 @Observable
 class AirportService {
     private(set) var airports: [Airport] = []
+    private var byIATA: [String: Airport] = [:]
 
     init() {
         load()
     }
 
     func airport(for iata: String) -> Airport? {
-        airports.first { $0.iata == iata }
+        byIATA[iata]
     }
 
     func search(_ query: String) -> [Airport] {
@@ -36,5 +37,6 @@ class AirportService {
             return
         }
         airports = decoded
+        byIATA = Dictionary(uniqueKeysWithValues: decoded.map { ($0.iata, $0) })
     }
 }

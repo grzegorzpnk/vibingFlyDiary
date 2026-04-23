@@ -249,6 +249,9 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var statsFlyingStyle:      String { t("FLYING STYLE",         "STYL LATANIA",          "ESTILO DE VUELO",      "STYLE DE VOL",          "フライトスタイル") }
     var statsClassBreakdown:   String { t("BY CLASS",             "KLASY",                 "POR CLASE",            "PAR CLASSE",            "クラス別") }
     var statsSeatPreference:   String { t("SEAT PREFERENCE",      "PREFERENCJA MIEJSCA",   "PREFERENCIA ASIENTO",  "PRÉFÉRENCE SIÈGE",      "座席の好み") }
+    var statsDomesticVsIntl:   String { t("DOMESTIC VS INTERNATIONAL","KRAJOWE VS MIĘDZYNARODOWE","DOMÉSTICO VS INTERNACIONAL","DOMESTIQUE VS INTERNATIONAL","国内 VS 国際") }
+    var statsDomestic:         String { t("Domestic",             "Krajowe",               "Doméstico",            "Domestique",            "国内") }
+    var statsInternational:    String { t("International",        "Międzynarodowe",        "Internacional",        "International",         "国際") }
     var statsWorldCoverage:    String { t("WORLD COVERAGE",       "ZASIĘG",                "COBERTURA MUNDIAL",    "COUVERTURE MONDIALE",   "世界カバレッジ") }
     var statsContinents:       String { t("continents",           "kontynenty",            "continentes",          "continents",            "大陸") }
     var statsFlightsCount:     String { t("flights",              "lotów",                 "vuelos",               "vols",                  "フライト") }

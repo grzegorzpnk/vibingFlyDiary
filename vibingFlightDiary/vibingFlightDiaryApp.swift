@@ -18,6 +18,10 @@ struct vibingFlightDiaryApp: App {
             fatalError("Failed to create ModelContainer: \(error)")
         }
         sync.start(modelContext: modelContainer.mainContext)
+        // Pre-warm country shapes off main thread so Map tab doesn't block on first open
+        Task.detached(priority: .utility) {
+            _ = CountryShapeService.shared.shapes.count
+        }
     }
 
     var body: some Scene {

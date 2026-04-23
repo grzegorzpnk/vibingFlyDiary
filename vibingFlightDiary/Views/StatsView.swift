@@ -70,6 +70,16 @@ struct StatsView: View {
         }.sorted { $0.count > $1.count }
     }
 
+    private var domesticCount: Int {
+        past.filter { f in
+            guard let o = airportService.airport(for: f.originIATA),
+                  let d = airportService.airport(for: f.destinationIATA) else { return false }
+            return o.country == d.country
+        }.count
+    }
+
+    private var internationalCount: Int { past.count - domesticCount }
+
     private var countryFlags: [String] {
         visitedCountries.sorted().compactMap { iso -> String? in
             let flag = iso.uppercased().unicodeScalars
@@ -604,6 +614,98 @@ struct StatsView: View {
                     barColor: FDColor.blue
                 )
             }
+            if !past.isEmpty {
+                domesticIntlCard
+            }
+        }
+    }
+
+    // MARK: - Domestic vs International
+
+    private var domesticIntlCard: some View {
+        let total = past.count
+        let domPct = total > 0 ? Double(domesticCount) / Double(total) : 0
+        let intlPct = total > 0 ? Double(internationalCount) / Double(total) : 0
+
+        return VStack(alignment: .leading, spacing: 14) {
+            Text(ls.statsDomesticVsIntl)
+                .font(FDFont.ui(10, weight: .medium))
+                .foregroundStyle(FDColor.textDim)
+                .tracking(1.5)
+
+            HStack(spacing: 20) {
+                // Donut ring
+                ZStack {
+                    Circle()
+                        .stroke(FDColor.surface3, lineWidth: 10)
+
+                    Circle()
+                        .trim(from: 0, to: animateCharts ? intlPct : 0)
+                        .stroke(FDColor.gold, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                        .rotationEffect(.degrees(-90))
+                        .animation(.spring(response: 0.8, dampingFraction: 0.8).delay(0.1), value: animateCharts)
+
+                    Circle()
+                        .trim(from: intlPct, to: animateCharts ? 1.0 : intlPct)
+                        .stroke(FDColor.blue, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                        .rotationEffect(.degrees(-90))
+                        .animation(.spring(response: 0.8, dampingFraction: 0.8).delay(0.2), value: animateCharts)
+
+                    VStack(spacing: 2) {
+                        Text("\(total)")
+                            .font(FDFont.display(20, weight: .bold))
+                            .foregroundStyle(FDColor.text)
+                        Text(ls.statsFlightsCount)
+                            .font(FDFont.ui(8, weight: .medium))
+                            .foregroundStyle(FDColor.textDim)
+                            .tracking(0.5)
+                    }
+                }
+                .frame(width: 90, height: 90)
+
+                // Legend
+                VStack(alignment: .leading, spacing: 14) {
+                    legendRow(
+                        color: FDColor.gold,
+                        icon: "globe",
+                        label: ls.statsInternational,
+                        count: internationalCount,
+                        pct: intlPct
+                    )
+                    legendRow(
+                        color: FDColor.blue,
+                        icon: "house.fill",
+                        label: ls.statsDomestic,
+                        count: domesticCount,
+                        pct: domPct
+                    )
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(20)
+        .background(FDColor.surface2)
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func legendRow(color: Color, icon: String, label: String, count: Int, pct: Double) -> some View {
+        HStack(spacing: 10) {
+            Circle()
+                .fill(color)
+                .frame(width: 8, height: 8)
+            Image(systemName: icon)
+                .font(.system(size: 11))
+                .foregroundStyle(color)
+                .frame(width: 16)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label)
+                    .font(FDFont.ui(12, weight: .medium))
+                    .foregroundStyle(FDColor.text)
+                Text("\(count) · \(Int(pct * 100))%")
+                    .font(FDFont.ui(10))
+                    .foregroundStyle(FDColor.textMuted)
+            }
         }
     }
 
@@ -759,7 +861,7 @@ struct StatsView: View {
                     VStack(spacing: 10) {
                         ForEach(Array(flightsByYear.enumerated()), id: \.offset) { idx, item in
                             HStack(spacing: 12) {
-                                Text("\(item.year)")
+                                Text(verbatim: "\(item.year)")
                                     .font(FDFont.ui(12, weight: .medium))
                                     .foregroundStyle(FDColor.textMuted)
                                     .frame(width: 42, alignment: .leading)
@@ -1087,7 +1189,7 @@ struct StatsView: View {
                     VStack(spacing: 10) {
                         ForEach(Array(hoursByYear.enumerated()), id: \.offset) { idx, item in
                             HStack(spacing: 12) {
-                                Text("\(item.year)")
+                                Text(verbatim: "\(item.year)")
                                     .font(FDFont.ui(12, weight: .medium))
                                     .foregroundStyle(FDColor.textMuted)
                                     .frame(width: 42, alignment: .leading)

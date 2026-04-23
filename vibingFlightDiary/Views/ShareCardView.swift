@@ -520,7 +520,7 @@ struct YearStatsShareCard: View {
 
                     // Year headline
                     VStack(spacing: h * 0.008) {
-                        Text("\(year)")
+                        Text(verbatim: "\(year)")
                             .font(.system(size: w * 0.2, weight: .heavy, design: .rounded))
                             .foregroundStyle(Color(hex: "C9A96E"))
                         Text("YOUR YEAR IN REVIEW")

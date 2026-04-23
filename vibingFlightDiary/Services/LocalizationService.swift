@@ -234,6 +234,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     // MARK: - Stats
     var statsComingSoon:       String { t("Coming soon",          "Wkrótce",               "Próximamente",         "Bientôt",               "近日公開") }
     var statsYourJourney:      String { t("YOUR JOURNEY",         "TWOJA PODRÓŻ",          "TU VIAJE",             "VOTRE VOYAGE",          "あなたの旅") }
+    var shareYourJourney:      String { t("Share your journey",    "Udostępnij swoją podróż","Comparte tu viaje",   "Partagez votre voyage", "旅をシェア") }
     var statsAroundEarth:      String { t("around the Earth",     "dookoła Ziemi",         "alrededor de la Tierra","autour de la Terre",   "地球一周") }
     var statsFlightsLabel:     String { t("FLIGHTS",              "LOTY",                  "VUELOS",               "VOLS",                  "フライト") }
     var statsCountriesLabel:   String { t("COUNTRIES",            "KRAJE",                 "PAÍSES",               "PAYS",                  "カ国") }

@@ -154,13 +154,17 @@ struct FlightMapShareCard: View {
         }
     }
 
-    // MARK: - Canvas: Arcs
+    // MARK: - Canvas: Arcs (deduplicated — one arc per unique route)
 
     private func drawArcs(ctx: GraphicsContext, size: CGSize) {
         let glowW  = max(0.8, size.width * 0.003)
         let solidW = max(0.4, size.width * 0.001)
 
+        var seen = Set<String>()
         for flight in past {
+            let key = routeKey(flight.originIATA, flight.destinationIATA)
+            guard seen.insert(key).inserted else { continue }
+
             guard
                 let origin = airportService.airport(for: flight.originIATA),
                 let dest   = airportService.airport(for: flight.destinationIATA)
@@ -176,6 +180,10 @@ struct FlightMapShareCard: View {
             ctx.stroke(glow,  with: .color(Color(hex: "C9A96E").opacity(0.22)), lineWidth: glowW)
             ctx.stroke(solid, with: .color(Color(hex: "C9A96E").opacity(0.88)), lineWidth: solidW)
         }
+    }
+
+    private func routeKey(_ a: String, _ b: String) -> String {
+        a < b ? "\(a)-\(b)" : "\(b)-\(a)"
     }
 
     // MARK: - Canvas: Airport Dots
@@ -340,7 +348,10 @@ struct TopRoutesShareCard: View {
     private var topRoutes: [(origin: String, dest: String, count: Int)] {
         var counts: [String: Int] = [:]
         for f in past {
-            counts["\(f.originIATA)|\(f.destinationIATA)", default: 0] += 1
+            let key = f.originIATA < f.destinationIATA
+                ? "\(f.originIATA)|\(f.destinationIATA)"
+                : "\(f.destinationIATA)|\(f.originIATA)"
+            counts[key, default: 0] += 1
         }
         return counts
             .sorted { $0.value > $1.value }
@@ -430,7 +441,7 @@ struct TopRoutesShareCard: View {
                 Text(origin)
                     .font(.system(size: w * 0.068, weight: .bold, design: .rounded))
                     .foregroundStyle(Color(hex: "F0EEE8"))
-                Image(systemName: "arrow.right")
+                Image(systemName: "arrow.left.arrow.right")
                     .font(.system(size: w * 0.028, weight: .semibold))
                     .foregroundStyle(Color(hex: "C9A96E").opacity(0.7))
                 Text(dest)

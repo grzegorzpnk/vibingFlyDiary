@@ -55,6 +55,7 @@ final class SyncService {
         if let v = flight.airline      { data["airline"]      = v }
         if let v = flight.flightNumber { data["flightNumber"] = v }
         if let v = flight.aircraftType { data["aircraftType"] = v }
+        if let v = flight.price       { data["price"]        = v }
 
         userFlights(uid: uid).document(flight.id.uuidString).setData(data, merge: true)
     }
@@ -135,6 +136,7 @@ final class SyncService {
             existing.airline         = data["airline"]      as? String
             existing.flightNumber    = data["flightNumber"] as? String
             existing.aircraftType    = data["aircraftType"] as? String
+            existing.price           = data["price"]        as? Double
         } else {
             let flight = Flight(
                 originIATA:      originIATA,
@@ -145,7 +147,8 @@ final class SyncService {
                 flightClass:     (data["flightClass"] as? String).flatMap(FlightClass.init),
                 airline:         data["airline"]      as? String,
                 aircraftType:    data["aircraftType"] as? String,
-                flightNumber:    data["flightNumber"] as? String
+                flightNumber:    data["flightNumber"] as? String,
+                price:           data["price"]        as? Double
             )
             flight.id = uuid   // preserve original UUID so future syncs match correctly
             ctx.insert(flight)

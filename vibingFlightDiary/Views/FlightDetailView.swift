@@ -39,7 +39,7 @@ struct FlightDetailView: View {
                     }
                     Divider().background(FDColor.border).padding(.horizontal, 24)
                     metaSection
-                    if flight.airline != nil || flight.seatType != nil || flight.flightClass != nil || flight.aircraftType != nil || flight.flightNumber != nil {
+                    if flight.airline != nil || flight.seatType != nil || flight.flightClass != nil || flight.aircraftType != nil || flight.flightNumber != nil || flight.price != nil {
                         Divider().background(FDColor.border).padding(.horizontal, 24)
                         travelSection
                     }
@@ -192,7 +192,8 @@ struct FlightDetailView: View {
             flight.airline.map { (ls.airlineLabel, $0, "airplane.circle") },
             flight.aircraftType.map { (ls.aircraftLabel, $0, "airplane") },
             flight.flightClass.map { (ls.classLabel, ls.flightClassLabel($0), $0.icon) },
-            flight.seatType.map { (ls.seatLabel, ls.seatTypeLabel($0), $0.icon) }
+            flight.seatType.map { (ls.seatLabel, ls.seatTypeLabel($0), $0.icon) },
+            flight.price.map { (ls.priceLabel, ls.formatPrice($0), "banknote") }
         ].compactMap { $0 }
 
         let rows = stride(from: 0, to: items.count, by: 2).map {

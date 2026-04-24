@@ -19,6 +19,7 @@ struct AddFlightView: View {
     @State private var airline: String
     @State private var flightNumber: String
     @State private var aircraftType: String?
+    @State private var priceText: String
     @State private var showAirlineSuggestions: Bool = false
     @State private var airlineAutoFilled = false
     @State private var showAircraftPicker = false
@@ -32,6 +33,7 @@ struct AddFlightView: View {
         _airline = State(initialValue: editingFlight?.airline ?? "")
         _flightNumber = State(initialValue: editingFlight?.flightNumber ?? "")
         _aircraftType = State(initialValue: editingFlight?.aircraftType)
+        _priceText = State(initialValue: editingFlight?.price.map { String(format: "%.2f", $0) } ?? "")
     }
 
     // Inline search state
@@ -323,6 +325,13 @@ struct AddFlightView: View {
                 .frame(height: 1)
                 .padding(.horizontal, 20)
 
+            priceField
+
+            Rectangle()
+                .fill(FDColor.border)
+                .frame(height: 1)
+                .padding(.horizontal, 20)
+
             aircraftField
         }
         .background(FDColor.surface2)
@@ -528,6 +537,29 @@ struct AddFlightView: View {
         }
     }
 
+    // MARK: - Price Field
+
+    private var priceField: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Text(ls.priceLabel)
+                    .font(FDFont.ui(10, weight: .medium))
+                    .foregroundStyle(FDColor.textDim)
+                    .tracking(1.2)
+                Text(ls.currency.rawValue)
+                    .font(FDFont.ui(10, weight: .medium))
+                    .foregroundStyle(FDColor.gold.opacity(0.6))
+            }
+            TextField(ls.pricePlaceholder, text: $priceText)
+                .font(FDFont.ui(15, weight: .medium))
+                .foregroundStyle(FDColor.text)
+                .tint(FDColor.gold)
+                .keyboardType(.decimalPad)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+    }
+
     // MARK: - Aircraft Field
 
     private var aircraftField: some View {
@@ -699,6 +731,7 @@ struct AddFlightView: View {
 
     private func save() {
         guard let o = origin, let d = destination, let km = distanceKm else { return }
+        let parsedPrice = Double(priceText.replacingOccurrences(of: ",", with: "."))
         let flightToSync: Flight
         if let ef = editingFlight {
             ef.originIATA      = o.iata
@@ -710,6 +743,7 @@ struct AddFlightView: View {
             ef.airline         = airline.isEmpty ? nil : airline
             ef.aircraftType    = aircraftType
             ef.flightNumber    = flightNumber.isEmpty ? nil : flightNumber
+            ef.price           = parsedPrice
             flightToSync = ef
         } else {
             let newFlight = Flight(
@@ -721,7 +755,8 @@ struct AddFlightView: View {
                 flightClass:     flightClass,
                 airline:         airline.isEmpty ? nil : airline,
                 aircraftType:    aircraftType,
-                flightNumber:    flightNumber.isEmpty ? nil : flightNumber
+                flightNumber:    flightNumber.isEmpty ? nil : flightNumber,
+                price:           parsedPrice
             )
             modelContext.insert(newFlight)
             flightToSync = newFlight

@@ -362,6 +362,9 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     // MARK: - Top Routes
     var statsTopRoutes:        String { t("TOP ROUTES",            "NAJCZĘSTSZE TRASY",     "RUTAS TOP",            "ROUTES PRINCIPALES",    "よく使うルート") }
 
+    // MARK: - Fun Facts
+    var statsFunFacts:         String { t("DID YOU KNOW?",          "CZY WIESZ, ŻE?",       "¿SABÍAS QUE?",         "LE SAVIEZ-VOUS ?",      "知ってた？") }
+
     // MARK: - Flights Detail Sheet
     var flightsLogged:         String { t("flights logged",        "lotów zarejestrowanych", "vuelos registrados",    "vols enregistrés",      "フライト記録") }
     var statsFlightsPerYear:   String { t("FLIGHTS PER YEAR",      "LOTY W ROKU",            "VUELOS POR AÑO",        "VOLS PAR AN",           "年別フライト") }

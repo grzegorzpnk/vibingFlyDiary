@@ -423,6 +423,10 @@ struct StatsView: View {
                             heatmapSection
                         }
 
+                        if funFacts.count >= 2 {
+                            funFactsSection
+                        }
+
                         deepDiveDivider(ls.statsCountriesLabel)
                         countriesDeepSection
 
@@ -1601,6 +1605,103 @@ struct StatsView: View {
             .background(FDColor.surface2)
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
             .clipShape(RoundedRectangle(cornerRadius: 16))
+        }
+    }
+
+    // MARK: - Fun Facts Section
+
+    private var funFacts: [String] {
+        var facts: [String] = []
+        let km = totalKm
+        // Distance comparisons
+        if km > 0 {
+            let londonNY = 5_570.0
+            let timesLondonNY = km / londonNY
+            if timesLondonNY >= 1 {
+                facts.append(String(format: "You've flown the London–New York distance %.1f times", timesLondonNY))
+            }
+        }
+        if earthLaps >= 0.01 {
+            facts.append(String(format: "You've circled the Earth %.2f times", earthLaps))
+        }
+        if moonTrips >= 0.001 {
+            facts.append(String(format: "You're %.1f%% of the way to the Moon", moonTrips * 100))
+        }
+
+        // Time in the air
+        let hours = totalHours
+        if hours >= 1 {
+            let days = Double(hours) / 24.0
+            if days >= 1 {
+                facts.append(String(format: "You've spent %.1f days in the air", days))
+            }
+            let movies = hours * 60 / 120 // ~120 min avg movie
+            if movies >= 2 {
+                facts.append("You could have watched \(movies) movies during your flights")
+            }
+        }
+
+        // Speed
+        if km > 0 && hours > 0 {
+            let avgSpeed = km / Double(hours)
+            facts.append(String(format: "Your average flying speed: %.0f km/h", avgSpeed))
+        }
+
+        // Airports & countries
+        let airports = visitedAirports.count
+        if airports >= 3 {
+            facts.append("You've been to \(airports) different airports")
+        }
+        let countries = visitedCountries.count
+        if countries >= 2 {
+            facts.append("You've visited \(countries) countries — that's \(Int(Double(countries) / 195.0 * 100))% of the world")
+        }
+
+        // Busiest month
+        let cal = Calendar.current
+        var monthCounts: [Int: Int] = [:]
+        for f in past {
+            let m = cal.component(.month, from: f.date)
+            monthCounts[m, default: 0] += 1
+        }
+        if let (busyMonth, busyCount) = monthCounts.max(by: { $0.value < $1.value }), busyCount >= 2 {
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US")
+            let monthName = formatter.monthSymbols[busyMonth - 1]
+            facts.append("\(monthName) is your busiest month with \(busyCount) flights")
+        }
+
+        // Longest flight
+        if let longest = past.max(by: { $0.distanceKm < $1.distanceKm }) {
+            facts.append(String(format: "Your longest flight: %@ → %@ (%.0f km)", longest.originIATA, longest.destinationIATA, longest.distanceKm))
+        }
+
+        return facts
+    }
+
+    private var funFactsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(ls.statsFunFacts)
+                .font(FDFont.ui(11, weight: .medium))
+                .foregroundStyle(FDColor.textMuted)
+                .tracking(1.2)
+
+            VStack(spacing: 8) {
+                ForEach(Array(funFacts.prefix(4).enumerated()), id: \.offset) { index, fact in
+                    HStack(alignment: .top, spacing: 10) {
+                        Text("💡")
+                            .font(.system(size: 14))
+                        Text(fact)
+                            .font(FDFont.ui(13, weight: .regular))
+                            .foregroundStyle(FDColor.text)
+                    }
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(FDColor.surface2)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(FDColor.border, lineWidth: 1))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+            }
         }
     }
 

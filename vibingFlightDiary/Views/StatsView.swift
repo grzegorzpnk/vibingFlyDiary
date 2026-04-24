@@ -382,7 +382,7 @@ struct StatsView: View {
                 emptyState
             } else {
                 ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 16) {
+                    LazyVStack(alignment: .leading, spacing: 16) {
                         heroCard
                         shareJourneyBanner
                         vitalsGrid

@@ -351,6 +351,11 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var achieveCollector:      String { t("Airport Collector",     "Kolekcjoner Lotnisk",   "Coleccionista",        "Collectionneur",        "空港コレクター") }
     var achieveCollectorSub:   String { t("Visit 10 airports",     "Odwiedź 10 lotnisk",    "Visita 10 aeropuertos","Visitez 10 aéroports",  "10空港訪問") }
 
+    // MARK: - Year Comparison
+    var statsYearVsYear:       String { t("YEAR VS YEAR",          "ROK DO ROKU",           "AÑO VS AÑO",          "ANNÉE VS ANNÉE",        "年度比較") }
+    var statsVs:               String { t("vs",                    "vs",                    "vs",                   "vs",                    "vs") }
+    var statsNoDataLastYear:   String { t("No data for last year", "Brak danych z ubiegłego roku","Sin datos del año pasado","Pas de données l'an dernier","昨年のデータなし") }
+
     // MARK: - Top Routes
     var statsTopRoutes:        String { t("TOP ROUTES",            "NAJCZĘSTSZE TRASY",     "RUTAS TOP",            "ROUTES PRINCIPALES",    "よく使うルート") }
 

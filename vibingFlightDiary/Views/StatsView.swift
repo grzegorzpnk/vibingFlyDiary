@@ -214,6 +214,32 @@ struct StatsView: View {
         }.sorted { $0.year < $1.year }
     }
 
+    // MARK: - Year Comparison
+
+    private struct YearStats {
+        let year: Int
+        let flights: Int
+        let km: Double
+        let hours: Int
+        let countries: Int
+    }
+
+    private func statsFor(year: Int) -> YearStats {
+        let cal = Calendar.current
+        let yearFlights = past.filter { cal.component(.year, from: $0.date) == year }
+        let km = yearFlights.reduce(0.0) { $0 + $1.distanceKm }
+        let hours = Int(yearFlights.reduce(0.0) { $0 + ($1.distanceKm / 850.0 + 0.5) })
+        var countries = Set<String>()
+        for f in yearFlights {
+            if let o = airportService.airport(for: f.originIATA) { countries.insert(o.country) }
+            if let d = airportService.airport(for: f.destinationIATA) { countries.insert(d.country) }
+        }
+        return YearStats(year: year, flights: yearFlights.count, km: km, hours: hours, countries: countries.count)
+    }
+
+    private var currentYear: Int { Calendar.current.component(.year, from: .now) }
+    private var hasLastYearData: Bool { past.contains { Calendar.current.component(.year, from: $0.date) == currentYear - 1 } }
+
     // MARK: - Top Routes
 
     private var topRoutes: [(origin: String, dest: String, count: Int)] {
@@ -363,6 +389,10 @@ struct StatsView: View {
                         deepDiveDivider(ls.statsFlightsLabel)
                         lockedSection(isLocked: past.count < 3) {
                             flightsDeepSection
+                        }
+
+                        if hasLastYearData {
+                            yearComparisonSection
                         }
 
                         if topRoutes.count >= 2 {
@@ -1492,6 +1522,99 @@ struct StatsView: View {
         .background(FDColor.surface2)
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
         .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    // MARK: - Year vs Year Section
+
+    private var yearComparisonSection: some View {
+        let thisY = statsFor(year: currentYear)
+        let lastY = statsFor(year: currentYear - 1)
+
+        return VStack(alignment: .leading, spacing: 14) {
+            sectionHeader(ls.statsYearVsYear)
+
+            HStack(spacing: 0) {
+                // This year column
+                VStack(spacing: 4) {
+                    Text(verbatim: "\(currentYear)")
+                        .font(FDFont.display(16, weight: .bold))
+                        .foregroundStyle(FDColor.gold)
+                }
+                .frame(maxWidth: .infinity)
+
+                Text(ls.statsVs)
+                    .font(FDFont.ui(11, weight: .medium))
+                    .foregroundStyle(FDColor.textDim)
+
+                // Last year column
+                VStack(spacing: 4) {
+                    Text(verbatim: "\(currentYear - 1)")
+                        .font(FDFont.display(16, weight: .bold))
+                        .foregroundStyle(FDColor.textMuted)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .padding(.horizontal, 16)
+
+            let rows: [(label: String, thisVal: Int, lastVal: Int)] = [
+                (ls.statsFlightsLabel, thisY.flights, lastY.flights),
+                (ls.statsCountriesLabel, thisY.countries, lastY.countries),
+                (ls.statsInTheAir, thisY.hours, lastY.hours),
+            ]
+
+            VStack(spacing: 0) {
+                ForEach(Array(rows.enumerated()), id: \.offset) { idx, row in
+                    if idx > 0 {
+                        Rectangle().fill(FDColor.border).frame(height: 1).padding(.horizontal, 16)
+                    }
+                    yearComparisonRow(label: row.label, thisYear: row.thisVal, lastYear: row.lastVal)
+                }
+            }
+            .background(FDColor.surface2)
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+        }
+    }
+
+    private func yearComparisonRow(label: String, thisYear: Int, lastYear: Int) -> some View {
+        let delta = thisYear - lastYear
+        let isUp = delta > 0
+        let isDown = delta < 0
+
+        return HStack(spacing: 12) {
+            Text(label)
+                .font(FDFont.ui(10, weight: .medium))
+                .foregroundStyle(FDColor.textDim)
+                .tracking(1.2)
+                .frame(width: 70, alignment: .leading)
+
+            Text("\(thisYear)")
+                .font(FDFont.display(18, weight: .bold))
+                .foregroundStyle(FDColor.gold)
+                .frame(maxWidth: .infinity)
+
+            if delta != 0 {
+                HStack(spacing: 3) {
+                    Image(systemName: isUp ? "arrow.up.right" : "arrow.down.right")
+                        .font(.system(size: 10, weight: .bold))
+                    Text(isUp ? "+\(delta)" : "\(delta)")
+                        .font(FDFont.ui(11, weight: .semibold))
+                }
+                .foregroundStyle(isUp ? Color(hex: "2E7D32") : Color(hex: "E05252"))
+                .frame(width: 52)
+            } else {
+                Text("=")
+                    .font(FDFont.ui(11, weight: .medium))
+                    .foregroundStyle(FDColor.textDim)
+                    .frame(width: 52)
+            }
+
+            Text("\(lastYear)")
+                .font(FDFont.display(18, weight: .bold))
+                .foregroundStyle(FDColor.textMuted)
+                .frame(maxWidth: .infinity)
+        }
+        .padding(.horizontal, 16).padding(.vertical, 14)
     }
 
     // MARK: - Top Routes Section

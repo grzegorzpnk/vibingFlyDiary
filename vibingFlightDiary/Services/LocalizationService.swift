@@ -328,6 +328,29 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var statsPerKm:            String { t("per km",                "za km",                 "por km",               "par km",                "/km") }
     var statsPerMi:            String { t("per mi",                "za mi",                 "por mi",               "par mi",                "/mi") }
 
+    // MARK: - Achievements
+    var statsAchievements:     String { t("ACHIEVEMENTS",          "OSIĄGNIĘCIA",           "LOGROS",               "SUCCÈS",                "実績") }
+    var achieveFirstFlight:    String { t("First Flight",          "Pierwszy Lot",          "Primer Vuelo",         "Premier Vol",           "初フライト") }
+    var achieveFirstFlightSub: String { t("Log your first flight", "Zarejestruj pierwszy lot","Registra tu primer vuelo","Enregistrez votre premier vol","最初のフライトを記録") }
+    var achieveFreqFlyer:      String { t("Frequent Flyer",        "Częsty Pasażer",        "Viajero Frecuente",    "Grand Voyageur",        "常連旅客") }
+    var achieveFreqFlyerSub:   String { t("Log 10 flights",        "Zarejestruj 10 lotów",  "Registra 10 vuelos",   "Enregistrez 10 vols",   "10フライト記録") }
+    var achieveJetSetter:      String { t("Jet Setter",            "Globtroter",            "Trotamundos",          "Jet-Setteur",           "ジェットセッター") }
+    var achieveJetSetterSub:   String { t("Log 50 flights",        "Zarejestruj 50 lotów",  "Registra 50 vuelos",   "Enregistrez 50 vols",   "50フライト記録") }
+    var achieveExplorer:       String { t("Explorer",              "Odkrywca",              "Explorador",           "Explorateur",           "探検家") }
+    var achieveExplorerSub:    String { t("Visit 5 countries",     "Odwiedź 5 krajów",      "Visita 5 países",      "Visitez 5 pays",        "5カ国訪問") }
+    var achieveGlobeTrotter:   String { t("Globe Trotter",         "Obieżyświat",           "Trotamundos",          "Globe-Trotteur",        "世界旅行者") }
+    var achieveGlobeTrotterSub:String { t("Visit 15 countries",    "Odwiedź 15 krajów",     "Visita 15 países",     "Visitez 15 pays",       "15カ国訪問") }
+    var achieveWorldCitizen:   String { t("World Citizen",         "Obywatel Świata",       "Ciudadano del Mundo",  "Citoyen du Monde",      "世界市民") }
+    var achieveWorldCitizenSub:String { t("Visit 30 countries",    "Odwiedź 30 krajów",     "Visita 30 países",     "Visitez 30 pays",       "30カ国訪問") }
+    var achieveAroundWorld:    String { t("Around the World",      "Dookoła Świata",        "Vuelta al Mundo",      "Tour du Monde",         "世界一周") }
+    var achieveAroundWorldSub: String { t("Fly 40,075 km total",   "Przeleć łącznie 40 075 km","Vuela 40.075 km en total","Parcourez 40 075 km au total","合計40,075km飛行") }
+    var achieveToTheMoon:      String { t("To the Moon",           "Na Księżyc",            "A la Luna",            "Vers la Lune",          "月まで") }
+    var achieveToTheMoonSub:   String { t("Fly 384,400 km total",  "Przeleć łącznie 384 400 km","Vuela 384.400 km en total","Parcourez 384 400 km au total","合計384,400km飛行") }
+    var achieveSkyTimer:       String { t("Sky Timer",             "Czas w Chmurach",       "Reloj Aéreo",          "Chrono du Ciel",        "スカイタイマー") }
+    var achieveSkyTimerSub:    String { t("Spend 100h in the air", "Spędź 100h w powietrzu","Pasa 100h en el aire", "Passez 100h en vol",    "飛行時間100時間") }
+    var achieveCollector:      String { t("Airport Collector",     "Kolekcjoner Lotnisk",   "Coleccionista",        "Collectionneur",        "空港コレクター") }
+    var achieveCollectorSub:   String { t("Visit 10 airports",     "Odwiedź 10 lotnisk",    "Visita 10 aeropuertos","Visitez 10 aéroports",  "10空港訪問") }
+
     // MARK: - Flights Detail Sheet
     var flightsLogged:         String { t("flights logged",        "lotów zarejestrowanych", "vuelos registrados",    "vols enregistrés",      "フライト記録") }
     var statsFlightsPerYear:   String { t("FLIGHTS PER YEAR",      "LOTY W ROKU",            "VUELOS POR AÑO",        "VOLS PAR AN",           "年別フライト") }

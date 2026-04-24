@@ -274,6 +274,36 @@ struct StatsView: View {
             .prefix(5).map { $0 }
     }
 
+    // MARK: - Achievements
+
+    private struct Achievement: Identifiable {
+        let id: String
+        let icon: String
+        let title: String
+        let subtitle: String
+        let current: Double
+        let target: Double
+        var progress: Double { min(1.0, current / target) }
+        var isUnlocked: Bool { current >= target }
+    }
+
+    private var achievements: [Achievement] {
+        [
+            Achievement(id: "first",     icon: "airplane.departure", title: ls.achieveFirstFlight,  subtitle: ls.achieveFirstFlightSub, current: Double(past.count), target: 1),
+            Achievement(id: "freq",      icon: "repeat",             title: ls.achieveFreqFlyer,    subtitle: ls.achieveFreqFlyerSub,   current: Double(past.count), target: 10),
+            Achievement(id: "jet",       icon: "bolt.fill",          title: ls.achieveJetSetter,    subtitle: ls.achieveJetSetterSub,   current: Double(past.count), target: 50),
+            Achievement(id: "explorer",  icon: "flag.fill",          title: ls.achieveExplorer,     subtitle: ls.achieveExplorerSub,    current: Double(visitedCountries.count), target: 5),
+            Achievement(id: "globe",     icon: "globe",              title: ls.achieveGlobeTrotter, subtitle: ls.achieveGlobeTrotterSub,current: Double(visitedCountries.count), target: 15),
+            Achievement(id: "citizen",   icon: "globe.americas.fill",title: ls.achieveWorldCitizen, subtitle: ls.achieveWorldCitizenSub,current: Double(visitedCountries.count), target: 30),
+            Achievement(id: "earth",     icon: "globe.europe.africa",title: ls.achieveAroundWorld,  subtitle: ls.achieveAroundWorldSub, current: totalKm, target: 40_075),
+            Achievement(id: "moon",      icon: "moon.stars.fill",    title: ls.achieveToTheMoon,    subtitle: ls.achieveToTheMoonSub,   current: totalKm, target: 384_400),
+            Achievement(id: "sky",       icon: "clock.fill",         title: ls.achieveSkyTimer,     subtitle: ls.achieveSkyTimerSub,    current: Double(totalHours), target: 100),
+            Achievement(id: "collector", icon: "building.2.fill",    title: ls.achieveCollector,    subtitle: ls.achieveCollectorSub,   current: Double(visitedAirports.count), target: 10),
+        ]
+    }
+
+    private var unlockedCount: Int { achievements.filter(\.isUnlocked).count }
+
     // MARK: - Body
 
     var body: some View {
@@ -287,6 +317,7 @@ struct StatsView: View {
                         heroCard
                         shareJourneyBanner
                         vitalsGrid
+                        achievementsSection
 
                         // 2+ flights to compare longest vs shortest
                         lockedSection(isLocked: past.count < 2) {
@@ -463,6 +494,94 @@ struct StatsView: View {
             .clipShape(RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Achievements Section
+
+    private var achievementsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                sectionHeader(ls.statsAchievements)
+                Spacer()
+                Text("\(unlockedCount)/\(achievements.count)")
+                    .font(FDFont.ui(12, weight: .medium))
+                    .foregroundStyle(FDColor.gold)
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(achievements) { a in
+                        achievementCard(a)
+                    }
+                }
+                .padding(.horizontal, 2)
+            }
+        }
+    }
+
+    private func achievementCard(_ a: Achievement) -> some View {
+        VStack(spacing: 10) {
+            ZStack {
+                Circle()
+                    .stroke(FDColor.surface3, lineWidth: 4)
+                    .frame(width: 52, height: 52)
+
+                Circle()
+                    .trim(from: 0, to: animateCharts ? a.progress : 0)
+                    .stroke(
+                        a.isUnlocked ? FDColor.gold : FDColor.textDim,
+                        style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90))
+                    .frame(width: 52, height: 52)
+                    .animation(
+                        .spring(response: 0.8, dampingFraction: 0.8)
+                            .delay(Double(achievements.firstIndex(where: { $0.id == a.id }) ?? 0) * 0.05),
+                        value: animateCharts
+                    )
+
+                Image(systemName: a.icon)
+                    .font(.system(size: 18))
+                    .foregroundStyle(a.isUnlocked ? FDColor.gold : FDColor.textDim)
+            }
+
+            VStack(spacing: 3) {
+                Text(a.title)
+                    .font(FDFont.ui(11, weight: .semibold))
+                    .foregroundStyle(a.isUnlocked ? FDColor.text : FDColor.textDim)
+                    .lineLimit(1)
+                Text(a.subtitle)
+                    .font(FDFont.ui(9))
+                    .foregroundStyle(FDColor.textDim)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+            }
+
+            if !a.isUnlocked {
+                Text("\(Int(a.current))/\(Int(a.target))")
+                    .font(FDFont.ui(9, weight: .medium))
+                    .foregroundStyle(FDColor.textMuted)
+            }
+        }
+        .frame(width: 100)
+        .padding(.vertical, 14)
+        .padding(.horizontal, 8)
+        .background(
+            ZStack {
+                FDColor.surface2
+                if a.isUnlocked {
+                    RadialGradient(
+                        colors: [FDColor.gold.opacity(0.1), .clear],
+                        center: .top, startRadius: 0, endRadius: 60
+                    )
+                }
+            }
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(a.isUnlocked ? FDColor.gold.opacity(0.3) : FDColor.border, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
     // MARK: - Vitals Grid

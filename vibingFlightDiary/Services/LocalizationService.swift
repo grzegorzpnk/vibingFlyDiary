@@ -351,6 +351,9 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var achieveCollector:      String { t("Airport Collector",     "Kolekcjoner Lotnisk",   "Coleccionista",        "Collectionneur",        "空港コレクター") }
     var achieveCollectorSub:   String { t("Visit 10 airports",     "Odwiedź 10 lotnisk",    "Visita 10 aeropuertos","Visitez 10 aéroports",  "10空港訪問") }
 
+    // MARK: - Top Routes
+    var statsTopRoutes:        String { t("TOP ROUTES",            "NAJCZĘSTSZE TRASY",     "RUTAS TOP",            "ROUTES PRINCIPALES",    "よく使うルート") }
+
     // MARK: - Flights Detail Sheet
     var flightsLogged:         String { t("flights logged",        "lotów zarejestrowanych", "vuelos registrados",    "vols enregistrés",      "フライト記録") }
     var statsFlightsPerYear:   String { t("FLIGHTS PER YEAR",      "LOTY W ROKU",            "VUELOS POR AÑO",        "VOLS PAR AN",           "年別フライト") }

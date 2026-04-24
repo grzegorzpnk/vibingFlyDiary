@@ -214,6 +214,28 @@ struct StatsView: View {
         }.sorted { $0.year < $1.year }
     }
 
+    // MARK: - Top Routes
+
+    private var topRoutes: [(origin: String, dest: String, count: Int)] {
+        var counts: [String: (a: String, b: String, count: Int)] = [:]
+        for f in past {
+            let key = f.originIATA < f.destinationIATA
+                ? "\(f.originIATA)-\(f.destinationIATA)"
+                : "\(f.destinationIATA)-\(f.originIATA)"
+            if let existing = counts[key] {
+                counts[key] = (existing.a, existing.b, existing.count + 1)
+            } else {
+                let a = f.originIATA < f.destinationIATA ? f.originIATA : f.destinationIATA
+                let b = f.originIATA < f.destinationIATA ? f.destinationIATA : f.originIATA
+                counts[key] = (a, b, 1)
+            }
+        }
+        return counts.values
+            .sorted { $0.count > $1.count }
+            .prefix(5)
+            .map { ($0.a, $0.b, $0.count) }
+    }
+
     // MARK: - Money Deep-Dive
 
     private var pricedFlights: [Flight] { past.filter { $0.price != nil } }
@@ -341,6 +363,10 @@ struct StatsView: View {
                         deepDiveDivider(ls.statsFlightsLabel)
                         lockedSection(isLocked: past.count < 3) {
                             flightsDeepSection
+                        }
+
+                        if topRoutes.count >= 2 {
+                            topRoutesSection
                         }
 
                         deepDiveDivider(ls.statsCountriesLabel)
@@ -1466,6 +1492,53 @@ struct StatsView: View {
         .background(FDColor.surface2)
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
         .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    // MARK: - Top Routes Section
+
+    private var topRoutesSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            sectionHeader(ls.statsTopRoutes)
+            VStack(spacing: 0) {
+                ForEach(Array(topRoutes.enumerated()), id: \.offset) { idx, route in
+                    if idx > 0 {
+                        Rectangle().fill(FDColor.border).frame(height: 1).padding(.leading, 56)
+                    }
+                    HStack(spacing: 14) {
+                        Text("#\(idx + 1)")
+                            .font(FDFont.ui(11, weight: .bold))
+                            .foregroundStyle(idx == 0 ? FDColor.gold : FDColor.textDim)
+                            .frame(width: 24)
+
+                        HStack(spacing: 6) {
+                            Text(route.origin)
+                                .font(FDFont.display(16, weight: .bold))
+                                .foregroundStyle(FDColor.text)
+                            Image(systemName: "arrow.left.arrow.right")
+                                .font(.system(size: 10))
+                                .foregroundStyle(idx == 0 ? FDColor.gold : FDColor.textMuted)
+                            Text(route.dest)
+                                .font(FDFont.display(16, weight: .bold))
+                                .foregroundStyle(idx == 0 ? FDColor.gold : FDColor.text)
+                        }
+
+                        Spacer()
+
+                        Text("×\(route.count)")
+                            .font(FDFont.ui(13, weight: .semibold))
+                            .foregroundStyle(idx == 0 ? FDColor.gold : FDColor.textMuted)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(idx == 0 ? FDColor.gold.opacity(0.12) : FDColor.surface3)
+                            .clipShape(Capsule())
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 14)
+                }
+            }
+            .background(FDColor.surface2)
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+        }
     }
 
     // MARK: - Deep-Dive: Money

@@ -9,6 +9,7 @@ struct StatsView: View {
 
     @State private var animateCharts = false
     @State private var showShareCard = false
+    @State private var counterProgress: Double = 0
 
     private var isLight: Bool {
         switch ls.theme {
@@ -451,8 +452,14 @@ struct StatsView: View {
                     withAnimation(.spring(response: 0.7, dampingFraction: 0.82).delay(0.15)) {
                         animateCharts = true
                     }
+                    withAnimation(.easeOut(duration: 1.0).delay(0.1)) {
+                        counterProgress = 1
+                    }
                 }
-                .onDisappear { animateCharts = false }
+                .onDisappear {
+                    animateCharts = false
+                    counterProgress = 0
+                }
             }
         }
         .sheet(isPresented: $showShareCard) {
@@ -495,13 +502,13 @@ struct StatsView: View {
                     .padding(.bottom, 14)
 
                 HStack(alignment: .lastTextBaseline, spacing: 8) {
-                    Text(ls.distanceUnit == .miles
-                         ? Int(totalKm * 0.621371).formatted()
-                         : Int(totalKm).formatted())
+                    Text(animatedInt(ls.distanceUnit == .miles
+                         ? Int(totalKm * 0.621371) : Int(totalKm)).formatted())
                         .font(FDFont.display(42, weight: .semibold))
                         .foregroundStyle(FDColor.gold)
                         .lineLimit(1)
                         .minimumScaleFactor(0.5)
+                        .contentTransition(.numericText())
                     Text(ls.distanceUnit == .miles ? "MI" : "KM")
                         .font(FDFont.ui(13, weight: .medium))
                         .foregroundStyle(FDColor.gold.opacity(0.55))
@@ -672,10 +679,10 @@ struct StatsView: View {
 
     private var vitalsGrid: some View {
         let items: [(value: String, label: String, highlight: Bool)] = [
-            ("\(past.count)",              ls.statsFlightsLabel,   false),
-            ("\(visitedCountries.count)",  ls.statsCountriesLabel, true),
-            ("\(visitedAirports.count)",   ls.statsAirportsLabel,  false),
-            ("\(totalHours)\(ls.statsHoursShort)", ls.statsInTheAir, true),
+            ("\(animatedInt(past.count))",              ls.statsFlightsLabel,   false),
+            ("\(animatedInt(visitedCountries.count))",  ls.statsCountriesLabel, true),
+            ("\(animatedInt(visitedAirports.count))",   ls.statsAirportsLabel,  false),
+            ("\(animatedInt(totalHours))\(ls.statsHoursShort)", ls.statsInTheAir, true),
         ]
 
         return LazyVGrid(
@@ -695,6 +702,7 @@ struct StatsView: View {
                 .foregroundStyle(highlight ? FDColor.gold : FDColor.text)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
+                .contentTransition(.numericText())
             Text(label)
                 .font(FDFont.ui(10, weight: .medium))
                 .foregroundStyle(FDColor.textMuted)
@@ -2216,6 +2224,10 @@ struct StatsView: View {
                 .tracking(1.5)
         }
         .padding(.top, 6)
+    }
+
+    private func animatedInt(_ target: Int) -> Int {
+        Int(Double(target) * counterProgress)
     }
 
     /// Wraps a section: if `isLocked` is true, dims content and shows a hint overlay.

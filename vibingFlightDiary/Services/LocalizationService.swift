@@ -10,6 +10,41 @@ enum DistanceUnit: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
+// MARK: - Currency
+
+enum AppCurrency: String, CaseIterable, Identifiable {
+    case eur = "EUR"
+    case usd = "USD"
+    case gbp = "GBP"
+    case pln = "PLN"
+    case chf = "CHF"
+    case jpy = "JPY"
+
+    var id: String { rawValue }
+
+    var symbol: String {
+        switch self {
+        case .eur: "€"
+        case .usd: "$"
+        case .gbp: "£"
+        case .pln: "zł"
+        case .chf: "CHF"
+        case .jpy: "¥"
+        }
+    }
+
+    var displayName: String {
+        switch self {
+        case .eur: "Euro (€)"
+        case .usd: "US Dollar ($)"
+        case .gbp: "British Pound (£)"
+        case .pln: "Polish Złoty (zł)"
+        case .chf: "Swiss Franc (CHF)"
+        case .jpy: "Japanese Yen (¥)"
+        }
+    }
+}
+
 // MARK: - App Theme
 
 enum AppTheme: String, CaseIterable, Identifiable {
@@ -69,12 +104,21 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         didSet { UserDefaults.standard.set(distanceUnit.rawValue, forKey: "distanceUnit") }
     }
 
+    var currency: AppCurrency {
+        didSet { UserDefaults.standard.set(currency.rawValue, forKey: "appCurrency") }
+    }
+
     /// Format a km value for display using the user's chosen unit.
     func formatDistance(_ km: Double) -> String {
         switch distanceUnit {
         case .km:    return "\(Int(km).formatted()) km"
         case .miles: return "\(Int(km * 0.621371).formatted()) mi"
         }
+    }
+
+    /// Format a price for display using the user's chosen currency.
+    func formatPrice(_ value: Double) -> String {
+        "\(currency.symbol)\(String(format: "%.2f", value))"
     }
 
     /// Compact format (e.g. "59k") without unit label — use distanceFlownLabel separately.
@@ -114,6 +158,8 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         self.theme = AppTheme(rawValue: savedTheme) ?? .dark
         let savedUnit = UserDefaults.standard.string(forKey: "distanceUnit") ?? "km"
         self.distanceUnit = DistanceUnit(rawValue: savedUnit) ?? .km
+        let savedCurrency = UserDefaults.standard.string(forKey: "appCurrency") ?? "EUR"
+        self.currency = AppCurrency(rawValue: savedCurrency) ?? .eur
     }
 
     // Shorthand helper
@@ -211,6 +257,8 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var fromPlaceholder:    String { t("From",           "Skąd",            "Desde",           "Départ",             "出発地") }
     var toPlaceholder:      String { t("To",             "Dokąd",           "Hasta",           "Arrivée",            "目的地") }
     var airlinePlaceholder: String { t("Airline (optional)", "Linia lotnicza (opcjonalne)", "Aerolínea (opcional)", "Compagnie (optionnel)", "航空会社（任意）") }
+    var priceLabel:         String { t("PRICE",              "CENA",                        "PRECIO",               "PRIX",                  "価格") }
+    var pricePlaceholder:   String { t("e.g. 199.99",        "np. 199.99",                  "p.ej. 199.99",         "ex. 199.99",            "例：199.99") }
 
     // MARK: - Settings
     var settingsTitle:      String { t("Settings",        "Ustawienia",      "Configuración",   "Paramètres",         "設定") }
@@ -230,8 +278,14 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var madeWithPassion:    String { t("Made with passion","Zrobione z pasją","Hecho con pasión","Fait avec passion",  "情熱を込めて制作") }
     var doneButton:         String { t("Done",            "Gotowe",          "Listo",           "Terminé",            "完了") }
     var comingSoon:         String { t("Soon",            "Wkrótce",         "Pronto",          "Bientôt",            "近日公開") }
+    var currencyRow:        String { t("Currency",        "Waluta",          "Moneda",          "Devise",             "通貨") }
 
     // MARK: - Stats
+    var statsAddMoreFlights:   String { t("Add more flights to unlock this stat",
+                                          "Dodaj więcej lotów, aby odblokować tę statystykę",
+                                          "Añade más vuelos para desbloquear esta estadística",
+                                          "Ajoutez plus de vols pour débloquer cette statistique",
+                                          "この統計を表示するにはフライトを追加してください") }
     var statsComingSoon:       String { t("Coming soon",          "Wkrótce",               "Próximamente",         "Bientôt",               "近日公開") }
     var statsYourJourney:      String { t("YOUR JOURNEY",         "TWOJA PODRÓŻ",          "TU VIAJE",             "VOTRE VOYAGE",          "あなたの旅") }
     var shareYourJourney:      String { t("Share your journey",    "Udostępnij swoją podróż","Comparte tu viaje",   "Partagez votre voyage", "旅をシェア") }
@@ -256,6 +310,23 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var statsContinents:       String { t("continents",           "kontynenty",            "continentes",          "continents",            "大陸") }
     var statsFlightsCount:     String { t("flights",              "lotów",                 "vuelos",               "vols",                  "フライト") }
     var statsHoursShort:       String { t("h",                    "g",                     "h",                    "h",                     "時間") }
+
+    // MARK: - Money Stats
+    var statsMoneySection:     String { t("SPENDING",              "WYDATKI",               "GASTOS",               "DÉPENSES",              "支出") }
+    var statsTotalSpent:       String { t("total spent",           "łącznie wydano",        "total gastado",        "total dépensé",         "合計支出") }
+    var statsSpendPerYear:     String { t("SPENDING PER YEAR",     "WYDATKI W ROKU",        "GASTOS POR AÑO",       "DÉPENSES PAR AN",       "年別支出") }
+    var statsAvgPerFlightCost: String { t("AVG PER FLIGHT",        "ŚR. NA LOT",            "PROM. POR VUELO",      "MOY. PAR VOL",          "便あたり平均") }
+    var statsCostPerKm:        String { t("COST PER KM",           "KOSZT ZA KM",           "COSTO POR KM",         "COÛT PAR KM",           "km単価") }
+    var statsCostPerMi:        String { t("COST PER MI",           "KOSZT ZA MI",           "COSTO POR MI",         "COÛT PAR MI",           "mi単価") }
+    var statsMostExpensive:    String { t("MOST EXPENSIVE",        "NAJDROŻSZY",            "MÁS CARO",             "LE PLUS CHER",          "最高額") }
+    var statsCheapest:         String { t("CHEAPEST",              "NAJTAŃSZY",             "MÁS BARATO",           "LE MOINS CHER",         "最安値") }
+    var statsSpendByClass:     String { t("AVG PRICE BY CLASS",    "ŚR. CENA WG KLASY",    "PRECIO PROM. POR CLASE","PRIX MOY. PAR CLASSE",  "クラス別平均価格") }
+    var statsTopAirlineSpend:  String { t("TOP AIRLINES BY SPEND", "LINIE WG WYDATKÓW",    "AEROLÍNEAS POR GASTO", "COMPAGNIES PAR DÉPENSE","航空会社別支出") }
+    var statsFlightsTracked:   String { t("flights with price",    "lotów z ceną",          "vuelos con precio",    "vols avec prix",        "価格記録済み") }
+    var statsBestDeal:         String { t("BEST DEAL",             "NAJLEPSZA OFERTA",      "MEJOR OFERTA",         "MEILLEURE AFFAIRE",     "お得なフライト") }
+    var statsPriciest:         String { t("PRICIEST",              "NAJDROŻSZY",            "MÁS COSTOSO",          "PLUS CHER",             "最高額") }
+    var statsPerKm:            String { t("per km",                "za km",                 "por km",               "par km",                "/km") }
+    var statsPerMi:            String { t("per mi",                "za mi",                 "por mi",               "par mi",                "/mi") }
 
     // MARK: - Flights Detail Sheet
     var flightsLogged:         String { t("flights logged",        "lotów zarejestrowanych", "vuelos registrados",    "vols enregistrés",      "フライト記録") }

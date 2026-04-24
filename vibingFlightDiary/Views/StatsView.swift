@@ -56,6 +56,11 @@ struct StatsView: View {
     private var topAirline: (name: String, count: Int)? { topItem(past.compactMap { $0.airline }) }
     private var topAircraft: (name: String, count: Int)? { topItem(past.compactMap { $0.aircraftType }) }
 
+    private var flightsWithAirline: Int  { past.filter { $0.airline != nil }.count }
+    private var flightsWithAircraft: Int { past.filter { $0.aircraftType != nil }.count }
+    private var flightsWithClass: Int    { past.filter { $0.flightClass != nil }.count }
+    private var flightsWithSeat: Int     { past.filter { $0.seatType != nil }.count }
+
     private var classBreakdown: [(label: String, icon: String, count: Int)] {
         let counts = Dictionary(grouping: past.compactMap { $0.flightClass }, by: { $0 }).mapValues { $0.count }
         return FlightClass.allCases.compactMap { cls in
@@ -209,6 +214,66 @@ struct StatsView: View {
         }.sorted { $0.year < $1.year }
     }
 
+    // MARK: - Money Deep-Dive
+
+    private var pricedFlights: [Flight] { past.filter { $0.price != nil } }
+
+    private var totalSpent: Double { pricedFlights.reduce(0) { $0 + ($1.price ?? 0) } }
+
+    private var avgCostPerFlight: Double {
+        pricedFlights.isEmpty ? 0 : totalSpent / Double(pricedFlights.count)
+    }
+
+    private var costPerKm: Double {
+        let totalKmPriced = pricedFlights.reduce(0.0) { $0 + $1.distanceKm }
+        return totalKmPriced > 0 ? totalSpent / totalKmPriced : 0
+    }
+
+    private var mostExpensiveFlight: Flight? {
+        pricedFlights.max { ($0.price ?? 0) < ($1.price ?? 0) }
+    }
+
+    private var cheapestFlight: Flight? {
+        pricedFlights.min { ($0.price ?? 0) < ($1.price ?? 0) }
+    }
+
+    private var bestDealFlight: Flight? {
+        // Best value = lowest price per km
+        pricedFlights.min { ($0.price ?? 0) / max(1, $0.distanceKm) < ($1.price ?? 0) / max(1, $1.distanceKm) }
+    }
+
+    private var priciestPerKmFlight: Flight? {
+        pricedFlights.max { ($0.price ?? 0) / max(1, $0.distanceKm) < ($1.price ?? 0) / max(1, $1.distanceKm) }
+    }
+
+    private var spendByYear: [(year: Int, total: Double)] {
+        let grouped = Dictionary(grouping: pricedFlights) { Calendar.current.component(.year, from: $0.date) }
+        return grouped.map { year, flights in
+            (year, flights.reduce(0.0) { $0 + ($1.price ?? 0) })
+        }.sorted { $0.year < $1.year }
+    }
+
+    private var avgPriceByClass: [(label: String, icon: String, avg: Double, count: Int)] {
+        let grouped = Dictionary(grouping: pricedFlights.filter { $0.flightClass != nil }) { $0.flightClass! }
+        return FlightClass.allCases.compactMap { cls in
+            guard let flights = grouped[cls], !flights.isEmpty else { return nil }
+            let avg = flights.reduce(0.0) { $0 + ($1.price ?? 0) } / Double(flights.count)
+            return (ls.flightClassLabel(cls), cls.icon, avg, flights.count)
+        }
+    }
+
+    private var topAirlinesBySpend: [(name: String, total: Double, count: Int)] {
+        var totals: [String: (total: Double, count: Int)] = [:]
+        for f in pricedFlights {
+            guard let airline = f.airline else { continue }
+            let existing = totals[airline] ?? (0, 0)
+            totals[airline] = (existing.total + (f.price ?? 0), existing.count + 1)
+        }
+        return totals.map { (name: $0.key, total: $0.value.total, count: $0.value.count) }
+            .sorted { $0.total > $1.total }
+            .prefix(5).map { $0 }
+    }
+
     // MARK: - Body
 
     var body: some View {
@@ -222,17 +287,30 @@ struct StatsView: View {
                         heroCard
                         shareJourneyBanner
                         vitalsGrid
-                        recordsSection
-                        if topAirline != nil || topAircraft != nil {
-                            favoritesSection
+
+                        // 2+ flights to compare longest vs shortest
+                        lockedSection(isLocked: past.count < 2) {
+                            recordsSection
                         }
-                        if !classBreakdown.isEmpty || !seatBreakdown.isEmpty {
-                            flyingStyleSection
+                        // 3+ flights with airline/aircraft data
+                        lockedSection(isLocked: flightsWithAirline < 3 && flightsWithAircraft < 3) {
+                            if topAirline != nil || topAircraft != nil {
+                                favoritesSection
+                            }
                         }
+                        // Each subsection locked by its own attribute count
+                        lockedSection(isLocked: flightsWithClass < 3 && flightsWithSeat < 3) {
+                            if !classBreakdown.isEmpty || !seatBreakdown.isEmpty {
+                                flyingStyleSection
+                            }
+                        }
+
                         worldSection
 
                         deepDiveDivider(ls.statsFlightsLabel)
-                        flightsDeepSection
+                        lockedSection(isLocked: past.count < 3) {
+                            flightsDeepSection
+                        }
 
                         deepDiveDivider(ls.statsCountriesLabel)
                         countriesDeepSection
@@ -242,6 +320,13 @@ struct StatsView: View {
 
                         deepDiveDivider(ls.statsInTheAir)
                         hoursDeepSection
+
+                        if !pricedFlights.isEmpty || past.count >= 2 {
+                            deepDiveDivider(ls.statsMoneySection)
+                            lockedSection(isLocked: pricedFlights.count < 2) {
+                                moneyDeepSection
+                            }
+                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
@@ -1264,6 +1349,338 @@ struct StatsView: View {
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
+    // MARK: - Deep-Dive: Money
+
+    private var moneyDeepSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Hero: total spent
+            HStack(alignment: .lastTextBaseline, spacing: 8) {
+                Text(ls.formatPrice(totalSpent))
+                    .font(FDFont.display(44, weight: .bold))
+                    .foregroundStyle(FDColor.gold)
+                    .lineLimit(1).minimumScaleFactor(0.5)
+            }
+            HStack(spacing: 6) {
+                Text(ls.statsTotalSpent)
+                    .font(FDFont.ui(14)).foregroundStyle(FDColor.textMuted)
+                Text("·")
+                    .foregroundStyle(FDColor.textDim)
+                Text("\(pricedFlights.count) \(ls.statsFlightsTracked)")
+                    .font(FDFont.ui(12)).foregroundStyle(FDColor.textDim)
+            }
+
+            // Avg cost + cost per km side by side
+            HStack(spacing: 12) {
+                moneyStatCell(
+                    value: ls.formatPrice(avgCostPerFlight),
+                    label: ls.statsAvgPerFlightCost,
+                    color: FDColor.gold
+                )
+                moneyStatCell(
+                    value: ls.formatPrice(costPerKm),
+                    label: ls.distanceUnit == .miles ? ls.statsCostPerMi : ls.statsCostPerKm,
+                    color: FDColor.blue
+                )
+            }
+
+            // Spending per year bar chart
+            if !spendByYear.isEmpty {
+                let maxSpend = spendByYear.map(\.total).max() ?? 1
+                VStack(alignment: .leading, spacing: 14) {
+                    sectionHeader(ls.statsSpendPerYear)
+                    VStack(spacing: 10) {
+                        ForEach(Array(spendByYear.enumerated()), id: \.offset) { idx, item in
+                            HStack(spacing: 12) {
+                                Text(verbatim: "\(item.year)")
+                                    .font(FDFont.ui(12, weight: .medium))
+                                    .foregroundStyle(FDColor.textMuted)
+                                    .frame(width: 42, alignment: .leading)
+                                GeometryReader { geo in
+                                    ZStack(alignment: .leading) {
+                                        RoundedRectangle(cornerRadius: 6).fill(FDColor.surface3).frame(height: 34)
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .fill(LinearGradient(
+                                                colors: [Color(hex: "2E7D32"), Color(hex: "66BB6A").opacity(0.6)],
+                                                startPoint: .leading, endPoint: .trailing
+                                            ))
+                                            .frame(
+                                                width: animateCharts
+                                                    ? max(34, geo.size.width * CGFloat(item.total / maxSpend))
+                                                    : 0,
+                                                height: 34
+                                            )
+                                            .animation(.spring(response: 0.65, dampingFraction: 0.82).delay(Double(idx) * 0.08), value: animateCharts)
+                                        Text(ls.formatPrice(item.total))
+                                            .font(FDFont.ui(10, weight: .semibold))
+                                            .foregroundStyle(.white.opacity(0.9))
+                                            .padding(.leading, 10)
+                                            .lineLimit(1)
+                                            .opacity(animateCharts ? 1 : 0)
+                                            .animation(.easeIn(duration: 0.2).delay(Double(idx) * 0.08 + 0.35), value: animateCharts)
+                                    }
+                                }
+                                .frame(height: 34)
+                            }
+                        }
+                    }
+                    .padding(20)
+                    .background(FDColor.surface2)
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+            }
+
+            // Most expensive + cheapest record cards
+            if let expensive = mostExpensiveFlight {
+                moneyRouteCard(flight: expensive, label: ls.statsMostExpensive, accentColor: FDColor.gold)
+            }
+            if let cheap = cheapestFlight, cheap.id != mostExpensiveFlight?.id {
+                moneyRouteCard(flight: cheap, label: ls.statsCheapest, accentColor: FDColor.blue)
+            }
+
+            // Best deal + priciest per km
+            if let best = bestDealFlight, let priciest = priciestPerKmFlight, best.id != priciest.id {
+                HStack(spacing: 12) {
+                    valuePerKmCard(flight: best, label: ls.statsBestDeal, color: Color(hex: "2E7D32"))
+                    valuePerKmCard(flight: priciest, label: ls.statsPriciest, color: Color(hex: "E05252"))
+                }
+            }
+
+            // Avg price by class
+            if !avgPriceByClass.isEmpty {
+                VStack(alignment: .leading, spacing: 14) {
+                    sectionHeader(ls.statsSpendByClass)
+                    VStack(spacing: 0) {
+                        ForEach(Array(avgPriceByClass.enumerated()), id: \.offset) { idx, item in
+                            if idx > 0 {
+                                Rectangle().fill(FDColor.border).frame(height: 1).padding(.leading, 56)
+                            }
+                            HStack(spacing: 14) {
+                                Image(systemName: item.icon)
+                                    .font(.system(size: 16))
+                                    .foregroundStyle(FDColor.gold)
+                                    .frame(width: 32)
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(item.label)
+                                        .font(FDFont.ui(13, weight: .medium))
+                                        .foregroundStyle(FDColor.text)
+                                    Text("\(item.count) \(ls.statsFlightsCount)")
+                                        .font(FDFont.ui(10))
+                                        .foregroundStyle(FDColor.textDim)
+                                }
+                                Spacer()
+                                Text(ls.formatPrice(item.avg))
+                                    .font(FDFont.display(16, weight: .semibold))
+                                    .foregroundStyle(FDColor.gold)
+                            }
+                            .padding(.horizontal, 16).padding(.vertical, 14)
+                        }
+                    }
+                    .background(FDColor.surface2)
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+            }
+
+            // Top airlines by total spend
+            if !topAirlinesBySpend.isEmpty {
+                let maxSpend = topAirlinesBySpend.first?.total ?? 1
+                VStack(alignment: .leading, spacing: 14) {
+                    sectionHeader(ls.statsTopAirlineSpend)
+                    VStack(spacing: 10) {
+                        ForEach(Array(topAirlinesBySpend.enumerated()), id: \.offset) { idx, item in
+                            HStack(spacing: 12) {
+                                Text("#\(idx + 1)")
+                                    .font(FDFont.ui(10, weight: .bold))
+                                    .foregroundStyle(idx == 0 ? FDColor.gold : FDColor.textDim)
+                                    .frame(width: 22)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(item.name)
+                                        .font(FDFont.ui(12, weight: .medium))
+                                        .foregroundStyle(FDColor.text)
+                                        .lineLimit(1)
+                                    Text("\(item.count) \(ls.statsFlightsCount)")
+                                        .font(FDFont.ui(9))
+                                        .foregroundStyle(FDColor.textDim)
+                                }
+                                .frame(width: 90, alignment: .leading)
+                                GeometryReader { geo in
+                                    ZStack(alignment: .leading) {
+                                        RoundedRectangle(cornerRadius: 6).fill(FDColor.surface3).frame(height: 28)
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .fill(LinearGradient(
+                                                colors: [FDColor.gold, FDColor.gold.opacity(0.4)],
+                                                startPoint: .leading, endPoint: .trailing
+                                            ))
+                                            .frame(
+                                                width: animateCharts
+                                                    ? max(28, geo.size.width * CGFloat(item.total / maxSpend))
+                                                    : 0,
+                                                height: 28
+                                            )
+                                            .animation(.spring(response: 0.65, dampingFraction: 0.82).delay(Double(idx) * 0.07), value: animateCharts)
+                                        Text(ls.formatPrice(item.total))
+                                            .font(FDFont.ui(10, weight: .semibold))
+                                            .foregroundStyle(FDColor.black)
+                                            .padding(.leading, 8)
+                                            .lineLimit(1)
+                                            .opacity(animateCharts ? 1 : 0)
+                                            .animation(.easeIn(duration: 0.2).delay(Double(idx) * 0.07 + 0.3), value: animateCharts)
+                                    }
+                                }
+                                .frame(height: 28)
+                            }
+                        }
+                    }
+                    .padding(20)
+                    .background(FDColor.surface2)
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+            }
+        }
+    }
+
+    private func moneyStatCell(value: String, label: String, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(value)
+                .font(FDFont.display(22, weight: .semibold))
+                .foregroundStyle(color)
+                .lineLimit(1).minimumScaleFactor(0.6)
+            Text(label)
+                .font(FDFont.ui(10, weight: .medium))
+                .foregroundStyle(FDColor.textMuted)
+                .tracking(1.2)
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            ZStack(alignment: .topLeading) {
+                FDColor.surface2
+                RadialGradient(colors: [color.opacity(0.08), .clear], center: .topLeading, startRadius: 0, endRadius: 80)
+            }
+        )
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(color.opacity(0.25), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func moneyRouteCard(flight: Flight, label: String, accentColor: Color) -> some View {
+        let origin = airportService.airport(for: flight.originIATA)
+        let dest   = airportService.airport(for: flight.destinationIATA)
+
+        return HStack(spacing: 0) {
+            accentColor
+                .frame(width: 4)
+                .clipShape(RoundedRectangle(cornerRadius: 2))
+                .padding(.vertical, 20)
+                .padding(.leading, 16)
+
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text(label)
+                        .font(FDFont.ui(10, weight: .medium))
+                        .foregroundStyle(FDColor.textDim)
+                        .tracking(1.5)
+                    Spacer()
+                    Text(ls.formatPrice(flight.price ?? 0))
+                        .font(FDFont.display(22, weight: .bold))
+                        .foregroundStyle(accentColor)
+                }
+
+                HStack(alignment: .center) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(flight.originIATA)
+                            .font(FDFont.display(20, weight: .semibold))
+                            .foregroundStyle(FDColor.text)
+                        Text(origin?.city ?? "")
+                            .font(FDFont.ui(10))
+                            .foregroundStyle(FDColor.textMuted)
+                            .lineLimit(1)
+                    }
+                    Spacer()
+                    HStack(spacing: 0) {
+                        Rectangle()
+                            .fill(LinearGradient(colors: [FDColor.border, accentColor.opacity(0.5)], startPoint: .leading, endPoint: .center))
+                            .frame(height: 1)
+                        Image(systemName: "airplane")
+                            .font(.system(size: 10))
+                            .foregroundStyle(accentColor)
+                            .padding(.horizontal, 5)
+                        Rectangle()
+                            .fill(LinearGradient(colors: [accentColor.opacity(0.5), FDColor.border], startPoint: .leading, endPoint: .trailing))
+                            .frame(height: 1)
+                    }
+                    .frame(maxWidth: 70)
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 3) {
+                        Text(flight.destinationIATA)
+                            .font(FDFont.display(20, weight: .semibold))
+                            .foregroundStyle(accentColor)
+                        Text(dest?.city ?? "")
+                            .font(FDFont.ui(10))
+                            .foregroundStyle(FDColor.textMuted)
+                            .lineLimit(1)
+                    }
+                }
+
+                HStack(spacing: 0) {
+                    Text(ls.formatDistance(flight.distanceKm))
+                        .font(FDFont.ui(11, weight: .medium))
+                        .foregroundStyle(FDColor.textMuted)
+                    if let airline = flight.airline {
+                        Text(" · \(airline)")
+                            .font(FDFont.ui(11))
+                            .foregroundStyle(FDColor.textDim)
+                            .lineLimit(1)
+                    }
+                }
+            }
+            .padding(.vertical, 18)
+            .padding(.horizontal, 16)
+        }
+        .background(FDColor.surface2)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(FDColor.border, lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+    }
+
+    private func valuePerKmCard(flight: Flight, label: String, color: Color) -> some View {
+        let pricePerKm = (flight.price ?? 0) / max(1, flight.distanceKm)
+        let unitLabel = ls.distanceUnit == .miles ? ls.statsPerMi : ls.statsPerKm
+        let displayValue = ls.distanceUnit == .miles ? pricePerKm / 0.621371 : pricePerKm
+
+        return VStack(alignment: .leading, spacing: 10) {
+            Text(label)
+                .font(FDFont.ui(10, weight: .medium))
+                .foregroundStyle(FDColor.textDim)
+                .tracking(1.2)
+            Text("\(flight.originIATA)→\(flight.destinationIATA)")
+                .font(FDFont.display(16, weight: .bold))
+                .foregroundStyle(FDColor.text)
+            HStack(alignment: .lastTextBaseline, spacing: 3) {
+                Text(ls.formatPrice(displayValue))
+                    .font(FDFont.display(18, weight: .bold))
+                    .foregroundStyle(color)
+                    .lineLimit(1).minimumScaleFactor(0.6)
+                Text(unitLabel)
+                    .font(FDFont.ui(10))
+                    .foregroundStyle(FDColor.textMuted)
+            }
+            Text(ls.formatPrice(flight.price ?? 0))
+                .font(FDFont.ui(11))
+                .foregroundStyle(FDColor.textMuted)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            ZStack(alignment: .topTrailing) {
+                FDColor.surface2
+                RadialGradient(colors: [color.opacity(0.08), .clear], center: .topTrailing, startRadius: 0, endRadius: 80)
+            }
+        )
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(color.opacity(0.25), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
     // MARK: - Empty State
 
     private var emptyState: some View {
@@ -1304,6 +1721,34 @@ struct StatsView: View {
                 .tracking(1.5)
         }
         .padding(.top, 6)
+    }
+
+    /// Wraps a section: if `isLocked` is true, dims content and shows a hint overlay.
+    @ViewBuilder
+    private func lockedSection<Content: View>(isLocked: Bool, @ViewBuilder content: () -> Content) -> some View {
+        if isLocked {
+            ZStack {
+                content()
+                    .opacity(0.25)
+                    .allowsHitTesting(false)
+
+                VStack(spacing: 8) {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 18))
+                        .foregroundStyle(FDColor.textDim)
+                    Text(ls.statsAddMoreFlights)
+                        .font(FDFont.ui(12, weight: .medium))
+                        .foregroundStyle(FDColor.textMuted)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(20)
+                .frame(maxWidth: .infinity)
+                .background(.ultraThinMaterial.opacity(0.3))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+            }
+        } else {
+            content()
+        }
     }
 
     private func topItem(_ items: [String]) -> (name: String, count: Int)? {

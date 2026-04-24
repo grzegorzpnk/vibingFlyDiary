@@ -7,6 +7,7 @@ struct SettingsView: View {
 
     @State private var languageExpanded = false
     @State private var themeExpanded = false
+    @State private var currencyExpanded = false
     @State private var passionExpanded = false
 
     private var appVersion: String {
@@ -236,6 +237,72 @@ struct SettingsView: View {
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
+
+                            settingsDivider
+
+                            // Currency picker (expandable)
+                            Button {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                    currencyExpanded.toggle()
+                                }
+                            } label: {
+                                HStack(spacing: 14) {
+                                    Image(systemName: "banknote")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundStyle(FDColor.gold)
+                                        .frame(width: 24)
+                                    Text(ls.currencyRow)
+                                        .font(FDFont.ui(14))
+                                        .foregroundStyle(FDColor.text)
+                                    Spacer()
+                                    Text(ls.currency.rawValue)
+                                        .font(FDFont.ui(13))
+                                        .foregroundStyle(FDColor.textMuted)
+                                    Image(systemName: "chevron.down")
+                                        .font(.system(size: 11, weight: .medium))
+                                        .foregroundStyle(FDColor.textDim)
+                                        .rotationEffect(.degrees(currencyExpanded ? 180 : 0))
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 14)
+                            }
+                            .buttonStyle(.plain)
+
+                            if currencyExpanded {
+                                Rectangle().fill(FDColor.border).frame(height: 0.5)
+
+                                ForEach(Array(AppCurrency.allCases.enumerated()), id: \.element.id) { index, cur in
+                                    if index > 0 {
+                                        Rectangle().fill(FDColor.border).frame(height: 0.5).padding(.leading, 54)
+                                    }
+                                    Button {
+                                        withAnimation(.easeInOut(duration: 0.2)) {
+                                            ls.currency = cur
+                                            currencyExpanded = false
+                                        }
+                                    } label: {
+                                        HStack(spacing: 14) {
+                                            Text(cur.symbol)
+                                                .font(.system(size: 16, weight: .medium))
+                                                .foregroundStyle(ls.currency == cur ? FDColor.gold : FDColor.textMuted)
+                                                .frame(width: 24)
+                                            Text(cur.displayName)
+                                                .font(FDFont.ui(14))
+                                                .foregroundStyle(ls.currency == cur ? FDColor.gold : FDColor.text)
+                                            Spacer()
+                                            if ls.currency == cur {
+                                                Image(systemName: "checkmark")
+                                                    .font(.system(size: 12, weight: .semibold))
+                                                    .foregroundStyle(FDColor.gold)
+                                            }
+                                        }
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 12)
+                                        .background(ls.currency == cur ? FDColor.gold.opacity(0.05) : Color.clear)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
                         }
 
                         // About section

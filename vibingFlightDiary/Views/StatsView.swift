@@ -214,6 +214,26 @@ struct StatsView: View {
         }.sorted { $0.year < $1.year }
     }
 
+    // MARK: - Monthly Heatmap
+
+    private var heatmapData: [(year: Int, months: [Int])] {
+        let cal = Calendar.current
+        var grid: [Int: [Int: Int]] = [:]
+        for f in past {
+            let y = cal.component(.year, from: f.date)
+            let m = cal.component(.month, from: f.date)
+            grid[y, default: [:]][m, default: 0] += 1
+        }
+        return grid.keys.sorted().map { year in
+            let months = (1...12).map { grid[year]?[$0] ?? 0 }
+            return (year, months)
+        }
+    }
+
+    private var heatmapMax: Int {
+        heatmapData.flatMap(\.months).max() ?? 1
+    }
+
     // MARK: - Year Comparison
 
     private struct YearStats {
@@ -397,6 +417,10 @@ struct StatsView: View {
 
                         if topRoutes.count >= 2 {
                             topRoutesSection
+                        }
+
+                        if past.count >= 3 {
+                            heatmapSection
                         }
 
                         deepDiveDivider(ls.statsCountriesLabel)
@@ -1524,6 +1548,62 @@ struct StatsView: View {
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
+    // MARK: - Monthly Heatmap Section
+
+    private var heatmapSection: some View {
+        let monthLabels = Calendar.current.shortMonthSymbols
+
+        return VStack(alignment: .leading, spacing: 14) {
+            sectionHeader(ls.statsActivityMap)
+
+            VStack(spacing: 6) {
+                // Month labels row
+                HStack(spacing: 0) {
+                    Text("")
+                        .frame(width: 40)
+                    ForEach(0..<12, id: \.self) { i in
+                        Text(String(monthLabels[i].prefix(1)))
+                            .font(FDFont.ui(8, weight: .medium))
+                            .foregroundStyle(FDColor.textDim)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+
+                // Year rows
+                ForEach(heatmapData, id: \.year) { row in
+                    HStack(spacing: 0) {
+                        Text(verbatim: "\(row.year)")
+                            .font(FDFont.ui(10, weight: .medium))
+                            .foregroundStyle(FDColor.textMuted)
+                            .frame(width: 40, alignment: .leading)
+
+                        ForEach(0..<12, id: \.self) { i in
+                            let count = row.months[i]
+                            let intensity = heatmapMax > 0 ? Double(count) / Double(heatmapMax) : 0
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(count == 0
+                                      ? FDColor.surface3
+                                      : FDColor.gold.opacity(0.2 + intensity * 0.8))
+                                .frame(maxWidth: .infinity)
+                                .aspectRatio(1, contentMode: .fit)
+                                .overlay(
+                                    count > 0
+                                        ? Text("\(count)")
+                                            .font(.system(size: 7, weight: .bold))
+                                            .foregroundStyle(intensity > 0.5 ? FDColor.black : FDColor.text)
+                                        : nil
+                                )
+                        }
+                    }
+                }
+            }
+            .padding(16)
+            .background(FDColor.surface2)
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(FDColor.border, lineWidth: 1))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+        }
+    }
+
     // MARK: - Year vs Year Section
 
     private var yearComparisonSection: some View {
@@ -1579,7 +1659,6 @@ struct StatsView: View {
     private func yearComparisonRow(label: String, thisYear: Int, lastYear: Int) -> some View {
         let delta = thisYear - lastYear
         let isUp = delta > 0
-        let isDown = delta < 0
 
         return HStack(spacing: 12) {
             Text(label)

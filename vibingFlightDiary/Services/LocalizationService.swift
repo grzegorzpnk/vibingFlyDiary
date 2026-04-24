@@ -351,6 +351,9 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var achieveCollector:      String { t("Airport Collector",     "Kolekcjoner Lotnisk",   "Coleccionista",        "Collectionneur",        "空港コレクター") }
     var achieveCollectorSub:   String { t("Visit 10 airports",     "Odwiedź 10 lotnisk",    "Visita 10 aeropuertos","Visitez 10 aéroports",  "10空港訪問") }
 
+    // MARK: - Monthly Heatmap
+    var statsActivityMap:      String { t("ACTIVITY MAP",           "MAPA AKTYWNOŚCI",       "MAPA DE ACTIVIDAD",    "CARTE D'ACTIVITÉ",      "アクティビティマップ") }
+
     // MARK: - Year Comparison
     var statsYearVsYear:       String { t("YEAR VS YEAR",          "ROK DO ROKU",           "AÑO VS AÑO",          "ANNÉE VS ANNÉE",        "年度比較") }
     var statsVs:               String { t("vs",                    "vs",                    "vs",                   "vs",                    "vs") }

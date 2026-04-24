@@ -7,7 +7,6 @@ struct StatsView: View {
     @Environment(LocalizationService.self) private var ls
     @Environment(\.colorScheme) private var colorScheme
 
-    @State private var animateCharts = false
     @State private var showShareCard = false
 
     private var isLight: Bool {
@@ -447,14 +446,6 @@ struct StatsView: View {
                     .padding(.top, 20)
                     .padding(.bottom, 110)
                 }
-                .onAppear {
-                    withAnimation(.spring(response: 0.7, dampingFraction: 0.82).delay(0.15)) {
-                        animateCharts = true
-                    }
-                }
-                .onDisappear {
-                    animateCharts = false
-                }
             }
         }
         .sheet(isPresented: $showShareCard) {
@@ -613,18 +604,13 @@ struct StatsView: View {
                     .frame(width: 52, height: 52)
 
                 Circle()
-                    .trim(from: 0, to: animateCharts ? a.progress : 0)
+                    .trim(from: 0, to: a.progress)
                     .stroke(
                         a.isUnlocked ? FDColor.gold : FDColor.textDim,
                         style: StrokeStyle(lineWidth: 4, lineCap: .round)
                     )
                     .rotationEffect(.degrees(-90))
                     .frame(width: 52, height: 52)
-                    .animation(
-                        .spring(response: 0.8, dampingFraction: 0.8)
-                            .delay(Double(achievements.firstIndex(where: { $0.id == a.id }) ?? 0) * 0.05),
-                        value: animateCharts
-                    )
 
                 Image(systemName: a.icon)
                     .font(.system(size: 18))
@@ -930,16 +916,14 @@ struct StatsView: View {
                         .stroke(FDColor.surface3, lineWidth: 10)
 
                     Circle()
-                        .trim(from: 0, to: animateCharts ? intlPct : 0)
+                        .trim(from: 0, to: intlPct)
                         .stroke(FDColor.gold, style: StrokeStyle(lineWidth: 10, lineCap: .round))
                         .rotationEffect(.degrees(-90))
-                        .animation(.spring(response: 0.8, dampingFraction: 0.8).delay(0.1), value: animateCharts)
 
                     Circle()
-                        .trim(from: intlPct, to: animateCharts ? 1.0 : intlPct)
+                        .trim(from: intlPct, to: 1.0)
                         .stroke(FDColor.blue, style: StrokeStyle(lineWidth: 10, lineCap: .round))
                         .rotationEffect(.degrees(-90))
-                        .animation(.spring(response: 0.8, dampingFraction: 0.8).delay(0.2), value: animateCharts)
 
                     VStack(spacing: 2) {
                         Text("\(total)")
@@ -1164,18 +1148,14 @@ struct StatsView: View {
                                                 startPoint: .leading, endPoint: .trailing
                                             ))
                                             .frame(
-                                                width: animateCharts
-                                                    ? max(34, geo.size.width * CGFloat(item.count) / CGFloat(maxCount))
-                                                    : 0,
+                                                width: max(34, geo.size.width * CGFloat(item.count) / CGFloat(maxCount)),
                                                 height: 34
                                             )
-                                            .animation(.spring(response: 0.65, dampingFraction: 0.82).delay(Double(idx) * 0.08), value: animateCharts)
                                         Text("\(item.count)")
                                             .font(FDFont.ui(12, weight: .semibold))
                                             .foregroundStyle(FDColor.black)
                                             .padding(.leading, 12)
-                                            .opacity(animateCharts ? 1 : 0)
-                                            .animation(.easeIn(duration: 0.2).delay(Double(idx) * 0.08 + 0.35), value: animateCharts)
+
                                     }
                                 }
                                 .frame(height: 34)
@@ -1276,8 +1256,7 @@ struct StatsView: View {
                                     colors: [FDColor.gold, FDColor.gold.opacity(0.5)],
                                     startPoint: .leading, endPoint: .trailing
                                 ))
-                                .frame(width: animateCharts ? geo.size.width * countryProgress : 0, height: 6)
-                                .animation(.spring(response: 0.8, dampingFraction: 0.8).delay(0.1), value: animateCharts)
+                                .frame(width: geo.size.width * countryProgress, height: 6)
                         }
                     }
                     .frame(height: 6)
@@ -1323,18 +1302,14 @@ struct StatsView: View {
                                                 startPoint: .leading, endPoint: .trailing
                                             ))
                                             .frame(
-                                                width: animateCharts
-                                                    ? max(30, geo.size.width * CGFloat(item.count) / CGFloat(maxCount))
-                                                    : 0,
+                                                width: max(30, geo.size.width * CGFloat(item.count) / CGFloat(maxCount)),
                                                 height: 30
                                             )
-                                            .animation(.spring(response: 0.65, dampingFraction: 0.82).delay(Double(idx) * 0.08), value: animateCharts)
                                         Text("\(item.count)")
                                             .font(FDFont.ui(12, weight: .semibold))
                                             .foregroundStyle(FDColor.black)
                                             .padding(.leading, 10)
-                                            .opacity(animateCharts ? 1 : 0)
-                                            .animation(.easeIn(duration: 0.2).delay(Double(idx) * 0.08 + 0.35), value: animateCharts)
+
                                     }
                                 }
                                 .frame(height: 30)
@@ -1424,18 +1399,14 @@ struct StatsView: View {
                                                 startPoint: .leading, endPoint: .trailing
                                             ))
                                             .frame(
-                                                width: animateCharts
-                                                    ? max(30, geo.size.width * CGFloat(item.count) / CGFloat(maxCount))
-                                                    : 0,
+                                                width: max(30, geo.size.width * CGFloat(item.count) / CGFloat(maxCount)),
                                                 height: 30
                                             )
-                                            .animation(.spring(response: 0.65, dampingFraction: 0.82).delay(Double(idx) * 0.07), value: animateCharts)
                                         Text("\(item.count)")
                                             .font(FDFont.ui(11, weight: .semibold))
                                             .foregroundStyle(FDColor.black)
                                             .padding(.leading, 10)
-                                            .opacity(animateCharts ? 1 : 0)
-                                            .animation(.easeIn(duration: 0.2).delay(Double(idx) * 0.07 + 0.3), value: animateCharts)
+
                                     }
                                 }
                                 .frame(height: 30)
@@ -1492,18 +1463,14 @@ struct StatsView: View {
                                                 startPoint: .leading, endPoint: .trailing
                                             ))
                                             .frame(
-                                                width: animateCharts
-                                                    ? max(34, geo.size.width * CGFloat(item.hours) / CGFloat(maxHours))
-                                                    : 0,
+                                                width: max(34, geo.size.width * CGFloat(item.hours) / CGFloat(maxHours)),
                                                 height: 34
                                             )
-                                            .animation(.spring(response: 0.65, dampingFraction: 0.82).delay(Double(idx) * 0.08), value: animateCharts)
                                         Text("\(item.hours)\(ls.statsHoursShort)")
                                             .font(FDFont.ui(11, weight: .semibold))
                                             .foregroundStyle(Color.white.opacity(0.9))
                                             .padding(.leading, 10)
-                                            .opacity(animateCharts ? 1 : 0)
-                                            .animation(.easeIn(duration: 0.2).delay(Double(idx) * 0.08 + 0.35), value: animateCharts)
+
                                     }
                                 }
                                 .frame(height: 34)
@@ -1901,19 +1868,15 @@ struct StatsView: View {
                                                 startPoint: .leading, endPoint: .trailing
                                             ))
                                             .frame(
-                                                width: animateCharts
-                                                    ? max(34, geo.size.width * CGFloat(item.total / maxSpend))
-                                                    : 0,
+                                                width: max(34, geo.size.width * CGFloat(item.total / maxSpend)),
                                                 height: 34
                                             )
-                                            .animation(.spring(response: 0.65, dampingFraction: 0.82).delay(Double(idx) * 0.08), value: animateCharts)
                                         Text(ls.formatPrice(item.total))
                                             .font(FDFont.ui(10, weight: .semibold))
                                             .foregroundStyle(.white.opacity(0.9))
                                             .padding(.leading, 10)
                                             .lineLimit(1)
-                                            .opacity(animateCharts ? 1 : 0)
-                                            .animation(.easeIn(duration: 0.2).delay(Double(idx) * 0.08 + 0.35), value: animateCharts)
+
                                     }
                                 }
                                 .frame(height: 34)
@@ -2010,19 +1973,15 @@ struct StatsView: View {
                                                 startPoint: .leading, endPoint: .trailing
                                             ))
                                             .frame(
-                                                width: animateCharts
-                                                    ? max(28, geo.size.width * CGFloat(item.total / maxSpend))
-                                                    : 0,
+                                                width: max(28, geo.size.width * CGFloat(item.total / maxSpend)),
                                                 height: 28
                                             )
-                                            .animation(.spring(response: 0.65, dampingFraction: 0.82).delay(Double(idx) * 0.07), value: animateCharts)
                                         Text(ls.formatPrice(item.total))
                                             .font(FDFont.ui(10, weight: .semibold))
                                             .foregroundStyle(FDColor.black)
                                             .padding(.leading, 8)
                                             .lineLimit(1)
-                                            .opacity(animateCharts ? 1 : 0)
-                                            .animation(.easeIn(duration: 0.2).delay(Double(idx) * 0.07 + 0.3), value: animateCharts)
+
                                     }
                                 }
                                 .frame(height: 28)

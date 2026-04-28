@@ -4,11 +4,13 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(LocalizationService.self) private var ls
     @Environment(AuthService.self) private var auth
+    @Environment(StoreService.self) private var store
 
     @State private var languageExpanded = false
     @State private var themeExpanded = false
     @State private var currencyExpanded = false
     @State private var passionExpanded = false
+    @State private var showPaywall = false
 
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
@@ -303,6 +305,73 @@ struct SettingsView: View {
                                     .buttonStyle(.plain)
                                 }
                             }
+                        }
+
+                        // Premium section
+                        settingsSection(title: "PREMIUM") {
+                            if store.isPremium {
+                                settingsRow(icon: "star.fill", label: "Flygram Premium") {
+                                    Text("Active")
+                                        .font(FDFont.ui(12, weight: .medium))
+                                        .foregroundStyle(FDColor.gold)
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 4)
+                                        .background(FDColor.gold.opacity(0.12))
+                                        .clipShape(Capsule())
+                                }
+                            } else {
+                                Button { showPaywall = true } label: {
+                                    HStack(spacing: 14) {
+                                        Image(systemName: "star.fill")
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundStyle(FDColor.gold)
+                                            .frame(width: 24)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text("Upgrade to Premium")
+                                                .font(FDFont.ui(14, weight: .medium))
+                                                .foregroundStyle(FDColor.text)
+                                            Text("Unlimited flights + all features")
+                                                .font(FDFont.ui(12))
+                                                .foregroundStyle(FDColor.textMuted)
+                                        }
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 12, weight: .medium))
+                                            .foregroundStyle(FDColor.textDim)
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 14)
+                                }
+                                .buttonStyle(.plain)
+
+                                settingsDivider
+
+                                Button {
+                                    Task { await store.restore() }
+                                } label: {
+                                    HStack(spacing: 14) {
+                                        Image(systemName: "arrow.clockwise")
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundStyle(FDColor.textMuted)
+                                            .frame(width: 24)
+                                        Text("Restore Purchases")
+                                            .font(FDFont.ui(14))
+                                            .foregroundStyle(FDColor.text)
+                                        Spacer()
+                                        if store.isLoading {
+                                            ProgressView()
+                                                .scaleEffect(0.8)
+                                        }
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 14)
+                                }
+                                .buttonStyle(.plain)
+                                .disabled(store.isLoading)
+                            }
+                        }
+                        .sheet(isPresented: $showPaywall) {
+                            PremiumUpgradeView()
                         }
 
                         // About section

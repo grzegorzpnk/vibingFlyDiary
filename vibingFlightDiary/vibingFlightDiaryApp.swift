@@ -9,6 +9,7 @@ struct vibingFlightDiaryApp: App {
     private let localization = LocalizationService()
     private let auth = AuthService()
     private let sync = SyncService()
+    private let store = StoreService()
 
     init() {
         FirebaseApp.configure()
@@ -18,6 +19,9 @@ struct vibingFlightDiaryApp: App {
             fatalError("Failed to create ModelContainer: \(error)")
         }
         sync.start(modelContext: modelContainer.mainContext)
+        #if DEBUG
+        DebugDataSeeder.seed19(context: modelContainer.mainContext)
+        #endif
         // Pre-warm country shapes off main thread so Map tab doesn't block on first open
         Task.detached(priority: .utility) {
             _ = CountryShapeService.shared.shapes.count
@@ -31,6 +35,7 @@ struct vibingFlightDiaryApp: App {
                 .environment(localization)
                 .environment(auth)
                 .environment(sync)
+                .environment(store)
         }
         .modelContainer(modelContainer)
     }

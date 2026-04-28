@@ -10,6 +10,16 @@ struct DebugDataSeeder {
         reseed(context: context)
     }
 
+    /// Tops up to 19 flights for paywall testing.
+    static func seed19(context: ModelContext) {
+        let existing = (try? context.fetchCount(FetchDescriptor<Flight>())) ?? 0
+        let needed = max(0, 19 - existing)
+        guard needed > 0 else { return }
+        for flight in sampleFlights.prefix(needed) {
+            context.insert(flight)
+        }
+    }
+
     static func wipeAll(context: ModelContext, sync: SyncService? = nil) {
         if let existing = try? context.fetch(FetchDescriptor<Flight>()) {
             for flight in existing {

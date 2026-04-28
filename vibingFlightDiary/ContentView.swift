@@ -1,9 +1,13 @@
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
     @State private var selectedTab = 0
     @State private var showAddFlight = false
+    @State private var showPaywall = false
     @Environment(LocalizationService.self) private var ls
+    @Environment(StoreService.self) private var store
+    @Query private var flights: [Flight]
 
     nonisolated(unsafe) private static let configureOnce: Void = {
         UITabBar.appearance().isHidden = true
@@ -23,10 +27,19 @@ struct ContentView: View {
             }
             .ignoresSafeArea()
 
-            FDTabBar(selectedTab: $selectedTab, showAddFlight: $showAddFlight)
+            FDTabBar(selectedTab: $selectedTab) {
+                if flights.count >= StoreService.freeFlightLimit && !store.isPremium {
+                    showPaywall = true
+                } else {
+                    showAddFlight = true
+                }
+            }
         }
         .sheet(isPresented: $showAddFlight) {
             AddFlightView()
+        }
+        .sheet(isPresented: $showPaywall) {
+            PremiumUpgradeView()
         }
         .preferredColorScheme(ls.preferredColorScheme)
         .onAppear { ls.applyWindowStyle() }
@@ -37,7 +50,7 @@ struct ContentView: View {
 
 struct FDTabBar: View {
     @Binding var selectedTab: Int
-    @Binding var showAddFlight: Bool
+    let onAdd: () -> Void
     @Environment(LocalizationService.self) private var ls
 
     var body: some View {
@@ -50,7 +63,7 @@ struct FDTabBar: View {
                 tabButton(icon: "book.fill", label: ls.tabDiary, tab: 0)
                 tabButton(icon: "map.fill", label: ls.tabMap, tab: 1)
 
-                Button { showAddFlight = true } label: {
+                Button { onAdd() } label: {
                     VStack(spacing: 5) {
                         ZStack {
                             Circle()
@@ -105,5 +118,6 @@ struct FDTabBar: View {
 #Preview {
     ContentView()
         .environment(AirportService())
+        .environment(StoreService())
         .modelContainer(for: Flight.self, inMemory: true)
 }

@@ -43,12 +43,21 @@ struct vibingFlightDiaryApp: App {
 
 private struct RootView: View {
     @Environment(AuthService.self) private var auth
+    @Environment(StoreService.self) private var store
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
-        if auth.isAuthenticated {
-            ContentView()
-        } else {
-            SignInView()
+        Group {
+            if auth.isAuthenticated {
+                ContentView()
+            } else {
+                SignInView()
+            }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                Task { await store.checkEntitlements() }
+            }
         }
     }
 }

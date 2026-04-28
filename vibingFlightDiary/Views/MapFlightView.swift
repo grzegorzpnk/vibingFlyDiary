@@ -125,8 +125,11 @@ struct MapFlightView: View {
                 if beenMode {
                     ForEach(countryRings) { ring in
                         MapPolygon(coordinates: ring.coordinates)
-                            .foregroundStyle(FDColor.gold.opacity(0.42))
-                            .stroke(FDColor.gold.opacity(0.85), lineWidth: 1.5)
+                            .foregroundStyle(FDColor.gold.opacity(0.30))
+                            .stroke(FDColor.gold.opacity(0.65), lineWidth: 2)
+                        // Outer glow stroke
+                        MapPolyline(coordinates: ring.coordinates + [ring.coordinates.first].compactMap { $0 })
+                            .stroke(FDColor.gold.opacity(0.15), lineWidth: 5)
                     }
                 }
 
@@ -135,10 +138,15 @@ struct MapFlightView: View {
                     if let arc = arcCache[route.key] {
                         let arcColor = route.upcoming ? FDColor.blue : FDColor.gold
 
+                        // Outer glow
                         MapPolyline(coordinates: arc)
-                            .stroke(arcColor.opacity(0.22), lineWidth: 5)
+                            .stroke(arcColor.opacity(0.10), lineWidth: 10)
+                        // Mid glow
                         MapPolyline(coordinates: arc)
-                            .stroke(arcColor.opacity(0.88), lineWidth: 2)
+                            .stroke(arcColor.opacity(0.25), lineWidth: 4)
+                        // Core line
+                        MapPolyline(coordinates: arc)
+                            .stroke(arcColor.opacity(0.92), lineWidth: 1.5)
 
                         if arc.indices.contains(arc.count / 2) {
                             let count = route.flights.count
@@ -181,6 +189,19 @@ struct MapFlightView: View {
                 }
             }())
             .ignoresSafeArea()
+
+            // Subtle edge vignette for cinematic depth
+            Rectangle()
+                .fill(
+                    RadialGradient(
+                        colors: [.clear, FDColor.black.opacity(colorScheme == .dark ? 0.35 : 0.15)],
+                        center: .center,
+                        startRadius: UIScreen.main.bounds.width * 0.35,
+                        endRadius: UIScreen.main.bounds.width * 0.85
+                    )
+                )
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
 
             // Top gradient + title + year chips
             VStack {
@@ -396,11 +417,17 @@ struct MapFlightView: View {
         let color = upcoming ? FDColor.blue : FDColor.gold
         return ZStack {
             Circle()
-                .fill(color.opacity(0.18))
+                .fill(color.opacity(0.08))
+                .frame(width: 22, height: 22)
+            Circle()
+                .fill(color.opacity(0.22))
                 .frame(width: 14, height: 14)
             Circle()
                 .fill(color)
                 .frame(width: 6, height: 6)
+            Circle()
+                .stroke(color.opacity(0.5), lineWidth: 0.8)
+                .frame(width: 10, height: 10)
         }
     }
 

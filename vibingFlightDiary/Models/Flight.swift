@@ -44,8 +44,8 @@ enum FlightClass: String, CaseIterable, Codable {
 
     var icon: String {
         switch self {
-        case .economy:        return "person.seat"
-        case .premiumEconomy: return "person.seat.fill"
+        case .economy:        return "ticket.fill"
+        case .premiumEconomy: return "sparkle"
         case .business:       return "star"
         case .first:          return "crown"
         }

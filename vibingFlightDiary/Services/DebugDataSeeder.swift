@@ -10,9 +10,12 @@ struct DebugDataSeeder {
         reseed(context: context)
     }
 
-    static func wipeAll(context: ModelContext) {
+    static func wipeAll(context: ModelContext, sync: SyncService? = nil) {
         if let existing = try? context.fetch(FetchDescriptor<Flight>()) {
-            existing.forEach { context.delete($0) }
+            for flight in existing {
+                sync?.delete(flightId: flight.id)
+                context.delete(flight)
+            }
         }
     }
 

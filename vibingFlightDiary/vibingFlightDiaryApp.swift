@@ -31,11 +31,6 @@ struct vibingFlightDiaryApp: App {
                 .environment(localization)
                 .environment(auth)
                 .environment(sync)
-                .onAppear {
-                    #if DEBUG
-                    DebugDataSeeder.reseed(context: modelContainer.mainContext)
-                    #endif
-                }
         }
         .modelContainer(modelContainer)
     }

@@ -4,6 +4,12 @@ import AuthenticationServices
 struct SignInView: View {
     @Environment(AuthService.self) private var auth
 
+    private func rootViewController() -> UIViewController? {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.windows.first?.rootViewController
+    }
+
     var body: some View {
         ZStack {
             Color(hex: "#0A0A0F").ignoresSafeArea()
@@ -53,23 +59,31 @@ struct SignInView: View {
 
                         SignInWithAppleButton(.continue) { request in
                             request.requestedScopes = [.fullName, .email]
+                            request.nonce = auth.prepareAppleSignIn()
                         } onCompletion: { result in
-                            if case .success(let auth) = result {
-                                self.auth.handleAuthorization(auth)
+                            if case .success(let authorization) = result {
+                                auth.handleAuthorization(authorization)
                             }
                         }
                         .opacity(0.001)
                     }
                     .frame(height: 50)
 
-                    // Google — custom styled button (UI only)
-                    authButton(
-                        logo: GoogleGLogo(size: 22),
-                        text: "Continue with Google"
-                    )
+                    // Google
+                    Button {
+                        if let vc = rootViewController() {
+                            auth.signInWithGoogle(presenting: vc)
+                        }
+                    } label: {
+                        authButton(
+                            logo: GoogleGLogo(size: 22),
+                            text: "Continue with Google"
+                        )
+                    }
+                    .buttonStyle(.plain)
                     .frame(height: 50)
 
-                    // Facebook — custom styled button (UI only)
+                    // Facebook — UI only for now
                     authButton(
                         logo: FacebookLogo(size: 22),
                         text: "Continue with Facebook"

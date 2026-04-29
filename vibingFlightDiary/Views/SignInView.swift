@@ -83,12 +83,6 @@ struct SignInView: View {
                     .buttonStyle(.plain)
                     .frame(height: 50)
 
-                    // Facebook — UI only for now
-                    authButton(
-                        logo: FacebookLogo(size: 22),
-                        text: "Continue with Facebook"
-                    )
-                    .frame(height: 50)
 
                     Button {
                         auth.continueAsGuest()
@@ -123,24 +117,6 @@ struct SignInView: View {
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "#DADCE0"), lineWidth: 1))
-    }
-}
-
-// MARK: - Facebook Logo
-
-private struct FacebookLogo: View {
-    let size: CGFloat
-
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: size * 0.22)
-                .fill(Color(hex: "1877F2"))
-                .frame(width: size, height: size)
-            Text("f")
-                .font(.system(size: size * 0.72, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
-                .offset(x: size * 0.04, y: size * 0.01)
-        }
     }
 }
 

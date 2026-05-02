@@ -48,25 +48,18 @@ struct SignInView: View {
                         .tracking(2)
                         .foregroundStyle(Color(hex: "#F0EEE8").opacity(0.35))
 
-                    // Apple — custom styled button with invisible native button on top
-                    ZStack {
+                    // Apple
+                    Button {
+                        auth.startAppleSignIn()
+                    } label: {
                         authButton(
                             logo: Image(systemName: "apple.logo")
                                 .font(.system(size: 20, weight: .semibold))
                                 .foregroundStyle(.black),
                             text: "Continue with Apple"
                         )
-
-                        SignInWithAppleButton(.continue) { request in
-                            request.requestedScopes = [.fullName, .email]
-                            request.nonce = auth.prepareAppleSignIn()
-                        } onCompletion: { result in
-                            if case .success(let authorization) = result {
-                                auth.handleAuthorization(authorization)
-                            }
-                        }
-                        .opacity(0.001)
                     }
+                    .buttonStyle(.plain)
                     .frame(height: 50)
 
                     // Google

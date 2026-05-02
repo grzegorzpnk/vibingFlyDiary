@@ -7,7 +7,7 @@ import FirebaseCore
 import GoogleSignIn
 
 @Observable
-final class AuthService: NSObject {
+final class AuthService: NSObject, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
 
     // MARK: - State
 
@@ -82,15 +82,21 @@ final class AuthService: NSObject {
 
     // MARK: - Apple Sign-In
 
-    /// Call this in `SignInWithAppleButton`'s `onRequest` closure.
-    /// Stores the raw nonce internally and returns the SHA-256 hash to pass to Apple.
-    func prepareAppleSignIn() -> String {
+    /// Programmatically starts the Sign in with Apple flow via ASAuthorizationController.
+    func startAppleSignIn() {
         let nonce = randomNonceString()
         currentNonce = nonce
-        return sha256(nonce)
+
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        request.requestedScopes = [.fullName, .email]
+        request.nonce = sha256(nonce)
+
+        let controller = ASAuthorizationController(authorizationRequests: [request])
+        controller.delegate = self
+        controller.presentationContextProvider = self
+        controller.performRequests()
     }
 
-    /// Call this in `SignInWithAppleButton`'s `onCompletion` closure.
     func handleAuthorization(_ authorization: ASAuthorization) {
         guard
             let credential  = authorization.credential as? ASAuthorizationAppleIDCredential,
@@ -194,6 +200,24 @@ final class AuthService: NSObject {
             req.displayName = displayName
             req.commitChanges(completion: nil)
         }
+    }
+
+    // MARK: - ASAuthorizationControllerDelegate
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        handleAuthorization(authorization)
+    }
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        print("[Apple] Sign-in error: \(error.localizedDescription)")
+    }
+
+    // MARK: - ASAuthorizationControllerPresentationContextProviding
+
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.windows.first ?? ASPresentationAnchor()
     }
 
     // MARK: - Nonce helpers

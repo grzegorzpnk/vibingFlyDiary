@@ -7,12 +7,15 @@ struct vibingFlightDiaryApp: App {
     private let modelContainer: ModelContainer
     private let airportService = AirportService()
     private let localization = LocalizationService()
-    private let auth = AuthService()
-    private let sync = SyncService()
-    private let store = StoreService()
+    private let auth: AuthService
+    private let sync: SyncService
+    private let store: StoreService
 
     init() {
         FirebaseApp.configure()
+        auth = AuthService()
+        sync = SyncService()
+        store = StoreService()
         do {
             modelContainer = try ModelContainer(for: Flight.self)
         } catch {

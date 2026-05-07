@@ -28,7 +28,7 @@ struct SettingsView: View {
                             Image(systemName: "airplane.circle.fill")
                                 .font(.system(size: 48, weight: .light))
                                 .foregroundStyle(FDColor.gold)
-                            Text("Flygram")
+                            Text("Flown")
                                 .font(FDFont.display(22, weight: .bold))
                                 .foregroundStyle(FDColor.text)
                             Text("v\(appVersion)")
@@ -310,7 +310,7 @@ struct SettingsView: View {
                         // Premium section
                         settingsSection(title: "PREMIUM") {
                             if store.isPremium {
-                                settingsRow(icon: "star.fill", label: "Flygram Premium") {
+                                settingsRow(icon: "star.fill", label: "Flown Premium") {
                                     Text("Active")
                                         .font(FDFont.ui(12, weight: .medium))
                                         .foregroundStyle(FDColor.gold)

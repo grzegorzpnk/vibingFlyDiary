@@ -20,9 +20,9 @@ final class AuthService: NSObject, ASAuthorizationControllerDelegate, ASAuthoriz
     // MARK: - Keychain keys
 
     private enum KeychainKey {
-        static let userID = "flightDiary.apple.userID"
-        static let name   = "flightDiary.apple.name"
-        static let email  = "flightDiary.apple.email"
+        static let userID = "flown.apple.userID"
+        static let name   = "flown.apple.name"
+        static let email  = "flown.apple.email"
     }
 
     // MARK: - Init

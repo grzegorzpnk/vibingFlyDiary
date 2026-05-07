@@ -57,7 +57,7 @@ struct PremiumUpgradeView: View {
                             Text("Premium")
                                 .font(FDFont.display(36, weight: .bold))
                                 .foregroundStyle(FDColor.text)
-                            Text("Unlock unlimited flights\nand everything Flygram has to offer.")
+                            Text("Unlock unlimited flights\nand everything Flown has to offer.")
                                 .font(FDFont.ui(15))
                                 .foregroundStyle(FDColor.textMuted)
                                 .multilineTextAlignment(.center)

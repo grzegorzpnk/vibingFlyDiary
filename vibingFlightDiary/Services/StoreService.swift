@@ -6,7 +6,7 @@ final class StoreService {
 
     // MARK: - Product IDs
 
-    static let premiumMonthlyID = "com.flygram.premium.monthly"
+    static let premiumMonthlyID = "io.flown.app.premium.monthly"
 
     // MARK: - Published State
 

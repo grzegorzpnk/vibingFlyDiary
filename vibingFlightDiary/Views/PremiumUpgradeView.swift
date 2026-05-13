@@ -5,13 +5,13 @@ struct PremiumUpgradeView: View {
     @Environment(StoreService.self) private var store
     @Environment(LocalizationService.self) private var ls
 
-    private let features: [(icon: String, text: String)] = [
-        ("infinity", "Unlimited flight logging"),
-        ("icloud.fill", "Cloud sync across devices"),
-        ("chart.bar.fill", "Full stats & insights"),
-        ("square.and.arrow.up", "Share cards & memories"),
-        ("star.fill", "Support independent development")
-    ]
+    private var features: [(icon: String, text: String)] {[
+        ("infinity",            ls.premiumFeatureUnlimited),
+        ("icloud.fill",         ls.premiumFeatureSync),
+        ("chart.bar.fill",      ls.premiumFeatureStats),
+        ("square.and.arrow.up", ls.premiumFeatureShare),
+        ("star.fill",           ls.premiumFeatureSupport)
+    ]}
 
     var body: some View {
         ZStack {
@@ -50,14 +50,14 @@ struct PremiumUpgradeView: View {
                         .padding(.top, 12)
 
                         VStack(spacing: 8) {
-                            Text("FLYGRAM")
+                            Text("✦ FLOWN")
                                 .font(FDFont.ui(11, weight: .medium))
                                 .foregroundStyle(FDColor.gold)
                                 .tracking(3)
                             Text("Premium")
                                 .font(FDFont.display(36, weight: .bold))
                                 .foregroundStyle(FDColor.text)
-                            Text("Unlock unlimited flights\nand everything Flown has to offer.")
+                            Text(ls.premiumUnlockDesc)
                                 .font(FDFont.ui(15))
                                 .foregroundStyle(FDColor.textMuted)
                                 .multilineTextAlignment(.center)
@@ -102,7 +102,7 @@ struct PremiumUpgradeView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "info.circle")
                             .font(.system(size: 12))
-                        Text("Free tier includes \(StoreService.freeFlightLimit) flights")
+                        Text(String(format: ls.premiumFreeTier, StoreService.freeFlightLimit))
                             .font(FDFont.ui(12))
                     }
                     .foregroundStyle(FDColor.textDim)
@@ -111,7 +111,7 @@ struct PremiumUpgradeView: View {
                     // Price + CTA
                     VStack(spacing: 12) {
                         if let product = store.monthlyProduct {
-                            Text("\(product.displayPrice) / month")
+                            Text("\(product.displayPrice) \(ls.premiumPerMonth)")
                                 .font(FDFont.display(22, weight: .bold))
                                 .foregroundStyle(FDColor.text)
                         }
@@ -124,7 +124,7 @@ struct PremiumUpgradeView: View {
                                     ProgressView()
                                         .tint(FDColor.black)
                                 } else {
-                                    Text(store.monthlyProduct != nil ? "Subscribe Now" : "Loading…")
+                                    Text(store.monthlyProduct != nil ? ls.subscribeNow : ls.premiumLoading)
                                         .font(FDFont.ui(16, weight: .bold))
                                         .tracking(0.3)
                                         .foregroundStyle(FDColor.black)
@@ -140,7 +140,7 @@ struct PremiumUpgradeView: View {
                         Button {
                             Task { await store.restore() }
                         } label: {
-                            Text("Restore Purchases")
+                            Text(ls.restorePurchases)
                                 .font(FDFont.ui(13))
                                 .foregroundStyle(FDColor.textMuted)
                                 .underline()
@@ -158,7 +158,7 @@ struct PremiumUpgradeView: View {
                             .padding(.top, 12)
                     }
 
-                    Text("Subscription auto-renews monthly. Cancel anytime in App Store settings.")
+                    Text(ls.premiumRenewalNote)
                         .font(FDFont.ui(11))
                         .foregroundStyle(FDColor.textDim)
                         .multilineTextAlignment(.center)

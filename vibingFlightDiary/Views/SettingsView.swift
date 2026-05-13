@@ -315,10 +315,10 @@ struct SettingsView: View {
                         }
 
                         // Premium section
-                        settingsSection(title: "PREMIUM") {
+                        settingsSection(title: ls.premiumSection) {
                             if store.isPremium {
                                 settingsRow(icon: "star.fill", label: "Flown Premium") {
-                                    Text("Active")
+                                    Text(ls.premiumActive)
                                         .font(FDFont.ui(12, weight: .medium))
                                         .foregroundStyle(FDColor.gold)
                                         .padding(.horizontal, 10)
@@ -334,10 +334,10 @@ struct SettingsView: View {
                                             .foregroundStyle(FDColor.gold)
                                             .frame(width: 24)
                                         VStack(alignment: .leading, spacing: 2) {
-                                            Text("Upgrade to Premium")
+                                            Text(ls.premiumUpgradeTitle)
                                                 .font(FDFont.ui(14, weight: .medium))
                                                 .foregroundStyle(FDColor.text)
-                                            Text("Unlimited flights + all features")
+                                            Text(ls.premiumUpgradeSubtitle)
                                                 .font(FDFont.ui(12))
                                                 .foregroundStyle(FDColor.textMuted)
                                         }
@@ -362,7 +362,7 @@ struct SettingsView: View {
                                             .font(.system(size: 14, weight: .medium))
                                             .foregroundStyle(FDColor.textMuted)
                                             .frame(width: 24)
-                                        Text("Restore Purchases")
+                                        Text(ls.restorePurchases)
                                             .font(FDFont.ui(14))
                                             .foregroundStyle(FDColor.text)
                                         Spacer()

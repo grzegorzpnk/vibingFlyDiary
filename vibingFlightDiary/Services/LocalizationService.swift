@@ -280,6 +280,24 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     var comingSoon:         String { t("Soon",            "Wkrótce",         "Pronto",          "Bientôt",            "近日公開") }
     var currencyRow:        String { t("Currency",        "Waluta",          "Moneda",          "Devise",             "通貨") }
 
+    // MARK: - Premium
+    var premiumSection:         String { t("PREMIUM",                  "PREMIUM",                    "PREMIUM",                   "PREMIUM",                     "プレミアム") }
+    var premiumActive:          String { t("Active",                   "Aktywny",                    "Activo",                    "Actif",                       "有効") }
+    var premiumUpgradeTitle:    String { t("Upgrade to Premium",       "Przejdź na Premium",         "Actualizar a Premium",      "Passer à Premium",            "プレミアムにアップグレード") }
+    var premiumUpgradeSubtitle: String { t("Unlimited flights + all features", "Nielimitowane loty + wszystkie funkcje", "Vuelos ilimitados + todas las funciones", "Vols illimités + toutes les fonctionnalités", "無制限フライト＋全機能") }
+    var restorePurchases:       String { t("Restore Purchases",        "Przywróć zakupy",            "Restaurar compras",         "Restaurer les achats",        "購入を復元") }
+    var subscribeNow:           String { t("Subscribe Now",            "Subskrybuj teraz",           "Suscribirse ahora",         "S'abonner maintenant",        "今すぐ登録") }
+    var premiumLoading:         String { t("Loading…",                 "Ładowanie…",                 "Cargando…",                 "Chargement…",                 "読込中…") }
+    var premiumPerMonth:        String { t("/ month",                  "/ miesiąc",                  "/ mes",                     "/ mois",                      "/ 月") }
+    var premiumUnlockDesc:      String { t("Unlock unlimited flights and everything Flown has to offer.", "Odblokuj nielimitowane loty i wszystko co oferuje Flown.", "Desbloquea vuelos ilimitados y todo lo que Flown tiene para ofrecer.", "Débloquez des vols illimités et tout ce que Flown a à offrir.", "無制限のフライトとFlownのすべての機能を解放しましょう。") }
+    var premiumFreeTier:        String { t("Free tier includes %d flights", "Darmowy plan obejmuje %d lotów", "El plan gratuito incluye %d vuelos", "Le plan gratuit comprend %d vols", "無料プランは%dフライトまで") }
+    var premiumRenewalNote:     String { t("Subscription auto-renews monthly. Cancel anytime in App Store settings.", "Subskrypcja odnawia się co miesiąc. Anuluj w ustawieniach App Store.", "La suscripción se renueva automáticamente cada mes. Cancela en cualquier momento.", "L'abonnement se renouvelle automatiquement chaque mois. Annulez à tout moment.", "サブスクリプションは毎月自動更新されます。App Storeの設定でいつでもキャンセルできます。") }
+    var premiumFeatureUnlimited: String { t("Unlimited flight logging",    "Nielimitowane logi lotów",   "Registro ilimitado de vuelos", "Journalisation illimitée",   "無制限のフライト記録") }
+    var premiumFeatureSync:      String { t("Cloud sync across devices",   "Synchronizacja w chmurze",   "Sincronización en la nube",    "Sync cloud multi-appareils", "クラウド同期") }
+    var premiumFeatureStats:     String { t("Full stats & insights",       "Pełne statystyki",           "Estadísticas completas",       "Statistiques complètes",     "完全な統計情報") }
+    var premiumFeatureShare:     String { t("Share cards & memories",      "Udostępniaj wspomnienia",    "Comparte recuerdos",           "Partagez vos souvenirs",     "カードと思い出を共有") }
+    var premiumFeatureSupport:   String { t("Support independent development", "Wspieraj niezależnych twórców", "Apoya el desarrollo independiente", "Soutenez le développement indépendant", "独立した開発をサポート") }
+
     // MARK: - Stats
     var statsAddMoreFlights:   String { t("Add more flights to unlock this stat",
                                           "Dodaj więcej lotów, aby odblokować tę statystykę",

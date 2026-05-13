@@ -216,7 +216,7 @@ struct HomeView: View {
                          isLight: isLight)
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("✦ FLYGRAM") // app name — not translated
+                Text("✦ FLOWN") // app name — not translated
                     .font(FDFont.ui(11, weight: .medium))
                     .foregroundStyle(FDColor.gold)
                     .tracking(2.5)

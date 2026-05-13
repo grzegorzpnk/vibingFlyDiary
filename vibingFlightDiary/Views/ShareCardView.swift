@@ -70,7 +70,7 @@ struct FlightMapShareCard: View {
                         }
                         .padding(.horizontal, w * 0.09)
 
-                        Text("flygram.app")
+                        Text("flown.app")
                             .font(.system(size: w * 0.024, weight: .light))
                             .tracking(w * 0.005)
                             .foregroundStyle(Color(hex: "F0EEE8").opacity(0.18))
@@ -294,7 +294,7 @@ struct CountriesShareCard: View {
 
                     Spacer()
 
-                    Text("flygram.app")
+                    Text("flown.app")
                         .font(.system(size: w * 0.024, weight: .light))
                         .tracking(w * 0.005)
                         .foregroundStyle(Color(hex: "F0EEE8").opacity(0.18))
@@ -415,7 +415,7 @@ struct InTheAirShareCard: View {
 
                     Spacer()
 
-                    Text("flygram.app")
+                    Text("flown.app")
                         .font(.system(size: w * 0.024, weight: .light))
                         .tracking(w * 0.005)
                         .foregroundStyle(Color(hex: "F0EEE8").opacity(0.18))
@@ -541,7 +541,7 @@ struct YearStatsShareCard: View {
 
                     Spacer()
 
-                    Text("flygram.app")
+                    Text("flown.app")
                         .font(.system(size: w * 0.024, weight: .light))
                         .tracking(w * 0.005)
                         .foregroundStyle(Color(hex: "F0EEE8").opacity(0.18))

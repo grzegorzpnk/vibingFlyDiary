@@ -109,6 +109,7 @@ struct SettingsView: View {
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 12)
                                         .background(ls.language == lang ? FDColor.gold.opacity(0.05) : Color.clear)
+                                        .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -207,6 +208,7 @@ struct SettingsView: View {
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 12)
                                         .background(ls.theme == t ? FDColor.gold.opacity(0.05) : Color.clear)
+                                        .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -305,6 +307,7 @@ struct SettingsView: View {
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 12)
                                         .background(ls.currency == cur ? FDColor.gold.opacity(0.05) : Color.clear)
+                                        .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
                                 }

@@ -416,7 +416,7 @@ struct SettingsView: View {
                             if passionExpanded {
                                 Rectangle().fill(FDColor.border).frame(height: 0.5)
                                 HStack(spacing: 12) {
-                                    socialButton(label: "Instagram", url: "https://www.instagram.com") {
+                                    socialButton(label: "Instagram", url: "https://www.instagram.com/flown_app/", appUrl: "instagram://user?username=flown_app") {
                                         ZStack {
                                             RoundedRectangle(cornerRadius: 7)
                                                 .fill(LinearGradient(
@@ -530,9 +530,13 @@ struct SettingsView: View {
         }
     }
 
-    private func socialButton<Icon: View>(label: String, url: String, @ViewBuilder icon: () -> Icon) -> some View {
+    private func socialButton<Icon: View>(label: String, url: String, appUrl: String? = nil, @ViewBuilder icon: () -> Icon) -> some View {
         Button {
-            if let u = URL(string: url) { UIApplication.shared.open(u) }
+            if let appUrl, let u = URL(string: appUrl), UIApplication.shared.canOpenURL(u) {
+                UIApplication.shared.open(u)
+            } else if let u = URL(string: url) {
+                UIApplication.shared.open(u)
+            }
         } label: {
             HStack(spacing: 8) {
                 icon()

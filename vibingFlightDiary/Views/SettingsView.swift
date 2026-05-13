@@ -314,7 +314,8 @@ struct SettingsView: View {
                             }
                         }
 
-                        // Premium section
+                        // Premium section (hidden until premiumEnabled = true)
+                        if StoreService.premiumEnabled {
                         settingsSection(title: ls.premiumSection) {
                             if store.isPremium {
                                 settingsRow(icon: "star.fill", label: "Flown Premium") {
@@ -382,6 +383,7 @@ struct SettingsView: View {
                         .sheet(isPresented: $showPaywall) {
                             PremiumUpgradeView()
                         }
+                        } // end if premiumEnabled
 
                         // About section
                         settingsSection(title: ls.aboutSection) {

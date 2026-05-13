@@ -8,6 +8,9 @@ final class StoreService {
 
     static let premiumMonthlyID = "io.flown.app.premium.monthly"
 
+    /// Set to false to disable the paywall and hide premium UI (v1 launch mode)
+    static let premiumEnabled = false
+
     // MARK: - Published State
 
     private(set) var isPremium = false

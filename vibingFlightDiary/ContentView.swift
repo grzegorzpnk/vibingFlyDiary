@@ -28,7 +28,7 @@ struct ContentView: View {
             .ignoresSafeArea()
 
             FDTabBar(selectedTab: $selectedTab) {
-                if flights.count >= StoreService.freeFlightLimit && !store.isPremium {
+                if StoreService.premiumEnabled && flights.count >= StoreService.freeFlightLimit && !store.isPremium {
                     showPaywall = true
                 } else {
                     showAddFlight = true
